@@ -217,26 +217,29 @@
                     <span class="brand-main">Delicious Food</span>
                     <span class="brand-sub">Stop</span>
                 </div>
-                <p>{{ restaurant.tagline }}</p>
-                <p><i class="fa-solid fa-location-dot"></i> {{ restaurant.address }}</p>
-                <p><i class="fa-solid fa-phone"></i> {{ restaurant.phone }}</p>
+                <p style="color: var(--color-text-gray); font-size: 0.88rem; margin-bottom: 8px;">Fast Food & Pulao</p>
+                <p style="margin-bottom: 6px;"><i class="fa-solid fa-location-dot" style="color: var(--color-primary); margin-right: 6px;"></i> Jamrud, Khyber District</p>
+                <p style="margin-bottom: 6px;"><i class="fa-solid fa-phone" style="color: var(--color-primary); margin-right: 6px;"></i> +92 333 9342567</p>
             </div>
 
             <div class="footer-links">
                 <h3>Quick Navigation</h3>
-                <ul>
-                    <li><a href="{% url 'index' %}">Home</a></li>
-                    <li><a href="{% url 'menu' %}">Our Menu</a></li>
-                    <li><a href="{% url 'about' %}">About Us</a></li>
-                    <li><a href="{% url 'contact' %}">Contact</a></li>
-                </ul>
+                <div class="footer-nav-dots">
+                    <a href="{% url 'index' %}">Home</a>
+                    <span class="dot">•</span>
+                    <a href="{% url 'menu' %}">Menu</a>
+                    <span class="dot">•</span>
+                    <a href="{% url 'about' %}">About</a>
+                    <span class="dot">•</span>
+                    <a href="{% url 'contact' %}">Contact</a>
+                </div>
             </div>
 
             <div class="footer-hours">
                 <h3>Opening Hours</h3>
-                <p><strong>Monday – Sunday</strong></p>
-                <p>Lunch: {{ restaurant.lunch_hours }}</p>
-                <p>Dinner: {{ restaurant.dinner_hours }}</p>
+                <p style="margin-bottom: 6px;"><strong style="color: #fff;">Mon – Sun</strong></p>
+                <p style="margin-bottom: 4px;">Lunch: 11:00 AM – 4:00 PM</p>
+                <p style="margin-bottom: 4px;">Dinner: 5:00 PM – 11:00 PM</p>
             </div>
 
             <div class="footer-social">
@@ -250,8 +253,12 @@
             </div>
         </div>
 
-        <hr>
-        <p class="footer-copy">&copy; {% now "Y" %} Delicious Food Stop. All Rights Reserved. &nbsp;|&nbsp; <a href="#">Privacy Policy</a> &nbsp;|&nbsp; <a href="#">Terms of Service</a> &nbsp;|&nbsp; Developed by <a href="https://harisyar-ai.github.io/harisyar-ai/" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary); font-weight: 600;">Muhammad Haris Afridi</a></p>
+        <hr style="border: none; border-top: 1px solid var(--color-border); margin: 20px 0 16px;">
+        <div class="footer-copy" style="text-align: center; font-size: 0.78rem; color: var(--color-text-muted); display: flex; flex-direction: column; gap: 4px; align-items: center;">
+            <p style="margin: 0;">&copy; {% now "Y" %} Delicious Food Stop</p>
+            <p style="margin: 0;"><a href="#" style="color: var(--color-text-gray); text-decoration: none;">Privacy</a> &bull; <a href="#" style="color: var(--color-text-gray); text-decoration: none;">Terms</a></p>
+            <p style="margin: 0;">Developed by <a href="https://harisyar-ai.github.io/harisyar-ai/" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">Muhammad Haris Afridi</a></p>
+        </div>
     </footer>
     {% endblock %}
 
