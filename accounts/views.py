@@ -128,11 +128,42 @@ def manage_orders(request):
     return render(request, 'accounts/orders.html', context)
 
 
+import urllib.parse
+
 @login_required(login_url='login')
 def order_detail(request, pk):
     order = get_object_or_404(Order.objects.prefetch_related('items'), pk=pk)
     info = RestaurantInfo.objects.first()
-    return render(request, 'accounts/order_detail.html', {'order': order, 'restaurant_info': info})
+    rest_name = info.name if info else "Delicious Food Stop"
+
+    # Build formatted WhatsApp response message
+    items = order.items.all()
+    if items.exists():
+        formatted_items = [f"{idx+1}. {item.product_name} x{item.quantity} - Rs. {item.subtotal:.0f}" for idx, item in enumerate(items)]
+        items_list_str = "\n".join(formatted_items)
+    else:
+        items_list_str = f"1. {order.items_summary}"
+
+    wa_msg = (
+        f"Hi *{order.customer_name}*! This is *{rest_name}* regarding your order.\n\n"
+        f"------------------------------\n"
+        f"*Ordered Items:*\n"
+        f"{items_list_str}\n"
+        f"------------------------------\n"
+        f"*Total Amount:* Rs. {order.total_price:.0f}\n"
+        f"------------------------------\n\n"
+        f"Should we confirm and start preparing your order?"
+    )
+    
+    encoded_wa_msg = urllib.parse.quote(wa_msg)
+    clean_phone = "".join(c for c in (order.customer_phone or '') if c.isdigit())
+    wa_url = f"https://wa.me/{clean_phone}?text={encoded_wa_msg}"
+
+    return render(request, 'accounts/order_detail.html', {
+        'order': order,
+        'restaurant_info': info,
+        'wa_url': wa_url,
+    })
 
 
 @login_required(login_url='login')

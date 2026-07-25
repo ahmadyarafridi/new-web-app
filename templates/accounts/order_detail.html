@@ -38,8 +38,8 @@
         </p>
 
         <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1);">
-            <a href="https://wa.me/{{ order.customer_phone|cut:' ' }}?text=Hi%20{{ order.customer_name|urlencode }},%20this%20is%20{{ restaurant_info.name|default:'Delicious Food Stop'|urlencode }}%20regarding%20your%20order." target="_blank" class="btn-primary" style="padding: 9px 18px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; background: #25D366; border-color: #25D366; color: #000;">
-                <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+            <a href="{{ wa_url }}" target="_blank" class="btn-primary" style="padding: 9px 18px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; background: #25D366; border-color: #25D366; color: #000; font-weight: 700; border-radius: 6px; text-decoration: none;">
+                <i class="fa-brands fa-whatsapp" style="font-size: 1rem;"></i> Chat on WhatsApp
             </a>
         </div>
     </div>

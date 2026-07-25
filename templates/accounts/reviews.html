@@ -33,7 +33,6 @@
                     <tr>
                         <th>Avatar</th>
                         <th>Customer Name</th>
-                        <th>Role</th>
                         <th>Rating</th>
                         <th>Comment</th>
                         <th>Status</th>
@@ -47,7 +46,6 @@
                             <img src="{% if review.avatar_file %}{{ review.avatar_file.url }}{% else %}{{ review.avatar_url }}{% endif %}" alt="{{ review.customer_name }}" class="tbl-img" style="border-radius: 50%;">
                         </td>
                         <td><strong>{{ review.customer_name }}</strong></td>
-                        <td><span style="font-size: 0.75rem; color: var(--color-text-gray);">{{ review.reviewer_role }}</span></td>
                         <td>
                             <span style="color: #f5b301; font-weight: 700;">
                                 {{ review.rating }} <i class="fa-solid fa-star"></i>
