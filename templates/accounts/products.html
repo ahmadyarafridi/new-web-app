@@ -29,10 +29,10 @@
 
                 <!-- CATEGORY ACTION BUTTONS -->
                 <div style="display: flex; gap: 4px; margin-top: 6px; width: 100%; justify-content: center; align-items: center; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.06);">
-                    <a href="{% url 'category_edit' cat.pk %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 2px 4px; font-size: 0.6rem; font-weight: 600; text-decoration: none; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; flex: 1;">
+                    <a href="{% url 'category_edit' cat.pk %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 2px 6px; font-size: 0.58rem; font-weight: 600; text-decoration: none; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; width: fit-content; max-width: max-content;">
                         <i class="fa-solid fa-pen-to-square" style="font-size: 0.55rem;"></i> Edit
                     </a>
-                    <a href="{% url 'category_delete' cat.pk %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 2px 4px; font-size: 0.6rem; font-weight: 600; text-decoration: none; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; flex: 1;">
+                    <a href="{% url 'category_delete' cat.pk %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 2px 6px; font-size: 0.58rem; font-weight: 600; text-decoration: none; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; width: fit-content; max-width: max-content;">
                         <i class="fa-solid fa-trash" style="font-size: 0.55rem;"></i> Delete
                     </a>
                 </div>
@@ -43,6 +43,13 @@
             </div>
             {% endfor %}
         </div>
+    </div>
+
+    <!-- PINNED CATEGORIES FOOTER BACK BUTTON -->
+    <div style="flex-shrink: 0; padding-top: 10px; border-top: 1px solid var(--color-border); display: flex; justify-content: flex-start;">
+        <a href="{% url 'owner_dashboard' %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 4px 10px; font-size: 0.72rem; font-weight: 600; text-decoration: none; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; width: fit-content; max-width: max-content;">
+            &larr; Back
+        </a>
     </div>
 
     {% else %}
@@ -68,10 +75,10 @@
 
                 <!-- PRODUCT ACTION BUTTONS -->
                 <div style="display: flex; gap: 4px; margin-top: 6px; width: 100%; justify-content: center; align-items: center; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.06);">
-                    <a href="{% url 'product_edit' product.pk %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 2px 4px; font-size: 0.6rem; font-weight: 600; text-decoration: none; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; flex: 1;">
+                    <a href="{% url 'product_edit' product.pk %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 2px 6px; font-size: 0.58rem; font-weight: 600; text-decoration: none; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; width: fit-content; max-width: max-content;">
                         <i class="fa-solid fa-pen-to-square" style="font-size: 0.55rem;"></i> Edit
                     </a>
-                    <a href="{% url 'product_delete' product.pk %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 2px 4px; font-size: 0.6rem; font-weight: 600; text-decoration: none; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; flex: 1;">
+                    <a href="{% url 'product_delete' product.pk %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 2px 6px; font-size: 0.58rem; font-weight: 600; text-decoration: none; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; width: fit-content; max-width: max-content;">
                         <i class="fa-solid fa-trash" style="font-size: 0.55rem;"></i> Delete
                     </a>
                 </div>
@@ -90,7 +97,7 @@
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
             <div>
                 {% if products.has_previous %}
-                <a href="?page={{ products.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_category %}&cat={{ current_category }}{% endif %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 5px 12px; font-size: 0.75rem; font-weight: 600; text-decoration: none; border-radius: var(--border-radius-sm);">
+                <a href="?page={{ products.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_category %}&cat={{ current_category }}{% endif %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 4px 10px; font-size: 0.72rem; font-weight: 600; text-decoration: none; border-radius: 14px;">
                     &larr; Prev
                 </a>
                 {% endif %}
@@ -102,7 +109,7 @@
 
             <div>
                 {% if products.has_next %}
-                <a href="?page={{ products.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_category %}&cat={{ current_category }}{% endif %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 5px 12px; font-size: 0.75rem; font-weight: 600; text-decoration: none; border-radius: var(--border-radius-sm);">
+                <a href="?page={{ products.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}{% if current_category %}&cat={{ current_category }}{% endif %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 4px 10px; font-size: 0.72rem; font-weight: 600; text-decoration: none; border-radius: 14px;">
                     Next &rarr;
                 </a>
                 {% endif %}
@@ -111,7 +118,7 @@
         {% endif %}
 
         <div style="display: flex; justify-content: flex-start; align-items: center;">
-            <a href="{% url 'manage_products' %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 6px 14px; font-size: 0.75rem; font-weight: 600; text-decoration: none; border-radius: var(--border-radius-sm);">
+            <a href="{% url 'manage_products' %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 4px 10px; font-size: 0.72rem; font-weight: 600; text-decoration: none; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; width: fit-content; max-width: max-content;">
                 &larr; Back
             </a>
         </div>
