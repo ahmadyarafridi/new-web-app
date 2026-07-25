@@ -104,7 +104,13 @@
                 const closeBtn = document.getElementById('closeFeedbackModalBtn');
                 const dismissBtn = document.getElementById('dismissFeedbackModalBtn');
                 const backdrop = document.getElementById('feedbackModalBackdrop');
+                const fbSection = document.getElementById('customer-feedback');
                 
+                // Instantly keep page focused on customer feedback form section
+                if (fbSection) {
+                    fbSection.scrollIntoView({ behavior: 'instant', block: 'center' });
+                }
+
                 function closeModal() {
                     if (modal) {
                         modal.classList.remove('active');
@@ -119,7 +125,7 @@
         </script>
         {% endif %}
 
-        <form method="post" action="{% url 'contact' %}" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
+        <form method="post" action="{% url 'contact' %}#customer-feedback" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
             {% csrf_token %}
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
