@@ -3161,3 +3161,61 @@ footer hr {
     padding: 0 4px;
     border: 2px solid var(--color-primary);
 }
+
+/* ==========================================================================
+   MOBILE FOOTER SINGLE-ROW NAVIGATION (@media max-width: 768px)
+   ========================================================================== */
+@media (max-width: 768px) {
+    footer {
+        padding: 36px 18px 20px;
+        text-align: center;
+    }
+
+    .footer-container,
+    .footer-inner {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+        gap: 24px;
+    }
+
+    .footer-brand,
+    .footer-links,
+    .footer-hours,
+    .footer-social {
+        min-width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+    }
+
+    .footer-brand p {
+        max-width: 100%;
+        text-align: center;
+    }
+
+    /* Single-row horizontal Quick Navigation links for mobile screens */
+    .footer-links ul,
+    .footer-links nav ul {
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        margin-top: 4px;
+    }
+
+    .footer-links ul li a,
+    .footer-links nav ul li a {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #fff;
+    }
+
+    .footer-social div {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+    }
+}
