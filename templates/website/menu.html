@@ -87,21 +87,42 @@
                     <button class="add-to-cart-btn" data-id="{{ deal.item_code }}" data-name="{{ deal.title }}" data-price="{{ deal.price|floatformat:0 }}" data-img="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}">
                         <i class="fa-solid fa-plus"></i> Add to Order
                     </button>
+        {% if deals %}
+        {% for deal in deals %}
+        <div class="menu-item-card" data-category="deals" data-id="{{ deal.item_code }}">
+            <div class="menu-item-img-wrapper">
+                <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}" class="menu-item-img">
+            </div>
+            <div class="menu-item-info">
+                <div class="menu-item-title-row">
+                    <h4>{{ deal.title }}</h4>
+                    <span class="menu-item-price">Rs. {{ deal.price|floatformat:0 }}</span>
+                </div>
+                {% if deal.description %}
+                <p class="menu-item-desc" style="font-size:0.75rem; color:var(--color-text-gray); margin-bottom:10px;">{{ deal.description }}</p>
+                {% endif %}
+                <div class="menu-item-actions">
+                    <button class="add-to-cart-btn" data-id="{{ deal.item_code }}" data-name="{{ deal.title }}" data-price="{{ deal.price|floatformat:0 }}" data-img="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}">
+                        <i class="fa-solid fa-plus"></i> Add to Order
+                    </button>
                 </div>
             </div>
         </div>
         {% endfor %}
         {% endif %}
+
+        {% if has_more %}
+        <!-- INITIAL HORIZONTAL LOAD MORE CARD -->
+        <div class="load-more-card" id="loadMoreCard" style="flex: 0 0 170px; min-width: 170px; min-height: 280px; background: rgba(201,168,76,0.06); border: 2px dashed rgba(201,168,76,0.4); border-radius: var(--border-radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; scroll-snap-align: start; text-align: center; padding: 18px;">
+            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(201,168,76,0.15); border: 1.5px solid var(--color-primary); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 10px;">
+                <i class="fa-solid fa-arrow-right" id="loadMoreCardIcon"></i>
+            </div>
+            <span style="font-family: var(--font-brand); color: #fff; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;" id="loadMoreCardText">More Items</span>
+            <span style="font-size: 0.7rem; color: var(--color-text-gray); margin-top: 4px;">Tap for next items</span>
+        </div>
+        {% endif %}
     </div>
     <div class="carousel-dots menu-carousel-dots" id="menuCarouselDots" aria-label="Menu carousel navigation"></div>
-
-    <!-- LOAD MORE CONTAINER -->
-    <div id="loadMoreWrapper" style="text-align: center; margin: 36px 0 20px; {% if not has_more %}display: none;{% endif %}">
-        <button type="button" id="loadMoreBtn" class="btn-primary" style="padding: 12px 36px; font-size: 0.85rem; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease; background: var(--color-primary); color: var(--color-bg-deep); border: none; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(201, 168, 76, 0.25);">
-            <span id="loadMoreBtnText">Load More Items</span>
-            <i class="fa-solid fa-chevron-down" id="loadMoreIcon"></i>
-        </button>
-    </div>
 </section>
 
 <script>
@@ -111,10 +132,6 @@ document.addEventListener('DOMContentLoaded', function() {
     let currentSearch = '';
 
     const menuGrid = document.getElementById('menuGrid');
-    const loadMoreWrapper = document.getElementById('loadMoreWrapper');
-    const loadMoreBtn = document.getElementById('loadMoreBtn');
-    const loadMoreBtnText = document.getElementById('loadMoreBtnText');
-    const loadMoreIcon = document.getElementById('loadMoreIcon');
 
     const searchInput = document.getElementById('menuSearchInput');
     const searchBtn = document.getElementById('menuSearchBtn');
@@ -165,14 +182,36 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
     }
 
+    function createLoadMoreCardHtml() {
+        return `
+            <div class="load-more-card" id="loadMoreCard" style="flex: 0 0 170px; min-width: 170px; min-height: 280px; background: rgba(201,168,76,0.06); border: 2px dashed rgba(201,168,76,0.4); border-radius: var(--border-radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; scroll-snap-align: start; text-align: center; padding: 18px;">
+                <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(201,168,76,0.15); border: 1.5px solid var(--color-primary); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 10px;">
+                    <i class="fa-solid fa-arrow-right" id="loadMoreCardIcon"></i>
+                </div>
+                <span style="font-family: var(--font-brand); color: #fff; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;" id="loadMoreCardText">More Items</span>
+                <span style="font-size: 0.7rem; color: var(--color-text-gray); margin-top: 4px;">Tap for next items</span>
+            </div>
+        `;
+    }
+
+    function attachLoadMoreCardListener() {
+        const loadMoreCard = document.getElementById('loadMoreCard');
+        if (loadMoreCard) {
+            loadMoreCard.addEventListener('click', function() {
+                const icon = document.getElementById('loadMoreCardIcon');
+                const text = document.getElementById('loadMoreCardText');
+                if (icon) icon.className = 'fa-solid fa-spinner fa-spin';
+                if (text) text.textContent = 'Loading...';
+
+                currentPage++;
+                fetchProducts(currentPage, true);
+            });
+        }
+    }
+
     function fetchProducts(page, append = false) {
         if (!append) {
             menuGrid.style.opacity = '0.4';
-        }
-        
-        if (loadMoreBtnText && loadMoreIcon) {
-            loadMoreBtnText.textContent = 'Loading...';
-            loadMoreIcon.className = 'fa-solid fa-spinner fa-spin';
         }
 
         const url = `/api/products/?category=${encodeURIComponent(activeCategory)}&page=${page}&search=${encodeURIComponent(currentSearch)}`;
@@ -180,53 +219,45 @@ document.addEventListener('DOMContentLoaded', function() {
         fetch(url)
             .then(res => res.json())
             .then(data => {
+                // Remove existing loadMoreCard if present
+                const existingCard = document.getElementById('loadMoreCard');
+                if (existingCard) existingCard.remove();
+
                 if (!append) {
                     menuGrid.innerHTML = '';
                 }
 
                 if (activeCategory === 'deals') {
-                    // Filter existing deal cards or show deals
                     const allCards = menuGrid.querySelectorAll('.menu-item-card');
                     allCards.forEach(card => {
                         card.style.display = card.getAttribute('data-category') === 'deals' ? 'flex' : 'none';
                     });
-                    if (loadMoreWrapper) loadMoreWrapper.style.display = 'none';
                 } else {
                     data.products.forEach(prod => {
                         menuGrid.insertAdjacentHTML('beforeend', createProductCardHtml(prod));
                     });
 
-                    if (loadMoreWrapper) {
-                        if (data.has_next) {
-                            loadMoreWrapper.style.display = 'block';
-                        } else {
-                            loadMoreWrapper.style.display = 'none';
-                        }
+                    if (data.has_next) {
+                        menuGrid.insertAdjacentHTML('beforeend', createLoadMoreCardHtml());
+                        attachLoadMoreCardListener();
                     }
                 }
 
                 menuGrid.style.opacity = '1';
-                if (loadMoreBtnText && loadMoreIcon) {
-                    loadMoreBtnText.textContent = 'Load More Items';
-                    loadMoreIcon.className = 'fa-solid fa-chevron-down';
+
+                // Scroll right slightly if appending new items
+                if (append) {
+                    menuGrid.scrollBy({ left: 300, behavior: 'smooth' });
                 }
             })
             .catch(err => {
                 console.error('Error loading products:', err);
                 menuGrid.style.opacity = '1';
-                if (loadMoreBtnText && loadMoreIcon) {
-                    loadMoreBtnText.textContent = 'Load More Items';
-                    loadMoreIcon.className = 'fa-solid fa-chevron-down';
-                }
             });
     }
 
-    if (loadMoreBtn) {
-        loadMoreBtn.addEventListener('click', function() {
-            currentPage++;
-            fetchProducts(currentPage, true);
-        });
-    }
+    // Initial listener binding for initial HTML state
+    attachLoadMoreCardListener();
 
     // Category Selector
     customOptions.forEach(opt => {
