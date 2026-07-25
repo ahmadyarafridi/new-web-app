@@ -106,9 +106,19 @@
                 const backdrop = document.getElementById('feedbackModalBackdrop');
                 const fbSection = document.getElementById('customer-feedback');
                 
-                // Instantly keep page focused on customer feedback form section
-                if (fbSection) {
-                    fbSection.scrollIntoView({ behavior: 'instant', block: 'center' });
+                // Prevent modal from reappearing on page refresh or after user clicks Done / X
+                if (sessionStorage.getItem('feedback_submitted_modal_closed') === 'true') {
+                    if (modal) {
+                        modal.classList.remove('active');
+                        modal.style.display = 'none';
+                    }
+                } else {
+                    if (fbSection) {
+                        fbSection.scrollIntoView({ behavior: 'instant', block: 'center' });
+                    }
+                    if (window.history && window.history.replaceState) {
+                        window.history.replaceState(null, null, window.location.pathname);
+                    }
                 }
 
                 function closeModal() {
@@ -116,6 +126,7 @@
                         modal.classList.remove('active');
                         modal.style.display = 'none';
                     }
+                    sessionStorage.setItem('feedback_submitted_modal_closed', 'true');
                 }
                 
                 if (closeBtn) closeBtn.addEventListener('click', closeModal);
@@ -125,7 +136,7 @@
         </script>
         {% endif %}
 
-        <form method="post" action="{% url 'contact' %}#customer-feedback" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
+        <form method="post" action="{% url 'contact' %}" onsubmit="sessionStorage.removeItem('feedback_submitted_modal_closed');" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
             {% csrf_token %}
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">

@@ -32,12 +32,12 @@ def index(request):
     try:
         deals = list(Deal.objects.filter(is_active=True))
         curated_reviews = list(Review.objects.filter(is_approved=True))
-        approved_feedback = list(CustomerFeedback.objects.filter(status='approved'))
+        approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
     except (OperationalError, ProgrammingError):
         ensure_db_ready()
         deals = list(Deal.objects.filter(is_active=True))
         curated_reviews = list(Review.objects.filter(is_approved=True))
-        approved_feedback = list(CustomerFeedback.objects.filter(status='approved'))
+        approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
         
     feedback_reviews = [
         {
@@ -50,7 +50,8 @@ def index(request):
         for fb in approved_feedback
     ]
     
-    combined_reviews = curated_reviews + feedback_reviews
+    # Put newly approved customer reviews FIRST in the testimonials slider
+    combined_reviews = feedback_reviews + curated_reviews
 
     return render(request, 'website/index.html', {
         'deals': deals,
