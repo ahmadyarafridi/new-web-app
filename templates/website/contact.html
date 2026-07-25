@@ -71,11 +71,23 @@
         
         <div style="margin-bottom: 25px; text-align: center;">
             <span class="section-tag" style="margin-bottom: 6px;">We Value Your Feedback</span>
-            <!-- <h2 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 1.6rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Customer Feedback</h2> -->
-            <!-- <p style="color: var(--color-text-gray); font-size: 0.88rem; max-width: 600px; margin: 0 auto;">Have you dined with us recently? Leave your review below to help us continuously perfect our flavors and service.</p> -->
         </div>
 
-        <form method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
+        {% if messages %}
+        <div style="max-width: 500px; margin: 0 auto 25px auto;">
+            {% for message in messages %}
+            <div style="background: rgba(201, 168, 76, 0.12); border: 1.5px solid var(--color-primary); border-radius: var(--border-radius-sm); padding: 20px 22px; text-align: center; color: #ffffff; box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45); animation: fadeIn 0.4s ease;">
+                <div style="font-size: 2.2rem; color: #f5b301; margin-bottom: 8px;">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <h3 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 1.15rem; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;">Thank You For Your Review!</h3>
+                <p style="font-size: 0.82rem; color: #e0e0e0; margin: 0; line-height: 1.5;">We truly appreciate your feedback! Your review has been submitted successfully and will be live on our website once reviewed.</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'contact' %}#customer-feedback" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
             {% csrf_token %}
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">

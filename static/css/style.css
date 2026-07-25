@@ -1430,15 +1430,17 @@ main {
     color: var(--color-text-bright);
 }
 
+.review-rating,
 .stars {
     display: flex;
     gap: 4px;
-    margin-bottom: 15px;
+    margin-bottom: 12px;
 }
 
+.review-rating i,
 .stars i {
-    color: var(--color-primary);
-    font-size: 0.85rem;
+    color: #f5b301 !important;
+    font-size: 0.9rem;
 }
 
 .review-card-slide h5 {
