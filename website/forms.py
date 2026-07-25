@@ -5,7 +5,7 @@ from .image_utils import validate_image_file, optimize_image
 class CustomerFeedbackForm(forms.ModelForm):
     avatar_file = forms.FileField(
         required=True,
-        widget=forms.FileInput(attrs={'class': 'floating-input', 'accept': 'image/*', 'id': 'fbCustAvatar', 'style': 'padding-top: 14px;'}),
+        widget=forms.FileInput(attrs={'class': 'floating-input', 'accept': 'image/*', 'id': 'fbCustAvatar', 'style': 'height: 58px !important; padding-top: 22px !important; cursor: pointer;'}),
         label="Your Photo / Avatar *"
     )
 
