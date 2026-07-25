@@ -43,14 +43,68 @@ def index(request):
         'reviews': combined_reviews,
     })
 
+from django.core.paginator import Paginator
+from django.templatetags.static import static
+
+PER_PAGE = 9
+
 def menu(request):
     categories = Category.objects.filter(is_active=True)
-    products = Product.objects.select_related('category').all()
+    products_qs = Product.objects.filter(category__is_active=True).select_related('category')
+    paginator = Paginator(products_qs, PER_PAGE)
+    first_page = paginator.get_page(1)
     deals = Deal.objects.filter(is_active=True)
+    
     return render(request, 'website/menu.html', {
         'categories': categories,
-        'products': products,
+        'products': first_page.object_list,
+        'has_more': first_page.has_next(),
+        'total_count': paginator.count,
         'deals': deals,
+    })
+
+def api_products(request):
+    cat_slug = request.GET.get('category', 'all')
+    search_q = request.GET.get('search', '').strip()
+    page_num = request.GET.get('page', 1)
+    
+    try:
+        page_num = int(page_num)
+    except (ValueError, TypeError):
+        page_num = 1
+        
+    qs = Product.objects.filter(category__is_active=True).select_related('category')
+    
+    if cat_slug and cat_slug != 'all' and cat_slug != 'deals':
+        qs = qs.filter(category__slug=cat_slug)
+        
+    if search_q:
+        from django.db.models import Q
+        qs = qs.filter(Q(name__icontains=search_q) | Q(description__icontains=search_q))
+        
+    paginator = Paginator(qs, PER_PAGE)
+    page_obj = paginator.get_page(page_num)
+    
+    items_data = []
+    for prod in page_obj.object_list:
+        img_url = prod.image_file.url if prod.image_file else static(prod.image)
+        items_data.append({
+            'item_code': prod.item_code,
+            'name': prod.name,
+            'price': int(round(prod.price)),
+            'description': prod.description or '',
+            'image_url': img_url,
+            'category_slug': prod.category.slug,
+            'is_available': prod.is_available,
+            'custom_style': prod.custom_style or '',
+        })
+        
+    return JsonResponse({
+        'products': items_data,
+        'has_next': page_obj.has_next(),
+        'current_page': page_obj.number,
+        'total_pages': paginator.num_pages,
+        'total_count': paginator.count,
     })
 
 def about(request):

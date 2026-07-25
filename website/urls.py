@@ -10,4 +10,5 @@ urlpatterns = [
     path('terms/', views.terms, name='terms'),
     path('create-order/', views.api_create_order, name='create_order'),
     path('api/orders/create/', views.api_create_order, name='api_create_order'),
+    path('api/products/', views.api_products, name='api_products'),
 ]

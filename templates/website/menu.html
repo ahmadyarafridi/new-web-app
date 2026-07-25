@@ -94,5 +94,170 @@
         {% endif %}
     </div>
     <div class="carousel-dots menu-carousel-dots" id="menuCarouselDots" aria-label="Menu carousel navigation"></div>
+
+    <!-- LOAD MORE CONTAINER -->
+    <div id="loadMoreWrapper" style="text-align: center; margin: 36px 0 20px; {% if not has_more %}display: none;{% endif %}">
+        <button type="button" id="loadMoreBtn" class="btn-primary" style="padding: 12px 36px; font-size: 0.85rem; border-radius: 30px; display: inline-flex; align-items: center; gap: 8px; cursor: pointer; transition: all 0.2s ease; background: var(--color-primary); color: var(--color-bg-deep); border: none; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; box-shadow: 0 4px 15px rgba(201, 168, 76, 0.25);">
+            <span id="loadMoreBtnText">Load More Items</span>
+            <i class="fa-solid fa-chevron-down" id="loadMoreIcon"></i>
+        </button>
+    </div>
 </section>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    let currentPage = 1;
+    let activeCategory = 'all';
+    let currentSearch = '';
+
+    const menuGrid = document.getElementById('menuGrid');
+    const loadMoreWrapper = document.getElementById('loadMoreWrapper');
+    const loadMoreBtn = document.getElementById('loadMoreBtn');
+    const loadMoreBtnText = document.getElementById('loadMoreBtnText');
+    const loadMoreIcon = document.getElementById('loadMoreIcon');
+
+    const searchInput = document.getElementById('menuSearchInput');
+    const searchBtn = document.getElementById('menuSearchBtn');
+    const customOptions = document.querySelectorAll('#customMobileOptions .custom-option');
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function createProductCardHtml(prod) {
+        const isAvailable = prod.is_available;
+        const descHtml = prod.description ? `<p class="menu-item-desc">${escapeHtml(prod.description)}</p>` : '';
+        const styleAttr = prod.custom_style ? `style="${escapeHtml(prod.custom_style)}"` : '';
+        
+        const outOfStockBadge = !isAvailable ? 
+            `<span class="badge-status badge-inactive" style="position: absolute; top: 10px; right: 10px; background: rgba(229,57,53,0.85); color: #ffffff; padding: 3px 8px; font-size: 0.65rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(4px);">Out of Stock</span>` : '';
+
+        const actionBtn = isAvailable ?
+            `<button class="add-to-cart-btn" data-id="${escapeHtml(prod.item_code)}" data-name="${escapeHtml(prod.name)}" data-price="${prod.price}" data-img="${escapeHtml(prod.image_url)}">
+                <i class="fa-solid fa-plus"></i> Add to Order
+            </button>` :
+            `<button class="add-to-cart-btn disabled" disabled style="background: #222222 !important; color: #777777 !important; border: 1px solid #444444 !important; opacity: 0.6; cursor: not-allowed; pointer-events: none; width: 100%;">
+                Out of Stock
+            </button>`;
+
+        return `
+            <div class="menu-item-card" data-category="${escapeHtml(prod.category_slug)}" data-id="${escapeHtml(prod.item_code)}" data-in-stock="${isAvailable}">
+                <div class="menu-item-img-wrapper" style="position: relative;">
+                    <img src="${escapeHtml(prod.image_url)}" alt="${escapeHtml(prod.name)}" class="menu-item-img" loading="lazy" decoding="async" width="400" height="260" ${styleAttr}>
+                    ${outOfStockBadge}
+                </div>
+                <div class="menu-item-info">
+                    <div class="menu-item-title-row">
+                        <h4>${escapeHtml(prod.name)}</h4>
+                        <span class="menu-item-price">Rs. ${prod.price}</span>
+                    </div>
+                    ${descHtml}
+                    <div class="menu-item-actions">
+                        ${actionBtn}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    function fetchProducts(page, append = false) {
+        if (!append) {
+            menuGrid.style.opacity = '0.4';
+        }
+        
+        if (loadMoreBtnText && loadMoreIcon) {
+            loadMoreBtnText.textContent = 'Loading...';
+            loadMoreIcon.className = 'fa-solid fa-spinner fa-spin';
+        }
+
+        const url = `/api/products/?category=${encodeURIComponent(activeCategory)}&page=${page}&search=${encodeURIComponent(currentSearch)}`;
+
+        fetch(url)
+            .then(res => res.json())
+            .then(data => {
+                if (!append) {
+                    menuGrid.innerHTML = '';
+                }
+
+                if (activeCategory === 'deals') {
+                    // Filter existing deal cards or show deals
+                    const allCards = menuGrid.querySelectorAll('.menu-item-card');
+                    allCards.forEach(card => {
+                        card.style.display = card.getAttribute('data-category') === 'deals' ? 'flex' : 'none';
+                    });
+                    if (loadMoreWrapper) loadMoreWrapper.style.display = 'none';
+                } else {
+                    data.products.forEach(prod => {
+                        menuGrid.insertAdjacentHTML('beforeend', createProductCardHtml(prod));
+                    });
+
+                    if (loadMoreWrapper) {
+                        if (data.has_next) {
+                            loadMoreWrapper.style.display = 'block';
+                        } else {
+                            loadMoreWrapper.style.display = 'none';
+                        }
+                    }
+                }
+
+                menuGrid.style.opacity = '1';
+                if (loadMoreBtnText && loadMoreIcon) {
+                    loadMoreBtnText.textContent = 'Load More Items';
+                    loadMoreIcon.className = 'fa-solid fa-chevron-down';
+                }
+            })
+            .catch(err => {
+                console.error('Error loading products:', err);
+                menuGrid.style.opacity = '1';
+                if (loadMoreBtnText && loadMoreIcon) {
+                    loadMoreBtnText.textContent = 'Load More Items';
+                    loadMoreIcon.className = 'fa-solid fa-chevron-down';
+                }
+            });
+    }
+
+    if (loadMoreBtn) {
+        loadMoreBtn.addEventListener('click', function() {
+            currentPage++;
+            fetchProducts(currentPage, true);
+        });
+    }
+
+    // Category Selector
+    customOptions.forEach(opt => {
+        opt.addEventListener('click', function() {
+            activeCategory = this.getAttribute('data-value');
+            currentPage = 1;
+            fetchProducts(1, false);
+        });
+    });
+
+    // Search Box Listener
+    if (searchInput) {
+        let searchTimeout;
+        searchInput.addEventListener('input', function() {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                currentSearch = this.value.trim();
+                currentPage = 1;
+                fetchProducts(1, false);
+            }, 300);
+        });
+    }
+
+    if (searchBtn) {
+        searchBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            currentSearch = searchInput ? searchInput.value.trim() : '';
+            currentPage = 1;
+            fetchProducts(1, false);
+        });
+    }
+});
+</script>
 {% endblock %}
