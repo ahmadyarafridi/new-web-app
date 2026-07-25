@@ -88,10 +88,24 @@ TEMPLATES = [
 WSGI_APPLICATION = 'restaurant_config.wsgi.application'
 
 
-# Database configuration (Auto-switches to PostgreSQL on Railway if DATABASE_URL exists)
+# Database configuration (Auto-connects to PostgreSQL on Railway if DATABASE_URL / PG variables exist)
 import os
 
-DATABASE_URL = os.environ.get('DATABASE_URL')
+DATABASE_URL = (
+    os.environ.get('DATABASE_URL') or 
+    os.environ.get('POSTGRES_URL') or 
+    os.environ.get('DATABASE_PRIVATE_URL') or 
+    os.environ.get('DATABASE_PUBLIC_URL')
+)
+
+PGHOST = os.environ.get('PGHOST') or os.environ.get('POSTGRES_HOST')
+PGUSER = os.environ.get('PGUSER') or os.environ.get('POSTGRES_USER')
+PGPASSWORD = os.environ.get('PGPASSWORD') or os.environ.get('POSTGRES_PASSWORD')
+PGDATABASE = os.environ.get('PGDATABASE') or os.environ.get('POSTGRES_DB') or os.environ.get('POSTGRES_DATABASE')
+PGPORT = os.environ.get('PGPORT') or os.environ.get('POSTGRES_PORT') or '5432'
+
+if not DATABASE_URL and PGHOST and PGUSER and PGPASSWORD and PGDATABASE:
+    DATABASE_URL = f"postgres://{PGUSER}:{PGPASSWORD}@{PGHOST}:{PGPORT}/{PGDATABASE}"
 
 if DATABASE_URL:
     try:
@@ -103,8 +117,9 @@ if DATABASE_URL:
                 conn_health_checks=True,
             )
         }
-    except ImportError:
-        # Fallback if dj_database_url isn't installed locally
+        print("[DATABASE] Connected to PostgreSQL database on Railway!")
+    except Exception as e:
+        print(f"[DATABASE WARNING] PostgreSQL connection failed ({e}), falling back to SQLite.")
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.sqlite3',
@@ -116,6 +131,7 @@ if DATABASE_URL:
             }
         }
 else:
+    print("[DATABASE] No PostgreSQL URL found. Using SQLite database.")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
