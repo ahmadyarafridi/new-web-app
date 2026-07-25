@@ -107,8 +107,11 @@
             </div>
         </div>
 
-        <div style="display: flex; gap: 12px; margin-top: 15px; padding-top: 20px; border-top: 1px solid var(--color-border);">
+        <div style="display: flex; gap: 12px; margin-top: 15px; padding-top: 20px; border-top: 1px solid var(--color-border); align-items: center; justify-content: space-between; flex-wrap: wrap;">
             <button type="submit" class="btn-primary" style="padding: 12px 28px;">Save All Changes</button>
+            <a href="{% url 'export_full_data_zip' %}" class="btn-secondary" title="Backup & Export All Data (.zip)" style="padding: 10px 20px; font-size: 0.82rem; font-weight: 700; border-color: var(--color-primary); color: var(--color-primary); display: inline-flex; align-items: center; gap: 8px; text-decoration: none; border-radius: 6px;">
+                <i class="fa-solid fa-file-zipper" style="font-size: 1rem;"></i> Export All Data (.zip)
+            </a>
         </div>
     </form>
 

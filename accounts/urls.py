@@ -44,8 +44,9 @@ urlpatterns = [
     path('dashboard/reviews/delete/<int:pk>/', views.review_delete, name='review_delete'),
     path('dashboard/reviews/toggle/<int:pk>/', views.review_toggle, name='review_toggle'),
     
-    # Restaurant Settings
+    # Restaurant Settings & Export
     path('dashboard/settings/', views.manage_settings, name='manage_settings'),
+    path('dashboard/export-full-zip/', views.export_full_data_zip, name='export_full_data_zip'),
     
     # Customer Feedback Management
     path('dashboard/feedback/', views.manage_feedback, name='manage_feedback'),

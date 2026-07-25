@@ -1,4 +1,9 @@
+import os
+import io
 import csv
+import json
+import zipfile
+from django.conf import settings
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.urls import reverse
@@ -819,3 +824,102 @@ def analytics_orders_today_pending(request):
 def analytics_orders_today_completed(request):
     data = get_orders_analytics_data()
     return render(request, 'accounts/analytics_orders_today_completed.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def export_full_data_zip(request):
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        # 1. Full Database JSON Backup
+        info_qs = RestaurantInfo.objects.all()
+        categories_qs = Category.objects.all()
+        products_qs = Product.objects.all()
+        deals_qs = Deal.objects.all()
+        reviews_qs = Review.objects.all()
+        feedback_qs = CustomerFeedback.objects.all()
+        orders_qs = Order.objects.all()
+        items_qs = OrderItem.objects.all()
+        visits_qs = DailyVisit.objects.all()
+
+        json_data = json.dumps({
+            'export_date': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'restaurant_info': list(info_qs.values()),
+            'categories': list(categories_qs.values()),
+            'products': list(products_qs.values()),
+            'deals': list(deals_qs.values()),
+            'reviews': list(reviews_qs.values()),
+            'customer_feedback': list(feedback_qs.values()),
+            'orders': list(orders_qs.values()),
+            'order_items': list(items_qs.values()),
+            'daily_visits': list(visits_qs.values()),
+        }, indent=2, default=str)
+
+        zip_file.writestr('restaurant_data_backup.json', json_data)
+
+        # 2. Products Catalog CSV
+        prod_csv_io = io.StringIO()
+        p_writer = csv.writer(prod_csv_io)
+        p_writer.writerow(['ID', 'Item Code', 'Name', 'Category', 'Price (Rs)', 'Status', 'Tag', 'Description'])
+        for p in products_qs.select_related('category'):
+            p_writer.writerow([
+                p.pk,
+                p.item_code,
+                p.name,
+                p.category.name if p.category else '',
+                f"{p.price:.0f}",
+                'Available' if p.is_available else 'Out of Stock',
+                p.tag or '',
+                p.description or ''
+            ])
+        zip_file.writestr('products_catalog.csv', prod_csv_io.getvalue())
+
+        # 3. Orders & Income CSV
+        orders_csv_io = io.StringIO()
+        o_writer = csv.writer(orders_csv_io)
+        o_writer.writerow(['Order ID', 'Date & Time', 'Customer Name', 'Phone', 'Address', 'Status', 'Payment', 'Total Price (Rs)', 'Items Summary', 'Notes'])
+        for o in orders_qs.order_by('-created_at'):
+            o_writer.writerow([
+                o.order_id,
+                o.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                o.customer_name,
+                o.customer_phone,
+                o.delivery_address or '',
+                o.order_status,
+                o.payment_status,
+                f"{o.total_price:.0f}",
+                o.items_summary,
+                o.order_notes or ''
+            ])
+        zip_file.writestr('orders_and_income.csv', orders_csv_io.getvalue())
+
+        # 4. Customer Feedback & Reviews CSV
+        fb_csv_io = io.StringIO()
+        f_writer = csv.writer(fb_csv_io)
+        f_writer.writerow(['ID', 'Date & Time', 'Customer Name', 'Email', 'Rating', 'Status', 'Comment'])
+        for f in feedback_qs.order_by('-created_at'):
+            f_writer.writerow([
+                f.pk,
+                f.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                f.customer_name,
+                f.email or '',
+                f.rating,
+                f.status,
+                f.comment or ''
+            ])
+        zip_file.writestr('customer_feedback.csv', fb_csv_io.getvalue())
+
+        # 5. Media Uploaded Images Folder
+        media_root = settings.MEDIA_ROOT
+        if os.path.exists(media_root):
+            for root, dirs, files in os.walk(media_root):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(file_path, media_root)
+                    zip_file.write(file_path, os.path.join('images', rel_path))
+
+    zip_buffer.seek(0)
+    filename = f"delicious_food_stop_backup_{timezone.now().strftime('%Y%m%d_%H%M%S')}.zip"
+    response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    return response
