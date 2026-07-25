@@ -2,7 +2,7 @@
 {% load static %}
 
 {% block dashboard_content %}
-<div class="dashboard-card" style="margin-bottom: 24px; position: relative; padding-bottom: 30px; max-height: calc(100vh - 170px); display: flex; flex-direction: column;">
+<div class="dashboard-card" style="margin-bottom: 24px; position: relative; padding-bottom: 25px; min-height: 520px; max-height: calc(100vh - 110px); display: flex; flex-direction: column;">
 
     {% if not current_category and not search_query %}
     <!-- 1. CATEGORIES CARD GRID VIEW (WHEN NO CATEGORY IS SELECTED) -->
