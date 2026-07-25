@@ -94,13 +94,12 @@
         {% endif %}
 
         {% if has_more %}
-        <!-- INITIAL HORIZONTAL LOAD MORE CARD -->
-        <div class="load-more-card" id="loadMoreCard" style="flex: 0 0 170px; min-width: 170px; min-height: 280px; background: rgba(201,168,76,0.06); border: 2px dashed rgba(201,168,76,0.4); border-radius: var(--border-radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; scroll-snap-align: start; text-align: center; padding: 18px;">
-            <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(201,168,76,0.15); border: 1.5px solid var(--color-primary); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 10px;">
-                <i class="fa-solid fa-arrow-right" id="loadMoreCardIcon"></i>
+        <!-- INITIAL HORIZONTAL LOAD MORE BUTTON -->
+        <div class="load-more-card" id="loadMoreCard" style="flex: 0 0 130px; min-width: 130px; background: transparent !important; border: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; scroll-snap-align: start; text-align: center; padding: 12px; align-self: center;">
+            <div style="width: 46px; height: 46px; border-radius: 50%; background: rgba(201,168,76,0.12); border: 1.5px solid var(--color-primary); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 8px;">
+                <i class="fa-solid fa-arrow-right" id="loadMoreCardIcon" style="animation: swipeHint 1.3s ease-in-out infinite; display: inline-block;"></i>
             </div>
-            <span style="font-family: var(--font-brand); color: #fff; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;" id="loadMoreCardText">More Items</span>
-            <span style="font-size: 0.7rem; color: var(--color-text-gray); margin-top: 4px;">Tap for next items</span>
+            <span style="font-size: 0.78rem; font-weight: 600; color: var(--color-primary); white-space: nowrap;" id="loadMoreCardText">Tap for Next Items</span>
         </div>
         {% endif %}
     </div>
@@ -166,12 +165,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function createLoadMoreCardHtml() {
         return `
-            <div class="load-more-card" id="loadMoreCard" style="flex: 0 0 170px; min-width: 170px; min-height: 280px; background: rgba(201,168,76,0.06); border: 2px dashed rgba(201,168,76,0.4); border-radius: var(--border-radius-md); display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; scroll-snap-align: start; text-align: center; padding: 18px;">
-                <div style="width: 50px; height: 50px; border-radius: 50%; background: rgba(201,168,76,0.15); border: 1.5px solid var(--color-primary); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; margin-bottom: 10px;">
-                    <i class="fa-solid fa-arrow-right" id="loadMoreCardIcon"></i>
+            <div class="load-more-card" id="loadMoreCard" style="flex: 0 0 130px; min-width: 130px; background: transparent !important; border: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; scroll-snap-align: start; text-align: center; padding: 12px; align-self: center;">
+                <div style="width: 46px; height: 46px; border-radius: 50%; background: rgba(201,168,76,0.12); border: 1.5px solid var(--color-primary); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 8px;">
+                    <i class="fa-solid fa-arrow-right" id="loadMoreCardIcon" style="animation: swipeHint 1.3s ease-in-out infinite; display: inline-block;"></i>
                 </div>
-                <span style="font-family: var(--font-brand); color: #fff; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;" id="loadMoreCardText">More Items</span>
-                <span style="font-size: 0.7rem; color: var(--color-text-gray); margin-top: 4px;">Tap for next items</span>
+                <span style="font-size: 0.78rem; font-weight: 600; color: var(--color-primary); white-space: nowrap;" id="loadMoreCardText">Tap for Next Items</span>
             </div>
         `;
     }

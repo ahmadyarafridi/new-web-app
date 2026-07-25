@@ -254,6 +254,9 @@
         border-radius: var(--border-radius-md);
         padding: 28px;
         box-shadow: var(--shadow-md);
+        overflow-x: hidden !important;
+        max-width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .dashboard-header-row {
@@ -277,9 +280,11 @@
 
     /* DATA TABLES */
     .dashboard-table-wrapper {
-        overflow-x: auto;
+        overflow-x: hidden !important;
         border: 1px solid var(--color-border);
         border-radius: var(--border-radius-sm);
+        width: 100% !important;
+        box-sizing: border-box !important;
     }
 
     .dashboard-table {
@@ -436,14 +441,6 @@
 
 {% block content %}
 <div class="dashboard-container">
-
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert-message {% if message.tags == 'error' or message.tags == 'danger' %}alert-inactive{% else %}alert-success{% endif %}" style="margin-bottom: 15px; {% if message.tags == 'error' or message.tags == 'danger' %}background: rgba(229,57,53,0.15); color: #ef5350; border: 1px solid rgba(229,57,53,0.3);{% else %}background: rgba(76,175,80,0.15); color: #81c784; border: 1px solid rgba(76,175,80,0.3);{% endif %}">
-                {{ message }}
-            </div>
-        {% endfor %}
-    {% endif %}
 
     <!-- MAIN DASHBOARD CONTENT AREA -->
     {% block dashboard_content %}{% endblock %}
