@@ -56,6 +56,12 @@ def menu(request):
 def about(request):
     return render(request, 'website/about.html')
 
+def privacy(request):
+    return render(request, 'website/privacy.html')
+
+def terms(request):
+    return render(request, 'website/terms.html')
+
 def contact(request):
     if request.method == 'POST':
         form = CustomerFeedbackForm(request.POST, request.FILES)

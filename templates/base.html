@@ -253,7 +253,7 @@
         <hr style="border: none; border-top: 1px solid var(--color-border); margin: 20px 0 16px;">
         <div class="footer-copy" style="text-align: center; font-size: 0.78rem; color: var(--color-text-muted); display: flex; flex-direction: column; gap: 4px; align-items: center;">
             <p style="margin: 0;">&copy; {% now "Y" %} Delicious Food Stop</p>
-            <p style="margin: 0; display: flex; gap: 14px;"><a href="#" style="color: var(--color-text-gray); text-decoration: none;">Privacy</a> <a href="#" style="color: var(--color-text-gray); text-decoration: none;">Terms</a></p>
+            <p style="margin: 0; display: flex; gap: 10px; align-items: center;"><a href="{% url 'privacy' %}" style="color: var(--color-text-gray); text-decoration: none;">Privacy Policy</a> <span style="color: var(--color-primary); font-size: 0.7rem;">|</span> <a href="{% url 'terms' %}" style="color: var(--color-text-gray); text-decoration: none;">Terms of Service</a></p>
             <p style="margin: 0;">Developed by <a href="https://harisyar-ai.github.io/harisyar-ai/" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">Muhammad Haris Afridi</a></p>
         </div>
     </footer>
