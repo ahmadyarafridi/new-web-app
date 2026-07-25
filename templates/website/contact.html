@@ -78,33 +78,33 @@
         <form method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
             {% csrf_token %}
             
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 5px;">
-                <div class="floating-group">
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
+                <div class="floating-group" style="margin-bottom: 10px !important;">
                     {{ feedback_form.customer_name }}
                     <label for="fbCustName" class="floating-label">Your Full Name</label>
                 </div>
-                <div class="floating-group">
+                <div class="floating-group" style="margin-bottom: 10px !important;">
                     {{ feedback_form.email }}
                     <label for="fbCustEmail" class="floating-label">Email Address (Optional)</label>
                 </div>
             </div>
 
-            <div class="floating-group">
+            <div class="floating-group" style="margin-bottom: 10px !important;">
                 {{ feedback_form.rating }}
                 <label for="fbCustRating" class="floating-label">Star Rating</label>
             </div>
 
-            <div class="floating-group">
+            <div class="floating-group" style="margin-bottom: 10px !important;">
                 {{ feedback_form.avatar_file }}
                 <label for="fbCustAvatar" class="floating-label" style="top: -8px; font-size: 0.72rem; color: var(--color-primary);">Upload Your Photo / Avatar</label>
             </div>
 
-            <div class="floating-group">
+            <div class="floating-group" style="margin-bottom: 12px !important;">
                 {{ feedback_form.comment }}
                 <label for="fbCustComment" class="floating-label">Feedback Message</label>
             </div>
 
-            <button type="submit" class="btn-primary" style="padding: 12px 28px; width: auto; align-self: flex-start; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+            <button type="submit" class="btn-primary" style="padding: 10px 24px; width: auto; align-self: flex-start; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
                 <i class="fa-solid fa-paper-plane"></i> Submit Feedback
             </button>
         </form>
