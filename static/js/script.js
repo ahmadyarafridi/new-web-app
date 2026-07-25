@@ -687,43 +687,33 @@ document.addEventListener('DOMContentLoaded', () => {
             const submitBtn = document.getElementById('submitOrderBtn');
             if (submitBtn) {
                 submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing Order...';
-            }
-
-            try {
-                // Await backend order creation and stock validation
-                const response = await fetch('/create-order/', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        customer_name: name,
-                        customer_phone: phone,
-                        delivery_address: address,
-                        order_notes: notes,
-                        cart_items: cart
-                    })
-                });
-                const resData = await response.json();
-                if (resData.status === 'error') {
-                    alert(resData.message || 'Error creating order.');
-                    if (submitBtn) {
-                        submitBtn.disabled = false;
-                        submitBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Confirm & Send Order via WhatsApp';
-                    }
-                    return;
-                }
-            } catch (err) {
-                console.log('Order API sync error:', err);
-            } finally {
-                if (submitBtn) {
+                submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Order Sent!';
+                setTimeout(() => {
                     submitBtn.disabled = false;
                     submitBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Confirm & Send Order via WhatsApp';
-                }
+                }, 2500);
             }
 
-            // Populate confirmation modal order items
+            // 1. Open WhatsApp INSTANTLY (0ms delay) so mobile browser popup blocker never triggers
+            const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(name, phone, address, notes))}`;
+            window.open(waUrl, '_blank');
+
+            // 2. Save order to backend database in parallel background (fire and forget)
+            fetch('/create-order/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    customer_name: name,
+                    customer_phone: phone,
+                    delivery_address: address,
+                    order_notes: notes,
+                    cart_items: cart
+                })
+            }).catch(err => console.log('Background order sync error:', err));
+
+            // 3. Populate confirmation modal order items
             if (modalOrderItems) {
                 modalOrderItems.innerHTML = '';
                 cart.forEach(item => {
@@ -741,15 +731,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalOrderTotal.textContent = cartTotal ? cartTotal.textContent : '';
             }
 
-            // Open WhatsApp with pre-filled details
-            const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(name, phone, address, notes))}`;
-            window.open(waUrl, '_blank');
-
-            // Close checkout modal & show confirmation modal
+            // 4. Close checkout modal & show confirmation modal
             closeCustomerCheckoutModal();
             if (orderConfirmModal) orderConfirmModal.classList.add('active');
 
-            // Clear cart
+            // 5. Clear cart
             cart = [];
             saveCartToStorage();
             updateCartUI();
