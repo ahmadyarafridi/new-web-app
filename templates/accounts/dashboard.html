@@ -1,0 +1,127 @@
+{% extends 'accounts/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-card">
+
+    <!-- TOP CONTROL ROW: NOTIFICATION BELL (LEFT) & SMOOTH SLIDING STATUS TOGGLE (RIGHT) -->
+    <div style="background: var(--color-bg-deep); border: 1px solid var(--color-border); border-radius: var(--border-radius-sm); padding: 10px 14px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: nowrap;">
+        
+        <!-- LEFT: NOTIFICATION BELL & CENTERED MODAL -->
+        <div class="notif-wrapper" style="position: relative; display: flex; align-items: center;">
+            <button id="notifBellBtn" title="Order Notifications" aria-label="Notifications" style="background: rgba(255,255,255,0.08); border: 1px solid var(--color-border); color: #fff; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: all 0.2s ease;">
+                <i class="fa-solid fa-bell" style="font-size: 1.1rem; color: var(--color-primary);"></i>
+                <span id="notifBadge" class="notif-badge" style="display: none; position: absolute; top: -4px; right: -4px; background: #e53935; color: #fff; font-size: 0.65rem; font-weight: 700; border-radius: 10px; padding: 2px 6px; min-width: 18px; text-align: center; border: 1.5px solid #111;">0</span>
+            </button>
+
+            <!-- BACKDROP BLUR OVERLAY FOR NOTIFICATIONS -->
+            <div id="notifBlurOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 999990;"></div>
+
+            <!-- CENTERED NOTIFICATION PANEL -->
+            <div id="notifDropdown" class="notif-dropdown" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 350px; max-width: 90vw; background: #181818; border: 1px solid var(--color-primary); border-radius: 12px; box-shadow: 0 16px 40px rgba(0,0,0,0.95); z-index: 1000000; overflow: hidden;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--color-border); background: rgba(255,255,255,0.03);">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <i class="fa-solid fa-bell" style="color: var(--color-primary); font-size: 0.9rem;"></i>
+                        <span style="font-weight: 700; color: #fff; font-size: 0.85rem;">Notifications</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                        <button id="markAllReadBtn" style="background: none; border: none; color: var(--color-primary); font-size: 0.72rem; font-weight: 600; cursor: pointer; text-decoration: underline;">Mark all read</button>
+                        <button id="closeNotifModalBtn" style="background: none; border: none; color: var(--color-text-gray); font-size: 0.9rem; cursor: pointer;" title="Close"><i class="fa-solid fa-xmark"></i></button>
+                    </div>
+                </div>
+                <div id="notifList" style="max-height: 280px; overflow-y: auto; padding: 0; scrollbar-width: thin;">
+                    <div style="padding: 20px; text-align: center; color: var(--color-text-gray); font-size: 0.8rem;">
+                        No new notifications
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT: SMOOTH SLIDING TOGGLE BUTTON (🟢 OPEN / 🔴 CLOSED) -->
+        <form method="post" action="{% url 'toggle_restaurant_status' %}" style="margin: 0;">
+            {% csrf_token %}
+            <button type="submit" title="Click to switch status" style="background: {% if restaurant.is_open %}rgba(76,175,80,0.15){% else %}rgba(229,57,53,0.15){% endif %}; border: 1px solid {% if restaurant.is_open %}rgba(76,175,80,0.5){% else %}rgba(229,57,53,0.5){% endif %}; color: #ffffff; padding: 6px 14px; border-radius: 25px; font-size: 0.82rem; font-weight: 700; cursor: pointer; display: flex; align-items: center; gap: 8px; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); white-space: nowrap;">
+                {% if restaurant.is_open %}
+                    <span style="color: #81c784;">🟢 OPEN</span>
+                    <span style="width: 22px; height: 22px; background: #81c784; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(76,175,80,0.6); margin-left: 2px;">
+                        <i class="fa-solid fa-check" style="color: #111; font-size: 0.7rem;"></i>
+                    </span>
+                {% else %}
+                    <span style="width: 22px; height: 22px; background: #ef5350; border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; box-shadow: 0 0 8px rgba(229,57,53,0.6); margin-right: 2px;">
+                        <i class="fa-solid fa-xmark" style="color: #fff; font-size: 0.7rem;"></i>
+                    </span>
+                    <span style="color: #ef5350;">🔴 CLOSED</span>
+                {% endif %}
+            </button>
+        </form>
+
+    </div>
+
+    <!-- 4 KPI CARDS GRID (ORDERS IS FIRST) -->
+    <style>
+        .kpi-card {
+            background: var(--color-bg-deep);
+            border: 1px solid var(--color-border);
+            padding: 16px;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .kpi-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 22px rgba(201, 168, 76, 0.2);
+            border-color: var(--color-primary) !important;
+        }
+    </style>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 30px;">
+        <!-- Card 1: Orders -->
+        <a href="{% url 'analytics_orders' %}" style="text-decoration: none;" title="View Orders Analytics">
+            <div class="kpi-card" style="border: 1.5px solid var(--color-primary);">
+                <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--color-primary); display: block; margin-bottom: 8px;">Orders</span>
+                <h3 id="metricOrdersBooked" style="font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0;">{{ orders_booked }}</h3>
+            </div>
+        </a>
+
+        <!-- Card 2: Total Visits -->
+        <a href="{% url 'analytics_visitors' %}" style="text-decoration: none;" title="View Visitor Analytics">
+            <div class="kpi-card">
+                <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--color-primary); display: block; margin-bottom: 8px;">Total Visits</span>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0;">{{ today_visits }}</h3>
+            </div>
+        </a>
+
+        <!-- Card 3: Income -->
+        <a href="{% url 'analytics_revenue' %}" style="text-decoration: none;" title="View Revenue Analytics">
+            <div class="kpi-card">
+                <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: #81c784; display: block; margin-bottom: 8px;">Income</span>
+                <h3 id="metricTodayIncome" style="font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0;">Rs. {{ today_income|floatformat:0 }}</h3>
+            </div>
+        </a>
+
+        <!-- Card 4: Products -->
+        <a href="{% url 'manage_products' %}" style="text-decoration: none;" title="View Products">
+            <div class="kpi-card">
+                <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--color-primary); display: block; margin-bottom: 8px;">Products</span>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0;">{{ total_products }}</h3>
+            </div>
+        </a>
+    </div>
+
+    <!-- QUICK MANAGEMENT LINKS (2 PER ROW) -->
+    <h3 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px;">Quick Actions</h3>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+        <a href="{% url 'analytics_orders_today' %}" class="btn-primary" style="padding: 11px; text-align: center; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i class="fa-solid fa-box"></i> View All Orders
+        </a>
+        <a href="{% url 'product_add' %}" class="btn-secondary" style="padding: 11px; text-align: center; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i class="fa-solid fa-plus"></i> Add Product
+        </a>
+        <a href="{% url 'deal_add' %}" class="btn-secondary" style="padding: 11px; text-align: center; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i class="fa-solid fa-fire"></i> Add Deal
+        </a>
+        <a href="{% url 'manage_reviews' %}" class="btn-secondary" style="padding: 11px; text-align: center; font-size: 0.75rem; display: flex; align-items: center; justify-content: center; gap: 6px;">
+            <i class="fa-solid fa-star"></i> Reviews
+        </a>
+    </div>
+
+</div>
+{% endblock %}

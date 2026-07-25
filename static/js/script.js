@@ -450,9 +450,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add To Order Action (Global Delegation for Deal Cards and Menu Cards)
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('.add-to-cart-btn');
-        if (!btn) return;
+        if (!btn || btn.disabled || btn.classList.contains('disabled')) return;
 
         const card = btn.closest('.menu-item-card, .specialty-card');
+        if (card && card.getAttribute('data-in-stock') === 'false') {
+            alert('This item is currently out of stock.');
+            return;
+        }
         const itemId = btn.getAttribute('data-id') || (card ? card.getAttribute('data-id') : 'item-' + Date.now());
         const itemName = btn.getAttribute('data-name') || (card && card.querySelector('h4') ? card.querySelector('h4').textContent : 'Item');
         
@@ -509,6 +513,8 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    const isRestaurantOpen = document.body.getAttribute('data-is-open') !== 'false';
+
     const updateCartUI = () => {
         if (!cartItemsContainer) return;
 
@@ -525,7 +531,19 @@ document.addEventListener('DOMContentLoaded', () => {
             if (mobileCartFab) mobileCartFab.classList.remove('visible');
         } else {
             if (emptyCartMessage) emptyCartMessage.style.display = 'none';
-            if (checkoutBtn) checkoutBtn.disabled = false;
+            if (checkoutBtn) {
+                if (!isRestaurantOpen) {
+                    checkoutBtn.disabled = true;
+                    checkoutBtn.style.opacity = '0.65';
+                    checkoutBtn.style.cursor = 'not-allowed';
+                    checkoutBtn.style.pointerEvents = 'none';
+                } else {
+                    checkoutBtn.disabled = false;
+                    checkoutBtn.style.opacity = '1';
+                    checkoutBtn.style.cursor = 'pointer';
+                    checkoutBtn.style.pointerEvents = 'auto';
+                }
+            }
 
             let totalQty = 0;
             let subtotal = 0;
@@ -603,20 +621,109 @@ document.addEventListener('DOMContentLoaded', () => {
     // Real WhatsApp order handoff
     const WHATSAPP_NUMBER = '923339342567'; // +92 333 9342567, no leading + or 0
 
-    const buildWhatsAppMessage = () => {
-        let msg = `Hello Delicious Food Stop! I'd like to order:\n\n`;
-        cart.forEach(item => {
-            msg += `${item.quantity} x ${item.name} - Rs. ${(item.price * item.quantity).toFixed(0)}\n`;
+    const customerCheckoutModal = document.getElementById('customerCheckoutModal');
+    const closeCheckoutModalBtn = document.getElementById('closeCheckoutModalBtn');
+    const checkoutBackdrop = document.getElementById('checkoutBackdrop');
+    const customerCheckoutForm = document.getElementById('customerCheckoutForm');
+
+    const buildWhatsAppMessage = (name, phone, address, notes) => {
+        let msg = `*DELICIOUS FOOD STOP - NEW ORDER*\n`;
+        msg += `------------------------------\n`;
+        if (name) msg += `*Customer:* ${name}\n`;
+        if (phone) msg += `*Phone:* ${phone}\n`;
+        if (address) msg += `*Address:* ${address}\n`;
+        if (notes) msg += `*Notes:* ${notes}\n`;
+        msg += `------------------------------\n`;
+        msg += `*Order Items:*\n`;
+        cart.forEach((item, index) => {
+            msg += `${index + 1}. ${item.name} x${item.quantity} - Rs. ${(item.price * item.quantity).toFixed(0)}\n`;
         });
-        msg += `\nEstimated Total: ${cartTotal ? cartTotal.textContent : ''} (please confirm)`;
-        msg += `\n\nMy delivery address / table:`;
+        msg += `------------------------------\n`;
+        msg += `*Total Amount:* ${cartTotal ? cartTotal.textContent : ''}\n`;
         return msg;
     };
 
-    if (checkoutBtn && orderConfirmModal) {
-        checkoutBtn.addEventListener('click', () => {
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener('click', (e) => {
+            if (!isRestaurantOpen) {
+                e.preventDefault();
+                alert('Ordering is currently unavailable because the restaurant is closed. Please visit again during our opening hours.');
+                return false;
+            }
+            if (cart.length === 0) return;
+            toggleCart();
+            if (customerCheckoutModal) {
+                customerCheckoutModal.classList.add('active');
+            }
+        });
+    }
+
+    const closeCustomerCheckoutModal = () => {
+        if (customerCheckoutModal) customerCheckoutModal.classList.remove('active');
+    };
+
+    if (closeCheckoutModalBtn) closeCheckoutModalBtn.addEventListener('click', closeCustomerCheckoutModal);
+    if (checkoutBackdrop) checkoutBackdrop.addEventListener('click', closeCustomerCheckoutModal);
+
+    if (customerCheckoutForm) {
+        customerCheckoutForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!isRestaurantOpen) {
+                alert('Ordering is currently unavailable because the restaurant is closed. Please visit again during our opening hours.');
+                return false;
+            }
             if (cart.length === 0) return;
 
+            const name = document.getElementById('custName') ? document.getElementById('custName').value.trim() : '';
+            const phone = document.getElementById('custPhone') ? document.getElementById('custPhone').value.trim() : '';
+            const address = document.getElementById('custAddress') ? document.getElementById('custAddress').value.trim() : '';
+            const notes = document.getElementById('custNotes') ? document.getElementById('custNotes').value.trim() : '';
+
+            if (!name || !phone || !address) {
+                alert('Please fill out all required fields (Name, Phone Number, and Delivery Address).');
+                return false;
+            }
+
+            const submitBtn = document.getElementById('submitOrderBtn');
+            if (submitBtn) {
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Processing Order...';
+            }
+
+            try {
+                // Await backend order creation and stock validation
+                const response = await fetch('/create-order/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        customer_name: name,
+                        customer_phone: phone,
+                        delivery_address: address,
+                        order_notes: notes,
+                        cart_items: cart
+                    })
+                });
+                const resData = await response.json();
+                if (resData.status === 'error') {
+                    alert(resData.message || 'Error creating order.');
+                    if (submitBtn) {
+                        submitBtn.disabled = false;
+                        submitBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Confirm & Send Order via WhatsApp';
+                    }
+                    return;
+                }
+            } catch (err) {
+                console.log('Order API sync error:', err);
+            } finally {
+                if (submitBtn) {
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Confirm & Send Order via WhatsApp';
+                }
+            }
+
+            // Populate confirmation modal order items
             if (modalOrderItems) {
                 modalOrderItems.innerHTML = '';
                 cart.forEach(item => {
@@ -631,32 +738,33 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             if (modalOrderTotal) {
-                modalOrderTotal.textContent = cartTotal.textContent;
+                modalOrderTotal.textContent = cartTotal ? cartTotal.textContent : '';
             }
 
-            // Open WhatsApp with the pre-filled order in a new tab
-            const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage())}`;
+            // Open WhatsApp with pre-filled details
+            const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(name, phone, address, notes))}`;
             window.open(waUrl, '_blank');
 
-            toggleCart();
-            orderConfirmModal.classList.add('active');
+            // Close checkout modal & show confirmation modal
+            closeCustomerCheckoutModal();
+            if (orderConfirmModal) orderConfirmModal.classList.add('active');
 
-            // Reset cart
+            // Clear cart
             cart = [];
             saveCartToStorage();
             updateCartUI();
         });
-
-        const closeOrderModal = () => {
-            orderConfirmModal.classList.remove('active');
-        };
-
-        if (closeOrderModalBtn) closeOrderModalBtn.addEventListener('click', closeOrderModal);
-        if (closeOrderSuccessBtn) closeOrderSuccessBtn.addEventListener('click', closeOrderModal);
-        
-        const orderConfirmBackdrop = document.getElementById('orderConfirmBackdrop');
-        if (orderConfirmBackdrop) orderConfirmBackdrop.addEventListener('click', closeOrderModal);
     }
+
+    const closeOrderModal = () => {
+        if (orderConfirmModal) orderConfirmModal.classList.remove('active');
+    };
+
+    if (closeOrderModalBtn) closeOrderModalBtn.addEventListener('click', closeOrderModal);
+    if (closeOrderSuccessBtn) closeOrderSuccessBtn.addEventListener('click', closeOrderModal);
+    
+    const orderConfirmBackdrop = document.getElementById('orderConfirmBackdrop');
+    if (orderConfirmBackdrop) orderConfirmBackdrop.addEventListener('click', closeOrderModal);
 
     // Initialize cart state
     loadCartFromStorage();
@@ -687,3 +795,26 @@ document.addEventListener('DOMContentLoaded', () => {
     checkLiveOperatingStatus();
     setInterval(checkLiveOperatingStatus, 60000);
 });
+
+
+// Floating label logic
+function initFloatingLabels() {
+    document.querySelectorAll('.floating-group').forEach(group => {
+        const input = group.querySelector('.floating-input');
+        if (!input) return;
+        const updateState = () => {
+            if (input.value && input.value.trim() !== '') {
+                group.classList.add('has-value', 'is-filled');
+            } else {
+                group.classList.remove('has-value', 'is-filled');
+            }
+        };
+        input.addEventListener('focus', () => group.classList.add('focused'));
+        input.addEventListener('blur', () => { group.classList.remove('focused'); updateState(); });
+        input.addEventListener('input', updateState);
+        input.addEventListener('change', updateState);
+        input.addEventListener('keyup', updateState);
+        updateState();
+    });
+}
+document.addEventListener('DOMContentLoaded', initFloatingLabels);

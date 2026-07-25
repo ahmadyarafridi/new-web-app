@@ -1,0 +1,70 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}About Us — {{ restaurant.name }}{% endblock %}
+
+{% block content %}
+<!-- DEEP DIVE ABOUT SECTION -->
+<section id="about-deep" style="padding-top: 20px;">
+    <div class="about-content">
+        <div class="about-text">
+            <span class="section-tag">Established {{ restaurant.about_established_year }}</span>
+            <h3>How We Started</h3>
+            <p>{{ restaurant.about_history }}</p>
+            
+            <p>{{ restaurant.about_history_p2 }}</p>
+            
+            <h3>Our Quality Promise</h3>
+            <p>{{ restaurant.about_quality_promise }}</p>
+        </div>
+        <div class="about-image">
+            <div class="about-image-frame">
+                <img src="{% static 'images/chef.jpg' %}" alt="{{ restaurant.name }} Kitchen Team">
+                <div class="about-badge">
+                    Quality First
+                    <span>Since {{ restaurant.about_established_year }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- CHEF TEAM SECTION -->
+<section id="chefs" class="reveal">
+    <div class="section-header">
+        <span class="section-tag">Kitchen Masters</span>
+        <h2 class="section-title">Meet Our Culinary Artists</h2>
+        <p class="section-desc">The creative minds and skilled hands behind our award-winning menu items.</p>
+    </div>
+
+    <!-- Chef Profiles Grid -->
+    <div class="specialties-grid">
+        <!-- Chef 1 -->
+        <div class="specialty-card" style="max-width: 320px; flex: 1; min-width: 250px;">
+            <div class="specialty-img-wrapper" style="height: 280px;">
+                <img src="https://i.pravatar.cc/300?img=33" alt="Chef Elena Rostova" style="filter: grayscale(10%) brightness(0.95);">
+            </div>
+            <h4 style="padding: 15px 15px 5px;">Elena Rostova</h4>
+            <p style="font-size: 0.78rem; text-transform: uppercase; color: var(--color-primary); letter-spacing: 1px; text-align: center; margin-bottom: 15px;">Head Pizzaiolo</p>
+        </div>
+
+        <!-- Chef 2 -->
+        <div class="specialty-card" style="max-width: 320px; flex: 1; min-width: 250px;">
+            <div class="specialty-img-wrapper" style="height: 280px;">
+                <img src="https://i.pravatar.cc/300?img=12" alt="Chef Thomas Kincaid" style="filter: grayscale(10%) brightness(0.95);">
+            </div>
+            <h4 style="padding: 15px 15px 5px;">Thomas Kincaid</h4>
+            <p style="font-size: 0.78rem; text-transform: uppercase; color: var(--color-primary); letter-spacing: 1px; text-align: center; margin-bottom: 15px;">Master Burger Chef</p>
+        </div>
+
+        <!-- Chef 3 -->
+        <div class="specialty-card" style="max-width: 320px; flex: 1; min-width: 250px;">
+            <div class="specialty-img-wrapper" style="height: 280px;">
+                <img src="https://i.pravatar.cc/300?img=60" alt="Sommelier Arthur Pendelton" style="filter: grayscale(10%) brightness(0.95);">
+            </div>
+            <h4 style="padding: 15px 15px 5px;">Arthur Pendelton</h4>
+            <p style="font-size: 0.78rem; text-transform: uppercase; color: var(--color-primary); letter-spacing: 1px; text-align: center; margin-bottom: 15px;">Head Mixologist</p>
+        </div>
+    </div>
+</section>
+{% endblock %}

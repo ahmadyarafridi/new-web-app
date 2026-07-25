@@ -1,0 +1,69 @@
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dashboard-card" style="max-width: 750px; margin: 0 auto;">
+
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; align-items: start;">
+        <div> 
+            <img src="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}" alt="{{ product.name }}" style="width: 100%; border-radius: var(--border-radius-md); border: 1.5px solid var(--color-border); box-shadow: var(--shadow-md);" onerror="this.src='https://via.placeholder.com/300';">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <div>
+                <span class="dashboard-label">Product Name</span>
+                <h3 style="font-family: var(--font-brand); color: #fff; font-size: 1.2rem; margin: 2px 0;">{{ product.name }}</h3>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px;">
+                <div>
+                    <span class="dashboard-label">Category</span>
+                    <p style="margin: 2px 0;"><span class="badge-status" style="background: rgba(255,255,255,0.05); color: #fff;">{{ product.category.name }}</span></p>
+                </div>
+
+                <div>
+                    <span class="dashboard-label">Price</span>
+                    <p style="margin: 2px 0; font-size: 1.1rem; font-weight: 700; color: var(--color-primary);">Rs. {{ product.price|floatformat:0 }}</p>
+                </div>
+
+                <div>
+                    <span class="dashboard-label">Display Order</span>
+                    <p style="margin: 2px 0; color: #fff; font-weight: 600;">#{{ product.display_order }}</p>
+                </div>
+
+                <div>
+                    <span class="dashboard-label">Stock Status</span>
+                    <p style="margin: 2px 0;">
+                        {% if product.is_available %}
+                        <span class="badge-status badge-active" style="padding: 2px 8px; font-size: 0.68rem;">In Stock</span>
+                        {% else %}
+                        <span class="badge-status badge-inactive" style="padding: 2px 8px; font-size: 0.68rem;">Out of Stock</span>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+
+            {% if product.description %}
+            <div>
+                <span class="dashboard-label">Description</span>
+                <p style="margin: 2px 0; font-size: 0.82rem; color: var(--color-text-gray); line-height: 1.5;">{{ product.description }}</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- BOTTOM ACTION BAR: BACK (LEFT), EDIT (MIDDLE), DELETE (RIGHT) -->
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--color-border);">
+        <a href="{% url 'manage_products' %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 8px 14px; font-size: 0.76rem; font-weight: 600; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: fit-content; max-width: max-content;">
+            &larr; Back
+        </a>
+        <a href="{% url 'product_edit' product.pk %}" class="btn-primary" style="padding: 8px 14px; font-size: 0.76rem; font-weight: 600; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: fit-content; max-width: max-content;">
+            <i class="fa-solid fa-pen"></i> Edit
+        </a>
+        <a href="{% url 'product_delete' product.pk %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 8px 14px; font-size: 0.76rem; font-weight: 600; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; justify-content: center; gap: 6px; width: fit-content; max-width: max-content;">
+            <i class="fa-solid fa-trash"></i> Delete
+        </a>
+    </div>
+
+</div>
+{% endblock %}

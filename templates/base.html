@@ -1,0 +1,353 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Delicious Food Stop — Fast Food & Pulao{% endblock %}</title>
+
+    <!-- SEO -->
+    <meta name="description" content="{% block meta_description %}Delicious Food Stop — Fast food restaurant in Jamrud rated 4.4/5 on Google. Order Zinger burgers, pizza, BBQ and chicken pulao straight to WhatsApp.{% endblock %}">
+
+    <!-- Open Graph (for WhatsApp / Facebook link previews) -->
+    <meta property="og:type" content="restaurant.restaurant">
+    <meta property="og:title" content="{% block og_title %}Delicious Food Stop — Fast Food & Pulao{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Delicious Food Stop — Fast food restaurant in Jamrud rated 4.4/5 on Google. Order Zinger burgers, pizza, BBQ and chicken pulao straight to WhatsApp.{% endblock %}">
+    <meta property="og:image" content="{% static 'images/logo.png' %}">
+
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+    <!-- Main Style Sheet -->
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=5">
+    <style>
+        /* ==========================================
+           EXACT MATERIAL DESIGN FLOATING LABEL SYSTEM
+           ========================================== */
+        .floating-group {
+            position: relative !important;
+            display: block !important;
+            width: 100% !important;
+            margin-bottom: 20px !important;
+            box-sizing: border-box !important;
+        }
+
+        .floating-group input.floating-input,
+        .floating-group textarea.floating-input,
+        .floating-group select.floating-input {
+            display: block !important;
+            width: 100% !important;
+            height: 52px !important;
+            padding: 16px 14px 4px 14px !important;
+            background-color: #0d0d0d !important;
+            border: 1.5px solid rgba(201, 168, 76, 0.3) !important;
+            border-radius: 8px !important;
+            color: #ffffff !important;
+            font-size: 0.95rem !important;
+            font-family: inherit !important;
+            box-sizing: border-box !important;
+            outline: none !important;
+            transition: border-color 0.2s ease, box-shadow 0.2s ease !important;
+        }
+
+        .floating-group textarea.floating-input {
+            height: 100px !important;
+            padding-top: 20px !important;
+            resize: vertical !important;
+        }
+
+        .floating-group input.floating-input:focus,
+        .floating-group textarea.floating-input:focus,
+        .floating-group select.floating-input:focus,
+        .floating-group input.floating-input:active,
+        .floating-group textarea.floating-input:active {
+            background-color: #0d0d0d !important;
+            color: #ffffff !important;
+            border-color: #c9a84c !important;
+            box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.2) !important;
+        }
+
+        .floating-group input.floating-input:-webkit-autofill,
+        .floating-group input.floating-input:-webkit-autofill:hover, 
+        .floating-group input.floating-input:-webkit-autofill:focus, 
+        .floating-group input.floating-input:-webkit-autofill:active {
+            -webkit-box-shadow: 0 0 0 1000px #0d0d0d inset !important;
+            -webkit-text-fill-color: #ffffff !important;
+            caret-color: #ffffff !important;
+            transition: background-color 5000s ease-in-out 0s !important;
+        }
+
+        .floating-group label.floating-label {
+            position: absolute !important;
+            left: 14px !important;
+            top: 50% !important;
+            transform: translateY(-50%) !important;
+            color: #a0a0a0 !important;
+            font-size: 0.9rem !important;
+            font-weight: 400 !important;
+            pointer-events: none !important;
+            transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1), top 0.2s cubic-bezier(0.4, 0, 0.2, 1), color 0.2s ease, font-size 0.2s ease !important;
+            background-color: transparent !important;
+            padding: 0 4px !important;
+            margin: 0 !important;
+            line-height: 1 !important;
+            z-index: 5 !important;
+            white-space: nowrap !important;
+        }
+
+        .floating-group textarea.floating-input ~ label.floating-label {
+            top: 24px !important;
+        }
+
+        .floating-group input.floating-input:focus ~ label.floating-label,
+        .floating-group textarea.floating-input:focus ~ label.floating-label,
+        .floating-group select.floating-input:focus ~ label.floating-label,
+        .floating-group input.floating-input:not(:placeholder-shown) ~ label.floating-label,
+        .floating-group textarea.floating-input:not(:placeholder-shown) ~ label.floating-label,
+        .floating-group select.floating-input:not(:placeholder-shown) ~ label.floating-label,
+        .floating-group.focused label.floating-label,
+        .floating-group.has-value label.floating-label {
+            top: 10px !important;
+            transform: translateY(0) !important;
+            font-size: 0.72rem !important;
+            font-weight: 700 !important;
+            color: #c9a84c !important;
+        }
+
+        /* MODAL VISIBILITY ENFORCEMENT */
+        .modal {
+            position: fixed !important;
+            top: 0 !important;
+            left: 0 !important;
+            width: 100% !important;
+            height: 100% !important;
+            z-index: 999999 !important;
+            display: flex !important;
+            justify-content: center !important;
+            align-items: center !important;
+            opacity: 0 !important;
+            visibility: hidden !important;
+            pointer-events: none !important;
+            transition: opacity 0.3s ease, visibility 0.3s ease !important;
+        }
+
+        .modal.active {
+            opacity: 1 !important;
+            visibility: visible !important;
+            pointer-events: auto !important;
+        }
+
+        .cart-sidebar {
+            z-index: 1000005 !important;
+        }
+
+        .cart-overlay {
+            z-index: 1000000 !important;
+        }
+
+        body {
+            padding-top: {% if not restaurant.is_open %}126px{% else %}90px{% endif %} !important;
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body data-is-open="{% if restaurant.is_open %}true{% else %}false{% endif %}">
+
+    {% block closed_banner %}
+    {% if not restaurant.is_open %}
+    <!-- FIXED TOP NOTIFICATION BANNER (WHEN RESTAURANT IS CLOSED) -->
+    <div class="restaurant-closed-banner" style="background: #111111; border-bottom: 1.5px solid var(--color-primary); color: #ffffff; text-align: center; padding: 8px 15px; font-size: 0.85rem; font-weight: 700; line-height: 1.35; width: 100%; position: fixed; top: 0; left: 0; z-index: 100000; box-shadow: 0 4px 15px rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; letter-spacing: 0.5px;">
+        <span>We are currently <strong>CLOSED</strong></span>
+    </div>
+    {% endif %}
+    {% endblock %}
+
+    <!-- HEADER / NAVIGATION (FIXED TOP BLOCK) -->
+    {% block header_tag %}
+    <header style="position: fixed !important; top: {% if not restaurant.is_open %}35px{% else %}0{% endif %} !important; left: 0 !important; width: 100% !important; z-index: 99999 !important;">
+    {% endblock %}
+        <div class="header-top-bar">
+            <div class="header-container">
+                <a href="{% url 'index' %}" class="header-brand">
+                    <div class="brand-text-logo">
+                        <span class="brand-main">Delicious Food</span>
+                        <span class="brand-sub">Stop</span>
+                    </div>
+                </a>
+                
+                <div class="header-actions" style="display: flex; align-items: center; gap: 16px;">
+                    {% if user.is_authenticated %}
+                        <a href="{% url 'logout' %}" class="login-header-btn" title="Logout" aria-label="Logout" style="background: transparent; border: 1px solid var(--color-border); color: var(--color-primary); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1rem;">
+                            <i class="fa-solid fa-right-from-bracket"></i>
+                        </a>
+                    {% else %}
+                        <a href="{% url 'login' %}" class="login-header-btn" title="Owner Login" aria-label="Owner Login" style="background: transparent; border: 1px solid var(--color-border); color: var(--color-primary); width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; text-decoration: none; font-size: 1rem;">
+                            <i class="fa-solid fa-user"></i>
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        {% block main_nav %}
+        <div class="header-sub-nav">
+            <div class="header-container">
+                <nav id="navbar">
+                    <ul>
+                        <li><a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Home</a></li>
+                        <li><a href="{% url 'menu' %}" class="{% if request.resolver_match.url_name == 'menu' %}active{% endif %}">Menu</a></li>
+                        <li><a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About Us</a></li>
+                        <li><a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a></li>
+                    </ul>
+                </nav>
+            </div>
+        </div>
+        {% endblock %}
+    </header>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- FOOTER SECTION -->
+    {% block footer %}
+    <footer>
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="brand-text-logo">
+                    <span class="brand-main">Delicious Food</span>
+                    <span class="brand-sub">Stop</span>
+                </div>
+                <p>{{ restaurant.tagline }}</p>
+                <p><i class="fa-solid fa-location-dot"></i> {{ restaurant.address }}</p>
+                <p><i class="fa-solid fa-phone"></i> {{ restaurant.phone }}</p>
+            </div>
+
+            <div class="footer-links">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="{% url 'index' %}">Home</a></li>
+                    <li><a href="{% url 'menu' %}">Our Menu</a></li>
+                    <li><a href="{% url 'about' %}">About Us</a></li>
+                    <li><a href="{% url 'contact' %}">Contact & Feedback</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-hours">
+                <h3>Opening Hours</h3>
+                <p><strong>Monday – Sunday</strong></p>
+                <p>Lunch: {{ restaurant.lunch_hours }}</p>
+                <p>Dinner: {{ restaurant.dinner_hours }}</p>
+            </div>
+
+            <div class="footer-social">
+                <h3>Follow Us</h3>
+                <div>
+                    <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                    <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                    <a href="https://x.com" target="_blank" aria-label="X"><i class="fa-brands fa-x-twitter"></i></a>
+                    <a href="https://youtube.com" target="_blank" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+                </div>
+            </div>
+        </div>
+
+        <hr>
+        <p class="footer-copy">&copy; {% now "Y" %} Delicious Food Stop. All Rights Reserved. &nbsp;|&nbsp; <a href="#">Privacy Policy</a> &nbsp;|&nbsp; <a href="#">Terms of Service</a> &nbsp;|&nbsp; Developed by <a href="https://harisyar-ai.github.io/harisyar-ai/" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary); font-weight: 600;">Muhammad Haris Afridi</a></p>
+    </footer>
+    {% endblock %}
+
+    <!-- SLIDE-OUT ORDER PRE-ORDER CART -->
+    <div class="cart-sidebar" id="cartSidebar">
+        <div class="cart-header">
+            <h3><i class="fa-solid fa-bag-shopping text-gold"></i> Pre-Order Cart</h3>
+            <button class="close-cart-btn" id="closeCartBtn" aria-label="Close Pre-Order Cart">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="cart-items" id="cartItemsContainer">
+            <div class="empty-cart-message" id="emptyCartMessage">
+                <i class="fa-solid fa-plate-wheat"></i>
+                <p>Your pre-order is empty. Select items from the menu to pre-order directly for your visit!</p>
+            </div>
+        </div>
+        <div class="cart-footer">
+            <div class="cart-summary-row total-row">
+                <span>Total Amount</span>
+                <span id="cartTotal">Rs. 0</span>
+            </div>
+            {% if not restaurant.is_open %}
+            <button class="checkout-btn closed-disabled-btn" id="checkoutBtn" disabled style="background: #282828 !important; color: #777777 !important; border: 1px solid #444 !important; opacity: 0.65; cursor: not-allowed; pointer-events: none;">
+                🔴 Restaurant Closed
+            </button>
+            {% else %}
+            <button class="checkout-btn" id="checkoutBtn" disabled>Send Order via WhatsApp</button>
+            {% endif %}
+        </div>
+    </div>
+    <div class="cart-overlay" id="cartOverlay"></div>
+
+    <!-- CUSTOMER CHECKOUT DETAILS MODAL -->
+    <div class="modal" id="customerCheckoutModal">
+        <div class="modal-backdrop" id="checkoutBackdrop"></div>
+        <div class="modal-content" style="max-width: 460px; padding: 24px;">
+            <button class="modal-close-btn" id="closeCheckoutModalBtn"><i class="fa-solid fa-xmark"></i></button>
+            <div style="text-align: center; margin-bottom: 16px;">
+                <h3 style="font-family: var(--font-brand); color: #fff; font-size: 1.25rem; margin: 0;">Customer Information</h3>
+            </div>
+            <form id="customerCheckoutForm" style="display: flex; flex-direction: column; gap: 0;">
+                <div class="floating-group" style="margin-bottom: 14px !important;">
+                    <input type="text" id="custName" class="floating-input" placeholder=" " required>
+                    <label for="custName" class="floating-label">Your Full Name *</label>
+                </div>
+                <div class="floating-group" style="margin-bottom: 14px !important;">
+                    <input type="tel" id="custPhone" class="floating-input" placeholder=" " required>
+                    <label for="custPhone" class="floating-label">Phone Number *</label>
+                </div>
+                <div class="floating-group" style="margin-bottom: 14px !important;">
+                    <input type="text" id="custAddress" class="floating-input" placeholder=" " required>
+                    <label for="custAddress" class="floating-label">Delivery Address *</label>
+                </div>
+                <div class="floating-group" style="margin-bottom: 14px !important;">
+                    <input type="text" id="custNotes" class="floating-input" placeholder=" ">
+                    <label for="custNotes" class="floating-label">Special Notes / Requests (Optional)</label>
+                </div>
+                <button type="submit" id="submitOrderBtn" class="btn-primary" style="margin-top: 6px; width: 100%; justify-content: center; padding: 13px;">
+                    <i class="fa-brands fa-whatsapp"></i> Confirm & Send Order via WhatsApp
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- PRE-ORDER CONFIRMATION MODAL -->
+    <div class="modal" id="orderConfirmModal">
+        <div class="modal-backdrop" id="orderConfirmBackdrop"></div>
+        <div class="modal-content">
+            <button class="modal-close-btn" id="closeOrderModalBtn"><i class="fa-solid fa-xmark"></i></button>
+            <div class="success-checkmark">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h3 class="order-success-title">Order Saved & Sent!</h3>
+            <p class="order-success-desc">Your order has been recorded in our system. WhatsApp should have opened in a new tab with your order pre-filled.</p>
+            <div class="order-details-card">
+                <h5>Pre-Ordered Items</h5>
+                <div class="order-details-items" id="modalOrderItems"></div>
+                <div style="margin-top:12px; padding-top:10px; border-top:1px dashed var(--color-border); display:flex; justify-content:space-between; font-weight:700; font-size:0.9rem; color:#fff;">
+                    <span>Order Total</span>
+                    <span id="modalOrderTotal" class="text-gold">Rs. 0</span>
+                </div>
+            </div>
+            <button class="ticket-print-btn" id="closeOrderSuccessBtn">Close</button>
+        </div>
+    </div>
+
+    <!-- Main Logic Script -->
+    <script src="{% static 'js/script.js' %}?v=101"></script>
+    <!-- MOBILE FLOATING CART BUTTON (shows only once cart has items) -->
+    <button class="mobile-cart-fab" id="mobileCartFab" aria-label="Open Cart">
+        <i class="fa-solid fa-bag-shopping"></i>
+        <span class="mobile-cart-fab-badge" id="mobileCartFabBadge">0</span>
+    </button>
+
+    {% block body_end %}{% endblock %}
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

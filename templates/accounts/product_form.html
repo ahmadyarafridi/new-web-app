@@ -1,0 +1,72 @@
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dashboard-card" style="max-width: 800px; margin: 0 auto;">
+
+    <div class="dashboard-header-row">
+        <div>
+            <h2 class="dashboard-title" style="font-size: 1.1rem;">{{ title }}</h2>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 8px;">
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="alert-message alert-inactive" style="background: rgba(229,57,53,0.15); color: #ef5350; border: 1px solid rgba(229,57,53,0.3); margin-bottom: 8px;">
+                <strong>Please fix the errors below:</strong>
+                {{ form.errors }}
+            </div>
+        {% endif %}
+
+        <div class="dashboard-form-grid" style="gap: 10px;">
+            <div class="floating-group" style="margin-bottom: 8px !important;">
+                {{ form.name }}
+                <label for="{{ form.name.id_for_label }}" class="floating-label">Product Name</label>
+            </div>
+
+            <div class="floating-group" style="margin-bottom: 8px !important;">
+                {{ form.category }}
+                <label for="{{ form.category.id_for_label }}" class="floating-label">Category</label>
+            </div>
+
+            <div class="floating-group full-width" style="margin-bottom: 8px !important;">
+                {{ form.price }}
+                <label for="{{ form.price.id_for_label }}" class="floating-label">Price (PKR)</label>
+            </div>
+
+            <div class="dashboard-form-group full-width" style="margin-bottom: 8px !important;">
+                <label class="dashboard-label" style="margin-bottom: 4px;">Upload Image File</label>
+                {{ form.image_file }}
+                {% if product and product.image_file %}
+                <div style="margin-top: 4px; display: flex; align-items: center; gap: 8px;">
+                    <img src="{{ product.image_file.url }}" alt="Current Image" style="width: 40px; height: 40px; object-fit: cover; border-radius: 6px; border: 1px solid var(--color-border);">
+                    <span style="font-size: 0.72rem; color: #81c784;">Current Uploaded Image</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="floating-group full-width" style="margin-bottom: 8px !important;">
+                {{ form.description }}
+                <label for="{{ form.description.id_for_label }}" class="floating-label">Product Description</label>
+            </div>
+
+            <div class="dashboard-form-group full-width" style="margin-bottom: 8px !important; display: flex; align-items: center; gap: 10px; background: var(--color-bg-deep); padding: 10px 14px; border-radius: 8px; border: 1px solid var(--color-border);">
+                {{ form.is_available }}
+                <label for="{{ form.is_available.id_for_label }}" style="font-size: 0.88rem; font-weight: 600; color: #ffffff; cursor: pointer; display: flex; align-items: center; gap: 6px; margin: 0;">
+                    <i class="fa-solid fa-boxes-stacked" style="color: var(--color-primary);"></i> In Stock
+                </label>
+            </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--color-border);">
+            <a href="{% url 'manage_products' %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 8px 16px; font-size: 0.78rem; font-weight: 600; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; justify-content: center; width: fit-content; max-width: max-content;">
+                &larr; Back
+            </a>
+            <button type="submit" class="btn-primary" style="padding: 8px 16px; font-size: 0.78rem; width: fit-content; max-width: max-content;">{% if product %}Update{% else %}Add{% endif %}</button>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

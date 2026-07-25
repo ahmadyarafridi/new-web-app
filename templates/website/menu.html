@@ -1,0 +1,98 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Our Menu — {{ restaurant.name }}{% endblock %}
+
+{% block content %}
+<!-- DYNAMIC TABBED MENU SECTION -->
+<section id="menu" style="padding-top: 20px;">
+    <!-- Menu Filter Controls Row (Left: Search Bar, Right: Category Select Dropdown) -->
+    <div class="menu-controls-wrapper">
+        <!-- Left Side: Live Search Input & Button -->
+        <div class="menu-search-box">
+            <input type="text" id="menuSearchInput" class="menu-search-input" placeholder="Search menu or deals...">
+            <button type="button" id="menuSearchBtn" class="search-icon-btn" aria-label="Search">
+                <i class="fa-solid fa-magnifying-glass"></i>
+            </button>
+        </div>
+
+        <!-- Right Side: Custom Branded Category Selector Dropdown -->
+        <div class="custom-select-wrapper" id="customMobileSelectWrapper">
+            <div class="custom-select-trigger" id="customMobileSelectTrigger">
+                <span>All Items</span>
+                <i class="fa-solid fa-chevron-down"></i>
+            </div>
+            <ul class="custom-options" id="customMobileOptions">
+                <li class="custom-option selected" data-value="all">All Items</li>
+                {% for category in categories %}
+                <li class="custom-option" data-value="{{ category.slug }}">{{ category.name }}</li>
+                {% endfor %}
+                {% if deals %}
+                <li class="custom-option" data-value="deals">Deals</li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+
+    <div class="swipe-guidance menu-swipe-guidance">
+        <p class="menu-swipe-hint"><i class="fa-solid fa-arrow-right"></i> Swipe to right</p>
+    </div>
+    <div class="menu-grid" id="menuGrid">
+        {% for product in products %}
+        <div class="menu-item-card" data-category="{{ product.category.slug }}" data-id="{{ product.item_code }}" data-in-stock="{% if product.is_available %}true{% else %}false{% endif %}">
+            <div class="menu-item-img-wrapper" style="position: relative;">
+                <img src="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}" alt="{{ product.name }}" class="menu-item-img" {% if product.custom_style %}style="{{ product.custom_style }}"{% endif %}>
+                {% if not product.is_available %}
+                <span class="badge-status badge-inactive" style="position: absolute; top: 10px; right: 10px; background: rgba(229,57,53,0.85); color: #ffffff; padding: 3px 8px; font-size: 0.65rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(4px);">Out of Stock</span>
+                {% endif %}
+            </div>
+            <div class="menu-item-info">
+                <div class="menu-item-title-row">
+                    <h4>{{ product.name }}</h4>
+                    <span class="menu-item-price">Rs. {{ product.price|floatformat:0 }}</span>
+                </div>
+                {% if product.description %}
+                <p class="menu-item-desc" {% if product.category.slug == 'deals' %}style="font-size:0.75rem; color:var(--color-text-gray); margin-bottom:10px;"{% endif %}>{{ product.description }}</p>
+                {% endif %}
+                <div class="menu-item-actions">
+                    {% if product.is_available %}
+                    <button class="add-to-cart-btn" data-id="{{ product.item_code }}" data-name="{{ product.name }}" data-price="{{ product.price|floatformat:0 }}" data-img="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}">
+                        <i class="fa-solid fa-plus"></i> Add to Order
+                    </button>
+                    {% else %}
+                    <button class="add-to-cart-btn disabled" disabled style="background: #222222 !important; color: #777777 !important; border: 1px solid #444444 !important; opacity: 0.6; cursor: not-allowed; pointer-events: none; width: 100%;">
+                        Out of Stock
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+
+        {% if deals %}
+        {% for deal in deals %}
+        <div class="menu-item-card" data-category="deals" data-id="{{ deal.item_code }}">
+            <div class="menu-item-img-wrapper">
+                <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}" class="menu-item-img">
+            </div>
+            <div class="menu-item-info">
+                <div class="menu-item-title-row">
+                    <h4>{{ deal.title }}</h4>
+                    <span class="menu-item-price">Rs. {{ deal.price|floatformat:0 }}</span>
+                </div>
+                {% if deal.description %}
+                <p class="menu-item-desc" style="font-size:0.75rem; color:var(--color-text-gray); margin-bottom:10px;">{{ deal.description }}</p>
+                {% endif %}
+                <div class="menu-item-actions">
+                    <button class="add-to-cart-btn" data-id="{{ deal.item_code }}" data-name="{{ deal.title }}" data-price="{{ deal.price|floatformat:0 }}" data-img="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}">
+                        <i class="fa-solid fa-plus"></i> Add to Order
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+    </div>
+    <div class="carousel-dots menu-carousel-dots" id="menuCarouselDots" aria-label="Menu carousel navigation"></div>
+</section>
+{% endblock %}

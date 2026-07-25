@@ -1,0 +1,49 @@
+{% extends 'accounts/dashboard_base.html' %}
+
+{% block title %}Completed Orders - {{ restaurant.name }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-card" style="display: flex; flex-direction: column; height: calc(100vh - 140px); min-height: 300px;">
+    <!-- FIXED HEADER -->
+    <div style="flex-shrink: 0; margin-bottom: 12px;">
+        <h2 style="font-family: var(--font-brand); color: #81c784; font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; margin: 0;">
+            Completed Orders ({{ analytics.today_completed_count }})
+        </h2>
+    </div>
+
+    <!-- SCROLLABLE CONTENT AREA -->
+    <div style="flex: 1; overflow-y: auto; min-height: 0; padding-right: 4px; scrollbar-width: thin;">
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            {% for order in analytics.today_completed_list %}
+            <a href="{% url 'order_detail' order.pk %}" style="text-decoration: none; color: inherit; display: block;">
+                <div style="background: var(--color-bg-deep); border: 1.5px solid rgba(76,175,80,0.3); border-radius: var(--border-radius-sm); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: border-color 0.2s ease, transform 0.2s ease;">
+                    <div style="min-width: 0; flex: 1;">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px;">
+                            <h4 style="font-family: var(--font-brand); color: #fff; font-size: 0.9rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;">{{ order.items_summary }}</h4>
+                            <span style="font-size: 0.65rem; font-weight: 700; color: #81c784; background: rgba(76,175,80,0.15); padding: 2px 7px; border-radius: 8px; flex-shrink: 0;">Completed</span>
+                        </div>
+                        <span style="font-size: 0.76rem; color: var(--color-text-gray); display: block;">
+                            Ordered by: <strong style="color: #ddd;">{{ order.customer_name }}</strong> &bull; <small style="color: #999;">{{ order.created_at|date:"h:i A" }}</small>
+                        </span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
+                        <span style="font-size: 0.85rem; font-weight: 700; color: var(--color-primary);">Rs. {{ order.total_price|floatformat:0 }}</span>
+                        <i class="fa-solid fa-chevron-right" style="font-size: 0.8rem; color: var(--color-text-gray);"></i>
+                    </div>
+                </div>
+            </a>
+            {% empty %}
+            <div style="text-align: center; padding: 40px 20px; color: var(--color-text-gray); background: var(--color-bg-deep); border: 1px dashed var(--color-border); border-radius: 8px;">
+                <i class="fa-solid fa-circle-check" style="font-size: 2rem; color: rgba(76,175,80,0.3); margin-bottom: 8px; display: block;"></i>
+                No completed orders yet today.
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- FIXED FOOTER WITH BACK BUTTON -->
+    <div style="flex-shrink: 0; padding-top: 10px; margin-top: 10px;">
+        <a href="{% url 'analytics_orders_today' %}" class="btn-secondary" style="padding: 6px 18px; font-size: 0.78rem; font-weight: 700; text-decoration: none; border-radius: 4px; display: inline-flex; align-items: center; gap: 6px;">Back</a>
+    </div>
+</div>
+{% endblock %}

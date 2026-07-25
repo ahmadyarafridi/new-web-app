@@ -15,7 +15,17 @@ Thumbs.db
 *.sublime-workspace
 *.sublime-project
 
-# Environment & Temp Files
+# Python & Django Cache / Environment Files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
 .env
 .env.local
 .env.*.local
@@ -23,14 +33,15 @@ Thumbs.db
 tmp/
 temp/
 
-# Deployment Artifacts
+# SQLite Database (Optional: un-comment db.sqlite3 if you want local database excluded)
+# db.sqlite3
+
+# Django Media Uploads (un-comment if uploads should not be committed to git)
+# media/uploads/
+
+# Deployment & Node Artifacts
 .vercel
 .output
 dist/
 build/
-
-# Node / Package Manager Files (if used in future)
 node_modules/
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*

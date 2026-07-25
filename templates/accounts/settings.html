@@ -1,0 +1,151 @@
+{% extends 'accounts/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-card" style="max-width: 900px; margin: 0 auto;">
+
+    <form method="post" style="display: flex; flex-direction: column; gap: 20px;">
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="alert-message alert-inactive" style="background: rgba(229,57,53,0.15); color: #ef5350; border: 1px solid rgba(229,57,53,0.3);">
+                <strong>Please fix the errors below:</strong>
+                {{ form.errors }}
+            </div>
+        {% endif %}
+
+        <h3 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 10px;">Contact & Location Details</h3>
+        <div class="dashboard-form-grid">
+            <div class="floating-group">
+                {{ form.name }}
+                <label for="{{ form.name.id_for_label }}" class="floating-label">Restaurant Name</label>
+            </div>
+
+            <div class="floating-group">
+                {{ form.tagline }}
+                <label for="{{ form.tagline.id_for_label }}" class="floating-label">Tagline</label>
+            </div>
+
+            <div class="floating-group">
+                {{ form.phone }}
+                <label for="{{ form.phone.id_for_label }}" class="floating-label">Phone Number</label>
+            </div>
+
+            <div class="floating-group">
+                {{ form.whatsapp_number }}
+                <label for="{{ form.whatsapp_number.id_for_label }}" class="floating-label">WhatsApp Number (e.g. 923339342567)</label>
+            </div>
+
+            <div class="floating-group">
+                {{ form.email }}
+                <label for="{{ form.email.id_for_label }}" class="floating-label">General Email</label>
+            </div>
+
+            <div class="floating-group">
+                {{ form.google_maps_plus_code }}
+                <label for="{{ form.google_maps_plus_code.id_for_label }}" class="floating-label">Google Maps Plus Code</label>
+            </div>
+
+            <div class="floating-group full-width">
+                {{ form.address }}
+                <label for="{{ form.address.id_for_label }}" class="floating-label">Physical Address</label>
+            </div>
+        </div>
+
+        <h3 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;">Google Reviews & Hours</h3>
+        <div class="dashboard-form-grid">
+            <div class="floating-group">
+                {{ form.google_rating }}
+                <label for="{{ form.google_rating.id_for_label }}" class="floating-label">Google Rating (Out of 5.0)</label>
+            </div>
+
+            <div class="floating-group">
+                {{ form.google_reviews_count }}
+                <label for="{{ form.google_reviews_count.id_for_label }}" class="floating-label">Google Reviews Count</label>
+            </div>
+
+            <div class="floating-group full-width">
+                {{ form.opening_hours_text }}
+                <label for="{{ form.opening_hours_text.id_for_label }}" class="floating-label">Operational Hours Summary Text</label>
+            </div>
+
+            <div class="floating-group">
+                {{ form.lunch_hours }}
+                <label for="{{ form.lunch_hours.id_for_label }}" class="floating-label">Lunch Hours</label>
+            </div>
+
+            <div class="floating-group">
+                {{ form.dinner_hours }}
+                <label for="{{ form.dinner_hours.id_for_label }}" class="floating-label">Dinner Hours</label>
+            </div>
+        </div>
+
+        <h3 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; margin-top: 20px;">Hero Banner & About Page Content</h3>
+        <div class="dashboard-form-grid">
+            <div class="floating-group full-width">
+                {{ form.hero_description }}
+                <label for="{{ form.hero_description.id_for_label }}" class="floating-label">Hero Section Description</label>
+            </div>
+
+            <div class="floating-group">
+                {{ form.about_established_year }}
+                <label for="{{ form.about_established_year.id_for_label }}" class="floating-label">Established Year</label>
+            </div>
+
+            <div class="floating-group full-width">
+                {{ form.about_history }}
+                <label for="{{ form.about_history.id_for_label }}" class="floating-label">About Story (Paragraph 1)</label>
+            </div>
+
+            <div class="floating-group full-width">
+                {{ form.about_history_p2 }}
+                <label for="{{ form.about_history_p2.id_for_label }}" class="floating-label">About Story (Paragraph 2)</label>
+            </div>
+
+            <div class="floating-group full-width">
+                {{ form.about_quality_promise }}
+                <label for="{{ form.about_quality_promise.id_for_label }}" class="floating-label">Quality Promise Text</label>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 15px; padding-top: 20px; border-top: 1px solid var(--color-border);">
+            <button type="submit" class="btn-primary" style="padding: 12px 28px;">Save All Changes</button>
+        </div>
+    </form>
+
+</div>
+
+<!-- FIXED FLOATING VIEW LIVE SITE BUTTON -->
+<style>
+    .fixed-live-site-fab {
+        position: fixed;
+        bottom: 25px;
+        right: 25px;
+        z-index: 9999;
+        background: var(--color-primary);
+        color: var(--color-bg-deep);
+        padding: 12px 22px;
+        border-radius: 50px;
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-decoration: none;
+        letter-spacing: 0.8px;
+        text-transform: uppercase;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        box-shadow: 0 6px 22px rgba(0, 0, 0, 0.6);
+        transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    }
+
+    .fixed-live-site-fab:hover {
+        background: var(--color-primary-light);
+        color: #000;
+        transform: translateY(-3px);
+        box-shadow: 0 10px 28px rgba(201, 168, 76, 0.4);
+    }
+</style>
+
+<a href="{% url 'index' %}" class="fixed-live-site-fab" target="_blank" title="View Live Site">
+    <i class="fa-solid fa-eye"></i> View Live Site
+</a>
+{% endblock %}

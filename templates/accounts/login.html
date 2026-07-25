@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Owner Login — Delicious Food Stop{% endblock %}
+
+{% block content %}
+<section style="min-height: 70vh; display: flex; align-items: center; justify-content: center; padding: 40px 20px;">
+    <div style="background-color: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--border-radius-md); padding: 40px; max-width: 420px; width: 100%; box-shadow: var(--shadow-md); text-align: center;">
+        
+        <h3 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 20px;">Admin Panel</h3>
+
+        {% if form.errors %}
+            <div style="background-color: rgba(229, 57, 53, 0.1); border: 1px solid rgba(229, 57, 53, 0.3); color: #ef5350; padding: 10px 14px; border-radius: 6px; font-size: 0.82rem; margin-bottom: 16px; text-align: left;">
+                Invalid username or password. Please try again.
+            </div>
+        {% endif %}
+
+        <form method="post" action="{% url 'login' %}" style="display: flex; flex-direction: column; gap: 10px; text-align: left;">
+            {% csrf_token %}
+            <div class="floating-group" style="margin-bottom: 10px !important;">
+                {{ form.username }}
+                <label for="loginUsername" class="floating-label">Owner Username</label>
+            </div>
+            <div class="floating-group" style="margin-bottom: 10px !important;">
+                {{ form.password }}
+                <label for="loginPassword" class="floating-label">Password</label>
+            </div>
+            
+            <button type="submit" class="btn-primary" style="width: 100%; margin-top: 4px; padding: 11px; cursor: pointer; text-align: center; justify-content: center;">
+                Log In
+            </button>
+        </form>
+
+        <div style="margin-top: 25px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.05); font-size: 0.8rem;">
+            <a href="{% url 'index' %}" style="color: var(--color-text-gray); text-decoration: none;">&larr; Back to Main Website</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

@@ -1,68 +1,84 @@
-# 🍔 Delicious Food Stop — Official Web Application
+# 🍔 Delicious Food Stop — Django Web Application
 
-[![Vercel Deployment](https://img.shields.io/badge/Deploy-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
+[![Django](https://img.shields.io/badge/Django-6.0+-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
 [![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/CSS)
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 
-A modern, responsive multi-page web application built for **Delicious Food Stop**, a popular fast-food restaurant based in Jamrud, Khyber Pakhtunkhwa. Designed with a luxury dark & gold aesthetic, seamless page transitions, interactive menu filtering, and direct WhatsApp ordering.
+A production-ready full-stack Django web application built for **Delicious Food Stop**, a popular fast-food restaurant based in Jamrud, Khyber Pakhtunkhwa. Designed with a luxury dark & gold aesthetic, seamless page transitions, interactive menu filtering, direct WhatsApp ordering, and restaurant owner authentication.
 
 ---
 
 ## ✨ Features
 
 - 📱 **Fully Responsive Layout**: Custom tailored experiences across Desktop, Laptop, Tablet, and Mobile screens.
+- 🐍 **Modular Django Architecture**: Clean app separation (`website` for public pages, `accounts` for owner authentication).
+- 🔐 **Owner Authentication & Dashboard**: Protected owner login/logout portal (`/owner/login/`) redirecting to a placeholder dashboard.
 - 🛒 **Persistent Shopping Cart**: Pre-order items saved seamlessly in browser `localStorage`.
 - 💬 **Direct WhatsApp Checkout**: 1-Click order confirmation that automatically pre-fills item details, quantities, and totals into WhatsApp.
 - 🍕 **Interactive Food Menu**: Instant keyword search and custom category filters for pizzas, burgers, shawarmas, appetizers, beverages, and desserts.
-- 🎠 **Touch-Friendly Carousels**: Left-to-right swipe deals and customer review sliders.
 - 🎨 **Luxury Dark Theme**: Custom CSS design system with HSL gold accents, smooth hover micro-interactions, and 60fps animations.
 - 📍 **Location & Operational Hours**: Embedded Google Maps location (Jamrud), contact channels, and live status badge.
 
 ---
 
-## 📂 Project Structure
+## 📁 Project Structure
 
 ```text
 Restaurant_Website/
-├── index.html        # Home Page (Hero banner, special deals, testimonials)
-├── menu.html         # Interactive Menu (Category filters, live search, dish cards)
-├── about.html        # About Us (Brand story, culinary values, kitchen masters)
-├── contact.html      # Contact Page (Hours, Google map embed, phone, email)
-├── style.css         # Core CSS stylesheet & design tokens
-├── script.js        # JavaScript application logic & cart state management
-└── images/           # High-resolution image assets & menu media
+├── manage.py                # Django CLI management script
+├── db.sqlite3               # SQLite Database (Development)
+├── restaurant_config/       # Django Project Package
+│   ├── settings.py          # App settings, static files, template DIRS
+│   ├── urls.py              # Root URL router
+│   ├── wsgi.py
+│   └── asgi.py
+├── website/                 # App: Customer-Facing Website (Index, Menu, About, Contact)
+├── accounts/                # App: Owner Authentication (Login, Logout, Dashboard)
+├── static/                  # Centralized Static Assets (CSS, JS, Images)
+└── templates/               # Django Master & App Templates
+    ├── base.html            # Master layout with DTL loads
+    ├── website/             # Public page templates
+    └── accounts/            # Owner portal templates
 ```
 
 ---
 
 ## 🚀 Getting Started
 
-### Local Development
-Since this is a static web application built with Vanilla HTML, CSS, and JS, no compilation or build steps are required.
+### Local Setup & Execution
 
-1. Clone or download this repository:
+1. **Clone the repository**:
    ```bash
-   git clone https://github.com/your-username/delicious-food-stop.git
+   git clone https://github.com/harisyar-ai/restaurant-web-app.git
+   cd restaurant-web-app
    ```
-2. Open `index.html` in any web browser or use a live server extension.
 
-### Deploying to Vercel
+2. **Apply database migrations**:
+   ```bash
+   python manage.py migrate
+   ```
 
-1. Push this project to GitHub.
-2. Go to [Vercel](https://vercel.com) and import the repository.
-3. Keep the **Framework Preset** as **"Other"** (Static Site).
-4. Click **Deploy** — your site will be live instantly!
+3. **Start the Django development server**:
+   ```bash
+   python manage.py runserver
+   ```
+
+4. **Access the application**:
+   - Customer Website: `http://127.0.0.1:8000/`
+   - Owner Login Portal: `http://127.0.0.1:8000/owner/login/`
+     - **Default Owner Username**: `admin`
+     - **Default Owner Password**: `admin123`
 
 ---
 
 ## 🛠️ Built With
 
-- **HTML5**: Semantic tags & accessible structure.
-- **CSS3**: Flexbox, CSS Grid, Custom Variables, & Keyframe Animations.
-- **JavaScript (ES6+)**: DOM manipulation, event listeners, LocalStorage API.
-- **Google Fonts**: *Cinzel*, *Playfair Display*, & *Plus Jakarta Sans*.
-- **Font Awesome 6**: Vector icons.
+- **Backend**: Django 6.0+ (Python)
+- **Database**: SQLite3 (Development)
+- **Frontend**: HTML5, CSS3, Vanilla JavaScript (ES6+)
+- **Fonts & Icons**: Google Fonts (*Cinzel*, *Playfair Display*, *Plus Jakarta Sans*), FontAwesome 6
 
 ---
 

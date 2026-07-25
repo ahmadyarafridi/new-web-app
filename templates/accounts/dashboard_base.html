@@ -1,0 +1,661 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Owner Dashboard — {{ restaurant.name }}{% endblock %}
+
+{% block main_nav %}
+<div class="header-sub-nav" id="adminNavBar">
+    <div class="header-container" style="overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
+        <nav id="admin-navbar">
+            <ul>
+                <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="fa-solid fa-chart-line"></i> Overview</a></li>
+                <li><a href="{% url 'analytics_orders' %}" class="{% if 'order' in request.resolver_match.url_name %}active{% endif %}"><i class="fa-solid fa-box"></i> Orders</a></li>
+                <li><a href="{% url 'manage_products' %}" class="{% if 'product' in request.resolver_match.url_name %}active{% endif %}"><i class="fa-solid fa-utensils"></i> Products</a></li>
+                <li><a href="{% url 'manage_deals' %}" class="{% if 'deal' in request.resolver_match.url_name %}active{% endif %}"><i class="fa-solid fa-fire"></i> Deals</a></li>
+                <li><a href="{% url 'manage_feedback' %}" class="{% if 'feedback' in request.resolver_match.url_name or 'review' in request.resolver_match.url_name %}active{% endif %}"><i class="fa-solid fa-star"></i> Reviews & Feedback</a></li>
+            </ul>
+        </nav>
+    </div>
+</div>
+{% endblock %}
+{% block closed_banner %}{% endblock %}
+
+{% block header_tag %}
+<header style="position: fixed !important; top: 0 !important; left: 0 !important; width: 100% !important; z-index: 99999 !important;">
+{% endblock %}
+
+{% block extra_head %}
+<style>
+    /* ── HIDE CUSTOMER CART & CLOSED BANNER IN ADMIN VIEW ── */
+    body {
+        padding-top: 90px !important;
+    }
+    header {
+        top: 0 !important;
+    }
+    .cart-sidebar,
+    .cart-overlay,
+    #mobileCartFab,
+    .restaurant-closed-banner {
+        display: none !important;
+    }
+
+    /* ── BRANDED SELECT DROPDOWN ── */
+    select.floating-input,
+    .dashboard-form-grid select {
+        background-color: var(--color-bg-deep) !important;
+        color: #ffffff !important;
+        border: 1px solid var(--color-border) !important;
+        border-radius: var(--border-radius-sm) !important;
+        padding: 12px 14px !important;
+        font-size: 0.85rem !important;
+        outline: none !important;
+        cursor: pointer !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        background-image: url("data:image/svg+xml;utf8,<svg fill='%23c9a84c' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 12px center !important;
+    }
+    select.floating-input:focus,
+    .dashboard-form-grid select:focus {
+        border-color: var(--color-primary) !important;
+        box-shadow: 0 0 0 2px rgba(201,168,76,0.2) !important;
+    }
+    select.floating-input option,
+    .dashboard-form-grid select option {
+        background-color: #141414 !important;
+        color: #ffffff !important;
+        padding: 10px !important;
+    }
+
+    /* ── ADMIN SWIPEABLE NAV ── */
+    #adminNavBar {
+        position: static !important;
+        width: 100% !important;
+        overflow: hidden !important;
+        background-color: rgba(14, 14, 14, 0.95) !important;
+    }
+
+    #adminNavBar .header-container {
+        display: block !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch !important;
+        scrollbar-width: none !important;
+        padding: 6px 16px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        white-space: nowrap !important;
+    }
+    #adminNavBar .header-container::-webkit-scrollbar { display: none !important; }
+
+    #admin-navbar {
+        display: inline-block !important;
+        width: max-content !important;
+        min-width: max-content !important;
+    }
+
+    #admin-navbar ul {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 6px !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: max-content !important;
+        list-style: none !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+
+    #admin-navbar ul li {
+        display: inline-block !important;
+        flex-shrink: 0 !important;
+    }
+
+    #admin-navbar ul li a {
+        display: inline-flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        padding: 6px 12px !important;
+        text-decoration: none !important;
+        color: var(--color-text-bright) !important;
+        font-size: 0.78rem !important;
+        font-weight: 600 !important;
+        letter-spacing: 0.8px !important;
+        text-transform: uppercase !important;
+        white-space: nowrap !important;
+        border-radius: 4px !important;
+        transition: background-color 0.3s ease, color 0.3s ease !important;
+        flex-shrink: 0 !important;
+    }
+
+    #admin-navbar ul li a:hover,
+    #admin-navbar ul li a.active {
+        background: var(--color-primary) !important;
+        color: var(--color-bg-deep) !important;
+    }
+
+    /* ── FIXED FLOATING (+) ACTION BUTTON ── */
+    .fixed-add-fab {
+        position: fixed !important;
+        bottom: 22px !important;
+        right: 20px !important;
+        z-index: 999999 !important;
+        width: 54px !important;
+        height: 54px !important;
+        border-radius: 50% !important;
+        background: var(--color-primary) !important;
+        color: var(--color-bg-deep) !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        font-size: 1.4rem !important;
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.7), 0 0 15px rgba(201, 168, 76, 0.4) !important;
+        text-decoration: none !important;
+        transition: transform 0.3s ease, background-color 0.3s ease, box-shadow 0.3s ease !important;
+    }
+
+    .fixed-add-fab:hover {
+        background: var(--color-primary-light) !important;
+        color: #000 !important;
+        transform: translateY(-4px) scale(1.08) !important;
+        box-shadow: 0 12px 30px rgba(201, 168, 76, 0.6) !important;
+    }
+
+    #dashboardDropdownWrapper .custom-select-trigger {
+        background-color: var(--color-bg-card);
+        border: 1.5px solid var(--color-primary);
+        border-radius: 30px;
+        padding: 12px 18px;
+        color: var(--color-primary);
+        font-family: var(--font-brand);
+        font-size: 0.82rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        cursor: pointer;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: var(--shadow-sm);
+        user-select: none;
+        -webkit-tap-highlight-color: transparent;
+        transition: var(--transition-fast);
+    }
+
+    #dashboardDropdownWrapper .custom-select-trigger:hover {
+        border-color: var(--color-primary-light);
+        box-shadow: var(--shadow-gold);
+    }
+
+    #dashboardDropdownWrapper .custom-select-trigger i {
+        transition: transform 0.3s ease;
+    }
+
+    #dashboardDropdownWrapper.open .custom-select-trigger i {
+        transform: rotate(180deg);
+    }
+
+    #dashboardDropdownWrapper .custom-options {
+        position: absolute;
+        top: calc(100% + 6px);
+        left: 0;
+        right: 0;
+        background-color: #141414;
+        border: 1.5px solid var(--color-primary);
+        border-radius: var(--border-radius-md);
+        z-index: 99999;
+        opacity: 0;
+        visibility: hidden;
+        display: none;
+        transform: translateY(-8px);
+        transition: opacity 0.2s ease, transform 0.2s ease, visibility 0.2s ease;
+        list-style: none;
+        padding: 8px 0;
+        margin: 0;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.85);
+        max-height: 340px;
+        overflow-y: auto;
+    }
+
+    #dashboardDropdownWrapper.open .custom-options {
+        opacity: 1 !important;
+        visibility: visible !important;
+        display: block !important;
+        transform: translateY(0) !important;
+    }
+
+    #dashboardDropdownWrapper .custom-option {
+        padding: 12px 18px;
+        color: var(--color-text-bright);
+        font-size: 0.82rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: var(--transition-fast);
+        -webkit-tap-highlight-color: rgba(201, 168, 76, 0.2);
+    }
+
+    #dashboardDropdownWrapper .custom-option:hover,
+    #dashboardDropdownWrapper .custom-option.selected {
+        background-color: var(--color-primary);
+        color: var(--color-bg-deep);
+    }
+
+    .dashboard-card {
+        background: var(--color-bg-card);
+        border: 1px solid var(--color-border);
+        border-radius: var(--border-radius-md);
+        padding: 28px;
+        box-shadow: var(--shadow-md);
+    }
+
+    .dashboard-header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .dashboard-title {
+        font-family: var(--font-brand);
+        color: var(--color-primary);
+        font-size: 1.4rem;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    /* DATA TABLES */
+    .dashboard-table-wrapper {
+        overflow-x: auto;
+        border: 1px solid var(--color-border);
+        border-radius: var(--border-radius-sm);
+    }
+
+    .dashboard-table {
+        width: 100%;
+        border-collapse: collapse;
+        text-align: left;
+        font-size: 0.85rem;
+    }
+
+    .dashboard-table th {
+        background: rgba(255, 255, 255, 0.03);
+        color: var(--color-primary);
+        font-family: var(--font-brand);
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        font-size: 0.72rem;
+        padding: 14px 16px;
+        border-bottom: 1px solid var(--color-border);
+    }
+
+    .dashboard-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        color: var(--color-text-bright);
+        vertical-align: middle;
+    }
+
+    .dashboard-table tr:hover td {
+        background: rgba(255, 255, 255, 0.02);
+    }
+
+    .tbl-img {
+        width: 48px;
+        height: 48px;
+        object-fit: cover;
+        border-radius: 6px;
+        border: 1px solid var(--color-border);
+    }
+
+    /* BADGES & BUTTONS */
+    .badge-status {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 20px;
+        font-size: 0.7rem;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+    .badge-active {
+        background: rgba(76, 175, 80, 0.15);
+        color: #66bb6a;
+        border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .badge-inactive {
+        background: rgba(229, 57, 53, 0.15);
+        color: #ef5350;
+        border: 1px solid rgba(229, 57, 53, 0.3);
+    }
+
+    .btn-action-edit {
+        background: rgba(201, 168, 76, 0.15);
+        color: var(--color-primary);
+        border: 1px solid rgba(201, 168, 76, 0.3);
+        padding: 5px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    .btn-action-delete {
+        background: rgba(229, 57, 53, 0.15);
+        color: #ef5350;
+        border: 1px solid rgba(229, 57, 53, 0.3);
+        padding: 5px 12px;
+        border-radius: 4px;
+        text-decoration: none;
+        font-size: 0.75rem;
+        font-weight: 600;
+    }
+
+    /* FORM STYLING */
+    .dashboard-form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 20px;
+    }
+
+    .dashboard-form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .dashboard-form-group.full-width {
+        grid-column: 1 / -1;
+    }
+
+    .dashboard-label {
+        font-size: 0.74rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        color: var(--color-primary);
+    }
+
+    .dashboard-input {
+        width: 100%;
+        background: var(--color-bg-deep);
+        border: 1px solid var(--color-border);
+        border-radius: var(--border-radius-sm);
+        padding: 10px 14px;
+        color: var(--color-text-bright);
+        font-family: var(--font-body);
+        font-size: 0.85rem;
+        transition: var(--transition-fast);
+    }
+
+    .dashboard-input:focus {
+        outline: none;
+        border-color: var(--color-primary);
+        box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.2);
+    }
+
+    .dashboard-checkbox {
+        width: 20px;
+        height: 20px;
+        accent-color: var(--color-primary);
+        cursor: pointer;
+    }
+
+    .alert-message {
+        padding: 12px 18px;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        margin-bottom: 20px;
+    }
+
+    .alert-success {
+        background: rgba(76, 175, 80, 0.15);
+        color: #81c784;
+        border: 1px solid rgba(76, 175, 80, 0.3);
+    }
+
+    .alert-info {
+        background: rgba(33, 150, 243, 0.15);
+        color: #64b5f6;
+        border: 1px solid rgba(33, 150, 243, 0.3);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="dashboard-container">
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert-message {% if message.tags == 'error' or message.tags == 'danger' %}alert-inactive{% else %}alert-success{% endif %}" style="margin-bottom: 15px; {% if message.tags == 'error' or message.tags == 'danger' %}background: rgba(229,57,53,0.15); color: #ef5350; border: 1px solid rgba(229,57,53,0.3);{% else %}background: rgba(76,175,80,0.15); color: #81c784; border: 1px solid rgba(76,175,80,0.3);{% endif %}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <!-- MAIN DASHBOARD CONTENT AREA -->
+    {% block dashboard_content %}{% endblock %}
+
+</div>
+{% endblock %}
+
+{% block body_end %}
+{% block floating_action %}{% endblock %}
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const bellBtn = document.getElementById('notifBellBtn');
+    const badge = document.getElementById('notifBadge');
+    const dropdown = document.getElementById('notifDropdown');
+    const notifList = document.getElementById('notifList');
+    const markAllBtn = document.getElementById('markAllReadBtn');
+
+    let previousUnreadCount = 0;
+    let isFirstLoad = true;
+
+    // Web Audio Synthesizer for 2-tone "Ding" sound (no external file needed)
+    function playDingSound() {
+        try {
+            const AudioContext = window.AudioContext || window.webkitAudioContext;
+            if (!AudioContext) return;
+            const ctx = new AudioContext();
+            
+            // Tone 1 (High bell chime)
+            const osc1 = ctx.createOscillator();
+            const gain1 = ctx.createGain();
+            osc1.type = 'sine';
+            osc1.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
+            gain1.gain.setValueAtTime(0.3, ctx.currentTime);
+            gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc1.connect(gain1);
+            gain1.connect(ctx.destination);
+            osc1.start(ctx.currentTime);
+            osc1.stop(ctx.currentTime + 0.4);
+
+            // Tone 2 (Harmonic response)
+            const osc2 = ctx.createOscillator();
+            const gain2 = ctx.createGain();
+            osc2.type = 'sine';
+            osc2.frequency.setValueAtTime(1318.5, ctx.currentTime + 0.12); // E6 note
+            gain2.gain.setValueAtTime(0.35, ctx.currentTime + 0.12);
+            gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
+            osc2.connect(gain2);
+            gain2.connect(ctx.destination);
+            osc2.start(ctx.currentTime + 0.12);
+            osc2.stop(ctx.currentTime + 0.7);
+        } catch (e) {
+            console.log('Audio notification error:', e);
+        }
+    }
+
+    const blurOverlay = document.getElementById('notifBlurOverlay');
+
+    function closeNotifPanel() {
+        if (dropdown) dropdown.style.display = 'none';
+        if (blurOverlay) blurOverlay.style.display = 'none';
+    }
+
+    function openNotifPanel() {
+        if (dropdown) dropdown.style.display = 'block';
+        if (blurOverlay) blurOverlay.style.display = 'block';
+    }
+
+    // Toggle dropdown & blur overlay
+    if (bellBtn && dropdown) {
+        bellBtn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const isOpen = dropdown.style.display === 'block';
+            if (isOpen) {
+                closeNotifPanel();
+            } else {
+                openNotifPanel();
+            }
+        });
+
+        if (blurOverlay) {
+            blurOverlay.addEventListener('click', () => {
+                closeNotifPanel();
+            });
+        }
+
+        const closeBtn = document.getElementById('closeNotifModalBtn');
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                closeNotifPanel();
+            });
+        }
+
+        document.addEventListener('click', (e) => {
+            if (dropdown && !dropdown.contains(e.target) && bellBtn && !bellBtn.contains(e.target)) {
+                closeNotifPanel();
+            }
+        });
+    }
+
+    // Fetch real-time notifications from API
+    async function fetchNotifications() {
+        try {
+            const res = await fetch("{% url 'api_get_notifications' %}");
+            if (!res.ok) return;
+            const data = await res.json();
+
+            if (data.status === 'success') {
+                const unreadCount = data.unread_count;
+
+                // Play ding sound if new unread notification arrived
+                if (!isFirstLoad && unreadCount > previousUnreadCount) {
+                    playDingSound();
+                }
+                previousUnreadCount = unreadCount;
+                isFirstLoad = false;
+
+                // Update badge
+                if (badge) {
+                    if (unreadCount > 0) {
+                        badge.textContent = unreadCount > 99 ? '99+' : unreadCount;
+                        badge.style.display = 'inline-block';
+                    } else {
+                        badge.style.display = 'none';
+                    }
+                }
+
+                // Live update Overview Metrics if present on page
+                if (data.stats) {
+                    const bookedEl = document.getElementById('metricOrdersBooked');
+                    const todayBookedEl = document.getElementById('metricTodayOrdersCount');
+                    const incomeEl = document.getElementById('metricTodayIncome');
+
+                    if (bookedEl) bookedEl.textContent = data.stats.orders_booked;
+                    if (todayBookedEl) todayBookedEl.textContent = `${data.stats.today_orders_count} Booked Today`;
+                    if (incomeEl) incomeEl.textContent = `Rs. ${data.stats.today_income.toLocaleString('en-US', {maximumFractionDigits: 0})}`;
+                }
+
+                // Render Notification Items in Dropdown Panel (Compact cards with delete icon & short order ID)
+                if (notifList) {
+                    if (!data.notifications || data.notifications.length === 0) {
+                        notifList.innerHTML = '<div style="padding: 20px; text-align: center; color: var(--color-text-gray); font-size: 0.8rem;">No notifications found</div>';
+                    } else {
+                        notifList.innerHTML = data.notifications.map(item => `
+                            <div class="notif-item ${item.is_read ? 'read' : 'unread'}" style="padding: 9px 12px; border-bottom: 1px solid rgba(255,255,255,0.06); background: ${item.is_read ? 'transparent' : 'rgba(201,168,76,0.08)'}; transition: background 0.2s ease; display: flex; align-items: center; justify-content: space-between; gap: 8px;">
+                                <div style="min-width: 0; flex: 1;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2px;">
+                                        <span style="font-weight: 700; color: ${item.is_read ? '#ccc' : '#fff'}; font-size: 0.78rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            ${!item.is_read ? '<span style="display:inline-block; width:6px; height:6px; background:var(--color-primary); border-radius:50%; margin-right:4px;"></span>' : ''}
+                                            🔔 ${item.title}
+                                        </span>
+                                        <span style="font-size: 0.65rem; color: var(--color-text-gray); flex-shrink: 0; margin-left: 4px;">${item.time_ago}</span>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <span style="font-size: 0.72rem; color: var(--color-text-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                                            ${item.order_id ? `<strong style="color:var(--color-primary);">${item.order_id}</strong> &bull; ` : ''}${item.customer_name} &bull; <strong style="color:#fff;">Rs. ${item.total_price.toLocaleString()}</strong>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
+                                    ${item.order_url && item.order_url !== '#' ? `<a href="${item.order_url}?ref=overview" class="mark-single-read-btn" data-id="${item.id}" style="font-size: 0.7rem; color: var(--color-primary); font-weight: 600; text-decoration: none; background: rgba(201,168,76,0.12); padding: 2px 7px; border-radius: 4px;">View</a>` : ''}
+                                    <button class="delete-notif-btn" data-id="${item.id}" title="Delete Notification" style="background: none; border: none; color: #ef5350; cursor: pointer; padding: 2px 4px; font-size: 0.8rem;">
+                                        <i class="fa-solid fa-trash"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        `).join('');
+
+                        // Single item click delegation to mark read
+                        notifList.querySelectorAll('.mark-single-read-btn').forEach(btn => {
+                            btn.addEventListener('click', async () => {
+                                const notifId = btn.getAttribute('data-id');
+                                if (notifId) {
+                                    await fetch(`/owner/dashboard/notifications/read/${notifId}/`);
+                                }
+                            });
+                        });
+
+                        // Delete single notification handler (removes notification ONLY, without affecting order)
+                        notifList.querySelectorAll('.delete-notif-btn').forEach(btn => {
+                            btn.addEventListener('click', async (e) => {
+                                e.stopPropagation();
+                                e.preventDefault();
+                                const notifId = btn.getAttribute('data-id');
+                                if (notifId) {
+                                    await fetch(`/owner/dashboard/notifications/delete/${notifId}/`);
+                                    fetchNotifications();
+                                }
+                            });
+                        });
+                    }
+                }
+            }
+        } catch (err) {
+            console.error('Failed to fetch notifications:', err);
+        }
+    }
+
+    // Mark all read button click
+    if (markAllBtn) {
+        markAllBtn.addEventListener('click', async () => {
+            await fetch("{% url 'api_mark_all_notifications_read' %}");
+            fetchNotifications();
+        });
+    }
+
+    // Initial fetch + Poll every 5 seconds for real-time order updates
+    fetchNotifications();
+    setInterval(fetchNotifications, 5000);
+});
+</script>
+{% endblock %}
+
+{% block subnav %}{% endblock %}
+{% block footer %}{% endblock %}

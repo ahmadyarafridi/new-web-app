@@ -1,0 +1,62 @@
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
+
+{% block dashboard_content %}
+<div class="dashboard-card" style="margin-bottom: 75px; padding-bottom: 35px;">
+
+    <!-- CENTERED SECTION HEADER -->
+    <div style="text-align: center; margin-bottom: 18px; padding-bottom: 12px; border-bottom: 1px solid var(--color-border);">
+        <h3 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1.5px; margin: 0; text-align: center;">DEALS</h3>
+    </div>
+
+    <!-- 2 CARDS PER ROW GRID FOR MOBILE OPTIMIZATION -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px;">
+        {% for deal in deals %}
+        <div style="background: var(--color-bg-deep); border: 1px solid var(--color-border); border-radius: var(--border-radius-sm); padding: 14px 10px; text-align: center; height: 100%; display: flex; flex-direction: column; align-items: center; justify-content: space-between;">
+            <a href="{% url 'deal_edit' deal.pk %}" style="text-decoration: none; color: inherit; width: 100%; display: flex; flex-direction: column; align-items: center;">
+                <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}" style="width: 54px; height: 54px; object-fit: cover; border-radius: 8px; margin-bottom: 6px; border: 1px solid rgba(255,255,255,0.1);" onerror="this.src='https://via.placeholder.com/54';">
+                <h4 style="font-family: var(--font-brand); color: #fff; font-size: 0.82rem; margin: 0; line-height: 1.25; font-weight: 600;">{{ deal.title }}</h4>
+            </a>
+
+            <!-- DEAL ACTION BUTTONS (COMPACT & MOBILE-SAFE) -->
+            <div style="display: flex; gap: 4px; margin-top: 8px; width: 100%; justify-content: center; align-items: center; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.06);">
+                <a href="{% url 'deal_edit' deal.pk %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 3px 6px; font-size: 0.65rem; font-weight: 600; text-decoration: none; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; flex: 1; max-width: 50%;">
+                    <i class="fa-solid fa-pen-to-square" style="font-size: 0.6rem;"></i> Edit
+                </a>
+                <a href="{% url 'deal_delete' deal.pk %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 3px 6px; font-size: 0.65rem; font-weight: 600; text-decoration: none; border-radius: 4px; display: inline-flex; align-items: center; justify-content: center; gap: 2px; white-space: nowrap; flex: 1; max-width: 50%;">
+                    <i class="fa-solid fa-trash" style="font-size: 0.6rem;"></i> Delete
+                </a>
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: span 2; text-align: center; padding: 30px; color: var(--color-text-gray);">
+            No special deals found.
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- PAGINATION CONTROLS -->
+    {% if deals.has_other_pages %}
+    <div style="display: flex; justify-content: center; gap: 8px; margin-top: 20px;">
+        {% if deals.has_previous %}
+        <a href="?page={{ deals.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">&larr; Prev</a>
+        {% endif %}
+
+        <span style="font-size: 0.8rem; color: var(--color-text-gray); align-self: center;">
+            Page {{ deals.number }} of {{ deals.paginator.num_pages }}
+        </span>
+
+        {% if deals.has_next %}
+        <a href="?page={{ deals.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">Next &rarr;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+
+</div>
+{% endblock %}
+
+{% block floating_action %}
+<a href="{% url 'deal_add' %}" class="fixed-add-fab" title="Add New Deal" aria-label="Add New Deal">
+    <i class="fa-solid fa-plus"></i>
+</a>
+{% endblock %}

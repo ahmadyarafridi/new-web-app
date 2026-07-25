@@ -1,0 +1,99 @@
+{% extends 'accounts/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-card" style="max-width: 850px; margin: 0 auto; position: relative;">
+
+    <div class="dashboard-header-row">
+        <div>
+            <h2 class="dashboard-title">Order Details</h2>
+        </div>
+    </div>
+
+    <!-- SINGLE COMBINED ORDER DETAILS CARD -->
+    <div style="background: var(--color-bg-deep); border: 1px solid var(--color-border); padding: 20px; border-radius: var(--border-radius-sm); margin-bottom: 20px;">
+        <div style="display: flex; justify-content: flex-end; align-items: center; margin-bottom: 14px;">
+            {% if order.order_status == 'pending' %}
+            <span style="font-size: 0.72rem; font-weight: 700; color: #ffb74d; background: rgba(255,183,77,0.15); padding: 3px 10px; border-radius: 10px;">Pending Confirmation</span>
+            {% elif order.order_status == 'completed' %}
+            <span style="font-size: 0.72rem; font-weight: 700; color: #81c784; background: rgba(76,175,80,0.15); padding: 3px 10px; border-radius: 10px;">Completed Order</span>
+            {% elif order.order_status == 'cancelled' %}
+            <span style="font-size: 0.72rem; font-weight: 700; color: #ef5350; background: rgba(239,83,80,0.15); padding: 3px 10px; border-radius: 10px;">Cancelled Order</span>
+            {% endif %}
+        </div>
+        
+        <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Name:</strong> <span style="color: #fff; font-weight: 700;">{{ order.customer_name }}</span></p>
+        <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Phone:</strong> <a href="tel:{{ order.customer_phone }}" style="color: var(--color-primary); font-weight: 700; text-decoration: none;">{{ order.customer_phone }}</a></p>
+        <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Order Items:</strong> <span style="color: #fff; font-weight: 600;">{{ order.items_summary }}</span></p>
+        <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Total Price:</strong> <span style="color: var(--color-primary); font-weight: 700;">Rs. {{ order.total_price|floatformat:0 }}</span></p>
+        <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Order Time:</strong> <span style="color: #fff;">{{ order.created_at|date:"F d, Y - g:i A" }}</span></p>
+
+        <p style="margin: 12px 0 4px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Delivery Address:</strong></p>
+        <p style="font-size: 0.82rem; color: #fff; line-height: 1.5; margin: 0 0 12px 0;">
+            {% if order.delivery_address %}{{ order.delivery_address }}{% else %}<span style="color: var(--color-text-gray);">Self Pickup / Dine-in</span>{% endif %}
+        </p>
+
+        <p style="margin: 8px 0 4px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Order Notes:</strong></p>
+        <p style="font-size: 0.82rem; color: #fff; line-height: 1.5; margin: 0 0 16px 0;">
+            {% if order.order_notes %}"{{ order.order_notes }}"{% else %}<span style="color: var(--color-text-gray);">No special instructions provided.</span>{% endif %}
+        </p>
+
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1);">
+            <a href="https://wa.me/{{ order.customer_phone|cut:' ' }}?text=Hi%20{{ order.customer_name|urlencode }},%20this%20is%20{{ restaurant_info.name|default:'Delicious Food Stop'|urlencode }}%20regarding%20your%20order." target="_blank" class="btn-primary" style="padding: 9px 18px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; background: #25D366; border-color: #25D366; color: #000;">
+                <i class="fa-brands fa-whatsapp"></i> Chat on WhatsApp
+            </a>
+        </div>
+    </div>
+
+    <!-- BOTTOM ACTIONS ROW -->
+    {% if order.order_status == 'pending' %}
+    <!-- 3 BUTTONS FOR PENDING ORDERS (BACK, COMPLETE, DELETE) -->
+    <div style="display: flex; gap: 10px; margin-top: 16px; padding-top: 12px; align-items: center;">
+        <a id="backBtn" href="{% url 'analytics_orders_today_pending' %}" class="btn-secondary" style="padding: 6px 20px; font-size: 0.78rem; font-weight: 700; text-decoration: none; border-radius: 4px; text-align: center; display: inline-flex; align-items: center; justify-content: center; height: 34px; box-sizing: border-box;">
+            Back
+        </a>
+
+        <form method="POST" action="{% url 'order_complete' order.pk %}" style="margin: 0; flex: 1;">
+            {% csrf_token %}
+            <button type="submit" class="btn-primary" style="background: #81c784; border-color: #81c784; color: #111; padding: 6px 14px; font-size: 0.78rem; font-weight: 700; border-radius: 4px; cursor: pointer; width: 100%; height: 34px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; border: none;">
+                Complete
+            </button>
+        </form>
+
+        <form method="POST" action="{% url 'order_delete' order.pk %}" style="margin: 0; flex: 1;" onsubmit="return confirm('Are you sure you want to delete this order? It will not be recorded in sales or income.');">
+            {% csrf_token %}
+            <button type="submit" class="btn-secondary" style="border-color: #ef5350; color: #ef5350; padding: 6px 14px; font-size: 0.78rem; font-weight: 700; border-radius: 4px; cursor: pointer; background: rgba(239,83,80,0.1); width: 100%; height: 34px; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">
+                Delete
+            </button>
+        </form>
+    </div>
+    {% else %}
+    <!-- 2 BUTTONS FOR COMPLETED/OTHER ORDERS (BACK, DELETE) -->
+    <div style="display: flex; gap: 10px; margin-top: 16px; padding-top: 12px; align-items: center;">
+        <a id="backBtnCompleted" href="{% url 'analytics_orders_today_completed' %}" class="btn-secondary" style="padding: 6px 20px; font-size: 0.78rem; font-weight: 700; text-decoration: none; border-radius: 4px; text-align: center; display: inline-flex; align-items: center; justify-content: center; height: 34px; box-sizing: border-box;">
+            Back
+        </a>
+
+        <form method="POST" action="{% url 'order_delete' order.pk %}" style="margin: 0; flex: 1;" onsubmit="return confirm('Are you sure you want to delete this order?');">
+            {% csrf_token %}
+            <button type="submit" class="btn-secondary" style="border-color: #ef5350; color: #ef5350; padding: 6px 14px; font-size: 0.78rem; font-weight: 700; border-radius: 4px; cursor: pointer; background: rgba(239,83,80,0.1); width: 100%; height: 34px; box-sizing: border-box; display: flex; align-items: center; justify-content: center;">
+                Delete
+            </button>
+        </form>
+    </div>
+    {% endif %}
+
+</div>
+
+<script>
+(function() {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('ref') === 'overview') {
+        const overviewUrl = '{% url "dashboard" %}';
+        const b1 = document.getElementById('backBtn');
+        const b2 = document.getElementById('backBtnCompleted');
+        if (b1) b1.href = overviewUrl;
+        if (b2) b2.href = overviewUrl;
+    }
+})();
+</script>
+{% endblock %}

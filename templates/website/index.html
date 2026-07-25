@@ -1,0 +1,87 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ restaurant.name }} — {{ restaurant.tagline }}{% endblock %}
+
+{% block content %}
+<!-- HERO / HOME SECTION -->
+<section id="home">
+    <div class="hero-bg-wrapper">
+        <img src="{% static 'images/Restaurant.avif' %}" alt="{{ restaurant.name }} Interior">
+    </div>
+    <div class="home-overlay">
+        <p>{{ restaurant.hero_description }}</p>
+        <div class="hero-actions">
+            <a href="{% url 'menu' %}" class="btn-primary">Order Online</a>
+            <a href="{% url 'contact' %}" class="btn-secondary">Find Our Location</a>
+        </div>
+    </div>
+</section>
+
+<!-- SPECIAL DEALS SECTION -->
+<section id="specialties">
+    <div class="section-header">
+        <h2 class="section-title">Our Special Deals</h2>
+    </div>
+
+    <div class="swipe-guidance">
+        <p class="deal-swipe-hint"><i class="fa-solid fa-arrow-right"></i> Swipe to right</p>
+    </div>
+    <div class="specialties-grid">
+        {% for deal in deals %}
+        <div class="specialty-card">
+            <div class="specialty-img-wrapper">
+                <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}">
+            </div>
+            <div class="deal-card-body">
+                <h4>{{ deal.title }}</h4>
+                <p>{{ deal.description }}</p>
+                <div class="deal-card-footer">
+                    <span class="deal-price">Rs. {{ deal.price|floatformat:0 }}</span>
+                    <button class="add-to-cart-btn btn-primary" data-id="{{ deal.item_code }}" data-name="{{ deal.title }}" data-price="{{ deal.price|floatformat:0 }}" data-img="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}"><i class="fa-solid fa-plus"></i> Order Deal</button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div class="carousel-dots deal-carousel-dots" id="dealCarouselDots" aria-label="Deal carousel navigation"></div>
+    <div class="view-menu-action">
+        <a href="{% url 'menu' %}" class="btn-primary">View All Items <i class="fa-solid fa-arrow-right"></i></a>
+    </div>
+</section>
+
+<!-- REVIEWS / TESTIMONIALS SLIDER SECTION -->
+<section id="reviews" class="reveal">
+    <div class="section-header">
+        <span class="section-tag">Testimonials</span>
+        <h2 class="section-title">What Our Guests Say</h2>
+        <p class="section-desc">Honest reviews from our beloved regular diners who make {{ restaurant.name }} their favorite stop.</p>
+    </div>
+
+    <div class="reviews-slider-container">
+        <button class="slider-control-btn slider-control-prev" id="reviewsPrevBtn" aria-label="Previous Testimonials"><i class="fa-solid fa-chevron-left"></i></button>
+        <button class="slider-control-btn slider-control-next" id="reviewsNextBtn" aria-label="Next Testimonials"><i class="fa-solid fa-chevron-right"></i></button>
+        <div class="reviews-slider-track" id="reviewsTrack">
+            {% for review in reviews %}
+            <div class="review-card-slide">
+                <div class="review-card">
+                    <img src="{% if review.avatar_file %}{{ review.avatar_file.url }}{% elif review.avatar_url %}{{ review.avatar_url }}{% else %}{{ review.avatar_src }}{% endif %}" alt="{{ review.customer_name }}" class="reviewer-avatar">
+                    <div class="review-rating">
+                        <i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i>
+                    </div>
+                    <p>{{ review.comment }}</p>
+                    <h5>{{ review.customer_name }}</h5>
+                    <span class="reviewer-role">{{ review.reviewer_role }}</span>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+
+        <div class="carousel-dots menu-carousel-dots" id="reviewCarouselDots" aria-label="Review carousel navigation"></div>
+
+        <div class="view-menu-action" style="margin-top: 25px;">
+            <a href="{% url 'contact' %}#customer-feedback" class="btn-primary">Leave a Review <i class="fa-solid fa-arrow-right"></i></a>
+        </div>
+    </div>
+</section>
+{% endblock %}

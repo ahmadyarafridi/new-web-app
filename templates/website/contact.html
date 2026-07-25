@@ -1,0 +1,114 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Contact Us — {{ restaurant.name }}{% endblock %}
+
+{% block content %}
+<!-- CONTACT SECTION -->
+<section id="contact" style="padding: 20px 24px 60px;">
+    <div class="contact-container">
+        <div class="contact-info-panel">
+            <p style="margin-bottom:6px;"><i class="fa-solid fa-star" style="color:#f5b301;"></i> {{ restaurant.google_rating }} &nbsp;·&nbsp; {{ restaurant.google_reviews_count }} Google reviews</p>
+            <p>We are situated in the town of Jamrud. Drop by or contact us directly for takeout orders.</p>
+            
+            <div class="contact-details">
+                <div class="contact-item">
+                    <i class="fa-solid fa-location-dot"></i>
+                    <div>
+                        <h4>Our Location</h4>
+                        <p>{{ restaurant.address }}</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fa-solid fa-phone"></i>
+                    <div>
+                        <h4>Phone Inquiries</h4>
+                        <p><a href="tel:{{ restaurant.phone }}" style="color:inherit; text-decoration:underline;">{{ restaurant.phone }}</a></p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fa-solid fa-envelope"></i>
+                    <div>
+                        <h4>General Email</h4>
+                        <p>{{ restaurant.email }}</p>
+                    </div>
+                </div>
+                <div class="contact-item">
+                    <i class="fa-solid fa-clock"></i>
+                    <div>
+                        <h4>Operational Hours</h4>
+                        <p>{{ restaurant.opening_hours_text }}</p>
+                        <span class="status-badge open" id="liveStatusBadge">Open Now</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="social-links">
+                <h4>Follow Our Culinary Journey</h4>
+                <a href="https://facebook.com" target="_blank" aria-label="Facebook"><i class="fa-brands fa-facebook-f"></i></a>
+                <a href="https://instagram.com" target="_blank" aria-label="Instagram"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://x.com" target="_blank" aria-label="X (Twitter)"><i class="fa-brands fa-x-twitter"></i></a>
+                <a href="https://youtube.com" target="_blank" aria-label="YouTube"><i class="fa-brands fa-youtube"></i></a>
+            </div>
+        </div>
+
+        <div class="contact-map-frame">
+            <!-- Real embedded Google Map, using the confirmed Plus Code (292F+QRP Jamrud) -->
+            <iframe
+                src="https://maps.google.com/maps?q={{ restaurant.google_maps_plus_code|urlencode }}&z=16&output=embed"
+                width="100%" height="100%" style="border:0; min-height:320px;"
+                allowfullscreen="" loading="lazy"
+                referrerpolicy="no-referrer-when-downgrade"
+                title="{{ restaurant.name }} location map">
+            </iframe>
+        </div>
+    </div>
+</section>
+
+<!-- CUSTOMER FEEDBACK FORM SECTION -->
+<section id="customer-feedback" style="padding: 0 24px 80px; max-width: 1200px; margin: 0 auto;">
+    <div style="background-color: var(--color-bg-card); border: 1px solid var(--color-border); border-radius: var(--border-radius-md); padding: 40px; box-shadow: var(--shadow-md);">
+        
+        <div style="margin-bottom: 25px; text-align: center;">
+            <span class="section-tag" style="margin-bottom: 6px;">We Value Your Feedback</span>
+            <!-- <h2 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 1.6rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Customer Feedback</h2> -->
+            <!-- <p style="color: var(--color-text-gray); font-size: 0.88rem; max-width: 600px; margin: 0 auto;">Have you dined with us recently? Leave your review below to help us continuously perfect our flavors and service.</p> -->
+        </div>
+
+        <form method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
+            {% csrf_token %}
+            
+            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 5px;">
+                <div class="floating-group">
+                    {{ feedback_form.customer_name }}
+                    <label for="fbCustName" class="floating-label">Your Full Name *</label>
+                </div>
+                <div class="floating-group">
+                    {{ feedback_form.email }}
+                    <label for="fbCustEmail" class="floating-label">Email Address (Optional)</label>
+                </div>
+            </div>
+
+            <div class="floating-group">
+                {{ feedback_form.rating }}
+                <label for="fbCustRating" class="floating-label">Star Rating *</label>
+            </div>
+
+            <div class="floating-group">
+                {{ feedback_form.avatar_file }}
+                <label for="fbCustAvatar" class="floating-label" style="top: -8px; font-size: 0.72rem; color: var(--color-primary);">Upload Your Photo / Avatar *</label>
+            </div>
+
+            <div class="floating-group">
+                {{ feedback_form.comment }}
+                <label for="fbCustComment" class="floating-label">Feedback Message *</label>
+            </div>
+
+            <button type="submit" class="btn-primary" style="padding: 12px 28px; width: auto; align-self: flex-start; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+                <i class="fa-solid fa-paper-plane"></i> Submit Feedback
+            </button>
+        </form>
+
+    </div>
+</section>
+{% endblock %}

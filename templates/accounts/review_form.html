@@ -1,0 +1,82 @@
+{% extends 'accounts/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-card" style="max-width: 650px; margin: 0 auto;">
+
+    <div class="dashboard-header-row">
+        <div>
+            <h2 class="dashboard-title">{{ title }}</h2>
+        </div>
+        <div>
+            <a href="{% url 'manage_reviews' %}" class="btn-secondary" style="padding: 8px 16px; font-size: 0.78rem;">
+                &larr; Back to Reviews
+            </a>
+        </div>
+    </div>
+
+    <form method="post" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 20px;">
+        {% csrf_token %}
+
+        {% if form.errors %}
+            <div class="alert-message alert-inactive" style="background: rgba(229,57,53,0.15); color: #ef5350; border: 1px solid rgba(229,57,53,0.3);">
+                <strong>Please fix the errors below:</strong>
+                {{ form.errors }}
+            </div>
+        {% endif %}
+
+        <div class="dashboard-form-grid">
+            <div class="floating-group">
+                {{ form.customer_name }}
+                <label for="{{ form.customer_name.id_for_label }}" class="floating-label">Customer Name</label>
+            </div>
+
+            <div class="floating-group">
+                {{ form.reviewer_role }}
+                <label for="{{ form.reviewer_role.id_for_label }}" class="floating-label">Role / Tagline (e.g. Regular Diner)</label>
+            </div>
+
+            <div class="floating-group">
+                {{ form.rating }}
+                <label for="{{ form.rating.id_for_label }}" class="floating-label">Rating (1 to 5 Stars)</label>
+            </div>
+
+            <div class="floating-group">
+                {{ form.display_order }}
+                <label for="{{ form.display_order.id_for_label }}" class="floating-label">Display Order</label>
+            </div>
+
+            <div class="dashboard-form-group full-width">
+                <label class="dashboard-label">Upload Avatar File (Recommended)</label>
+                {{ form.avatar_file }}
+                {% if review and review.avatar_file %}
+                <div style="margin-top: 8px; display: flex; align-items: center; gap: 10px;">
+                    <img src="{{ review.avatar_file.url }}" alt="Current Avatar" style="width: 48px; height: 48px; border-radius: 50%; border: 1px solid var(--color-border);">
+                    <span style="font-size: 0.75rem; color: #81c784;">Current Uploaded Avatar File</span>
+                </div>
+                {% endif %}
+            </div>
+
+            <div class="floating-group full-width">
+                {{ form.avatar_url }}
+                <label for="{{ form.avatar_url.id_for_label }}" class="floating-label">Fallback Avatar Image URL</label>
+            </div>
+
+            <div class="floating-group full-width">
+                {{ form.comment }}
+                <label for="{{ form.comment.id_for_label }}" class="floating-label">Review Comment</label>
+            </div>
+
+            <div class="dashboard-form-group" style="flex-direction: row; align-items: center; gap: 10px; margin-top: 10px;">
+                {{ form.is_approved }}
+                <label class="dashboard-label" style="margin: 0; cursor: pointer;">Is Approved for Testimonial Slider?</label>
+            </div>
+        </div>
+
+        <div style="display: flex; gap: 12px; margin-top: 15px; padding-top: 20px; border-top: 1px solid var(--color-border);">
+            <button type="submit" class="btn-primary" style="padding: 10px 24px;">Save Review</button>
+            <a href="{% url 'manage_reviews' %}" class="btn-secondary" style="padding: 10px 24px;">Cancel</a>
+        </div>
+    </form>
+
+</div>
+{% endblock %}

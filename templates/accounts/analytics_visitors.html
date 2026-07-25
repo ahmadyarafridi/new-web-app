@@ -1,0 +1,73 @@
+{% extends 'accounts/dashboard_base.html' %}
+
+{% block title %}Visitor Analytics - {{ restaurant.name }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-card" style="margin-bottom: 24px; position: relative; padding-bottom: 70px;">
+    <!-- HEADER BAR WITH PAGE TITLE -->
+    <div style="margin-bottom: 20px;">
+        <h2 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; margin: 0;">
+            Visitors
+        </h2>
+    </div>
+
+    <!-- 4 KPI CARDS GRID (EACH CARD LINKS TO ITS DEDICATED ANALYTICS PAGE) -->
+    <style>
+        .visitor-card {
+            background: var(--color-bg-deep);
+            border: 1px solid var(--color-border);
+            padding: 16px;
+            border-radius: var(--border-radius-sm);
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+        .visitor-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--color-primary) !important;
+            box-shadow: 0 6px 20px rgba(201,168,76,0.2);
+        }
+    </style>
+
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 14px; margin-bottom: 30px;">
+        <!-- Card 1: Today (Navigates to Today Analytics Page) -->
+        <a href="{% url 'analytics_visitors_today' %}" style="text-decoration: none;" title="View Today Analytics">
+            <div class="visitor-card">
+                <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--color-primary); display: block; margin-bottom: 8px;">Today</span>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0;">{{ analytics.today }}</h3>
+            </div>
+        </a>
+
+        <!-- Card 2: This Week (Navigates to This Week Page) -->
+        <a href="{% url 'analytics_visitors_week' %}" style="text-decoration: none;" title="View This Week Analytics">
+            <div class="visitor-card">
+                <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--color-primary); display: block; margin-bottom: 8px;">This Week</span>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0;">{{ analytics.this_week }}</h3>
+            </div>
+        </a>
+
+        <!-- Card 3: This Month (Navigates to This Month Page) -->
+        <a href="{% url 'analytics_visitors_month' %}" style="text-decoration: none;" title="View This Month Analytics">
+            <div class="visitor-card">
+                <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--color-primary); display: block; margin-bottom: 8px;">This Month</span>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0;">{{ analytics.this_month }}</h3>
+            </div>
+        </a>
+
+        <!-- Card 4: This Year (Navigates to This Year Page) -->
+        <a href="{% url 'analytics_visitors_year' %}" style="text-decoration: none;" title="View This Year Analytics">
+            <div class="visitor-card">
+                <span style="font-size: 0.7rem; font-weight: 700; text-transform: uppercase; color: var(--color-primary); display: block; margin-bottom: 8px;">This Year</span>
+                <h3 style="font-size: 1.5rem; font-weight: 700; color: #fff; margin: 0;">{{ analytics.this_year }}</h3>
+            </div>
+        </a>
+    </div>
+
+    <!-- BOTTOM LEFT STYLED BACK BUTTON -->
+    <div style="position: absolute; bottom: 18px; left: 18px;">
+        <a href="{% url 'dashboard' %}" class="btn-secondary" style="padding: 9px 26px; font-size: 0.82rem; font-weight: 700; text-decoration: none; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
+            Back
+        </a>
+    </div>
+
+</div>
+{% endblock %}
