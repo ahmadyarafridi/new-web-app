@@ -1,9 +1,9 @@
 {% extends 'accounts/dashboard_base.html' %}
 
 {% block dashboard_content %}
-<div class="dashboard-card">
+<div class="dashboard-card" style="margin-bottom: 24px; position: relative; padding-bottom: 30px; max-height: calc(100vh - 170px); display: flex; flex-direction: column;">
 
-    <div class="dashboard-table-wrapper">
+    <div class="dashboard-table-wrapper" style="flex: 1; overflow-y: auto; overflow-x: auto; -webkit-overflow-scrolling: touch;">
         <table class="dashboard-table">
             <thead>
                 <tr>
@@ -53,7 +53,7 @@
 
     <!-- PAGINATION CONTROLS -->
     {% if categories.has_other_pages %}
-    <div style="display: flex; justify-content: center; gap: 8px; margin-top: 20px;">
+    <div style="flex-shrink: 0; display: flex; justify-content: center; gap: 8px; margin-top: 15px; padding-top: 10px; border-top: 1px solid var(--color-border);">
         {% if categories.has_previous %}
         <a href="?page={{ categories.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">&larr; Prev</a>
         {% endif %}

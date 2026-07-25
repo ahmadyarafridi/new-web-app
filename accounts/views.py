@@ -523,8 +523,8 @@ def feedback_delete(request, pk):
 # ==============================================================================
 @login_required(login_url='login')
 def api_get_notifications(request):
-    unread_count = OrderNotification.objects.filter(is_read=False).count()
-    notifications_qs = OrderNotification.objects.select_related('order').all()[:20]
+    unread_count = OrderNotification.objects.filter(is_read=False, order__isnull=False).count()
+    notifications_qs = OrderNotification.objects.filter(order__isnull=False).select_related('order')[:20]
 
     today = timezone.now().date()
     orders_booked = Order.objects.count()
