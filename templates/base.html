@@ -224,13 +224,10 @@
 
             <div class="footer-links">
                 <h3>Quick Navigation</h3>
-                <div class="footer-nav-dots">
+                <div class="footer-nav-dots" style="gap: 14px;">
                     <a href="{% url 'index' %}">Home</a>
-                    <span class="dot">•</span>
                     <a href="{% url 'menu' %}">Menu</a>
-                    <span class="dot">•</span>
                     <a href="{% url 'about' %}">About</a>
-                    <span class="dot">•</span>
                     <a href="{% url 'contact' %}">Contact</a>
                 </div>
             </div>
@@ -256,7 +253,7 @@
         <hr style="border: none; border-top: 1px solid var(--color-border); margin: 20px 0 16px;">
         <div class="footer-copy" style="text-align: center; font-size: 0.78rem; color: var(--color-text-muted); display: flex; flex-direction: column; gap: 4px; align-items: center;">
             <p style="margin: 0;">&copy; {% now "Y" %} Delicious Food Stop</p>
-            <p style="margin: 0;"><a href="#" style="color: var(--color-text-gray); text-decoration: none;">Privacy</a> &bull; <a href="#" style="color: var(--color-text-gray); text-decoration: none;">Terms</a></p>
+            <p style="margin: 0; display: flex; gap: 14px;"><a href="#" style="color: var(--color-text-gray); text-decoration: none;">Privacy</a> <a href="#" style="color: var(--color-text-gray); text-decoration: none;">Terms</a></p>
             <p style="margin: 0;">Developed by <a href="https://harisyar-ai.github.io/harisyar-ai/" target="_blank" rel="noopener noreferrer" style="color: var(--color-primary); font-weight: 600; text-decoration: none;">Muhammad Haris Afridi</a></p>
         </div>
     </footer>
