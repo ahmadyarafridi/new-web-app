@@ -2029,11 +2029,13 @@ footer {
     padding: 48px 24px 20px;
 }
 
+.footer-container,
 .footer-inner {
     display: flex;
     gap: 40px;
     flex-wrap: wrap;
     justify-content: space-between;
+    align-items: flex-start;
     max-width: 1200px;
     margin: 0 auto 28px;
 }
@@ -2057,6 +2059,7 @@ footer {
     line-height: 1.7;
     max-width: 280px;
     font-weight: 300;
+    margin-bottom: 6px;
 }
 
 .footer-links,
@@ -2077,6 +2080,7 @@ footer {
     margin-bottom: 12px;
 }
 
+.footer-links ul,
 .footer-links nav ul {
     list-style: none;
     padding: 0;
@@ -2084,20 +2088,25 @@ footer {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
-    gap: 12px;
+    gap: 10px;
 }
 
+.footer-links ul li a,
 .footer-links nav ul li a {
     color: var(--color-text-gray);
     padding: 0;
     font-size: 0.88rem;
     font-weight: 300;
+    text-decoration: none;
+    transition: var(--transition-fast);
 }
 
+.footer-links ul li a::after,
 .footer-links nav ul li a::after {
     display: none;
 }
 
+.footer-links ul li a:hover,
 .footer-links nav ul li a:hover {
     color: var(--color-primary);
     padding-left: 5px;
