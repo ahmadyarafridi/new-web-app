@@ -9,6 +9,16 @@ from django.db.models import F
 from .models import RestaurantInfo, Category, Product, Deal, Review, CustomerFeedback, Order, OrderItem, DailyVisit, OrderNotification
 from .forms import CustomerFeedbackForm
 
+from django.db import OperationalError, ProgrammingError
+from django.core.management import call_command
+
+def ensure_db_ready():
+    try:
+        call_command('migrate', interactive=False)
+        call_command('seed_data')
+    except Exception as e:
+        print("ensure_db_ready error:", e)
+
 def track_visit(request):
     try:
         today = timezone.now().date()
@@ -19,12 +29,16 @@ def track_visit(request):
 
 def index(request):
     track_visit(request)
-    deals = Deal.objects.filter(is_active=True)
-    # Combine static approved reviews and approved customer feedback
-    curated_reviews = list(Review.objects.filter(is_approved=True))
-    approved_feedback = CustomerFeedback.objects.filter(status='approved')
-    
-    # Map customer feedback items to review display format
+    try:
+        deals = list(Deal.objects.filter(is_active=True))
+        curated_reviews = list(Review.objects.filter(is_approved=True))
+        approved_feedback = list(CustomerFeedback.objects.filter(status='approved'))
+    except (OperationalError, ProgrammingError):
+        ensure_db_ready()
+        deals = list(Deal.objects.filter(is_active=True))
+        curated_reviews = list(Review.objects.filter(is_approved=True))
+        approved_feedback = list(CustomerFeedback.objects.filter(status='approved'))
+        
     feedback_reviews = [
         {
             'customer_name': fb.customer_name,
@@ -49,12 +63,20 @@ from django.templatetags.static import static
 PER_PAGE = 9
 
 def menu(request):
-    categories = Category.objects.filter(is_active=True)
-    products_qs = Product.objects.filter(category__is_active=True).select_related('category')
-    paginator = Paginator(products_qs, PER_PAGE)
-    first_page = paginator.get_page(1)
-    deals = Deal.objects.filter(is_active=True)
-    
+    try:
+        categories = list(Category.objects.filter(is_active=True))
+        products_qs = Product.objects.filter(category__is_active=True).select_related('category')
+        paginator = Paginator(products_qs, PER_PAGE)
+        first_page = paginator.get_page(1)
+        deals = list(Deal.objects.filter(is_active=True))
+    except (OperationalError, ProgrammingError):
+        ensure_db_ready()
+        categories = list(Category.objects.filter(is_active=True))
+        products_qs = Product.objects.filter(category__is_active=True).select_related('category')
+        paginator = Paginator(products_qs, PER_PAGE)
+        first_page = paginator.get_page(1)
+        deals = list(Deal.objects.filter(is_active=True))
+
     return render(request, 'website/menu.html', {
         'categories': categories,
         'products': first_page.object_list,
