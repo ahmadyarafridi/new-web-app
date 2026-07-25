@@ -358,4 +358,14 @@ class Command(BaseCommand):
                 }
             )
         self.stdout.write(self.style.SUCCESS('[OK] Reviews created/updated'))
+
+        # 6. Default Admin Superuser
+        from django.contrib.auth.models import User
+        admin_user, created = User.objects.get_or_create(username='admin')
+        admin_user.set_password('admin123')
+        admin_user.is_staff = True
+        admin_user.is_superuser = True
+        admin_user.save()
+        self.stdout.write(self.style.SUCCESS('[OK] Default admin user updated (admin / admin123)'))
+
         self.stdout.write(self.style.SUCCESS('Seeding complete! All data successfully loaded.'))
