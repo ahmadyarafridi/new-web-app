@@ -3215,3 +3215,33 @@ footer hr {
         gap: 10px;
     }
 }
+
+/* Footer Copy & Single-Line Laptop Layout */
+.footer-copy {
+    text-align: center;
+    font-size: 0.78rem;
+    color: var(--color-text-gray);
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    align-items: center;
+    justify-content: center;
+}
+
+.footer-divider-dot {
+    display: none;
+    color: var(--color-primary);
+    font-size: 0.75rem;
+}
+
+@media (min-width: 769px) {
+    .footer-copy {
+        flex-direction: row !important;
+        gap: 14px !important;
+        flex-wrap: wrap !important;
+        justify-content: center !important;
+    }
+    .footer-divider-dot {
+        display: inline-block !important;
+    }
+}
