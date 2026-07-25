@@ -7,7 +7,7 @@
 <!-- HERO / HOME SECTION -->
 <section id="home">
     <div class="hero-bg-wrapper">
-        <img src="{% static 'images/Restaurant.avif' %}" alt="{{ restaurant.name }} Interior">
+        <img src="{% static 'images/Restaurant.avif' %}" alt="{{ restaurant.name }} Interior" fetchpriority="high" decoding="async">
     </div>
     <div class="home-overlay">
         <p>{{ restaurant.hero_description }}</p>
@@ -31,7 +31,7 @@
         {% for deal in deals %}
         <div class="specialty-card">
             <div class="specialty-img-wrapper">
-                <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}">
+                <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}" loading="lazy" decoding="async">
             </div>
             <div class="deal-card-body">
                 <h4>{{ deal.title }}</h4>
