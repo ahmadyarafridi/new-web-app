@@ -3,7 +3,7 @@
 {% block title %}Manage Reviews - {{ restaurant.name }}{% endblock %}
 
 {% block dashboard_content %}
-<div class="dashboard-card" style="display: flex; flex-direction: column; height: calc(100vh - 140px); min-height: 300px;">
+<div class="dashboard-card" style="margin-bottom: 24px; position: relative; padding-bottom: 25px; min-height: 520px; max-height: calc(100vh - 110px); display: flex; flex-direction: column;">
 
     <!-- FIXED HEADER -->
     <div style="flex-shrink: 0; margin-bottom: 14px;">
@@ -26,8 +26,8 @@
     </div>
 
     <!-- SCROLLABLE TABLE AREA -->
-    <div style="flex: 1; overflow-y: auto; min-height: 0; padding-right: 4px; scrollbar-width: thin;">
-        <div class="dashboard-table-wrapper">
+    <div style="flex: 1; overflow-y: auto; overflow-x: hidden; min-height: 0; padding-right: 4px; scrollbar-width: thin; -webkit-overflow-scrolling: touch;">
+        <div class="dashboard-table-wrapper" style="overflow-x: hidden !important;">
             <table class="dashboard-table">
                 <thead>
                     <tr>
@@ -66,9 +66,9 @@
                             </a>
                         </td>
                         <td>
-                            <div style="display: flex; gap: 6px;">
-                                <a href="{% url 'review_edit' review.pk %}" class="btn-action-edit"><i class="fa-solid fa-pen"></i> Edit</a>
-                                <a href="{% url 'review_delete' review.pk %}" class="btn-action-delete"><i class="fa-solid fa-trash"></i> Delete</a>
+                            <div style="display: flex; gap: 4px;">
+                                <a href="{% url 'review_edit' review.pk %}" class="btn-action-edit" style="padding: 2px 6px; font-size: 0.58rem; border-radius: 12px;"><i class="fa-solid fa-pen"></i> Edit</a>
+                                <a href="{% url 'review_delete' review.pk %}" class="btn-action-delete" style="padding: 2px 6px; font-size: 0.58rem; border-radius: 12px;"><i class="fa-solid fa-trash"></i> Delete</a>
                             </div>
                         </td>
                     </tr>
@@ -85,26 +85,26 @@
 
         <!-- PAGINATION CONTROLS -->
         {% if reviews.has_other_pages %}
-        <div style="display: flex; justify-content: center; gap: 8px; margin-top: 20px; margin-bottom: 10px;">
+        <div style="display: flex; justify-content: center; gap: 8px; margin-top: 15px; margin-bottom: 10px;">
             {% if reviews.has_previous %}
-            <a href="?page={{ reviews.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">&larr; Prev</a>
+            <a href="?page={{ reviews.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn-secondary" style="padding: 4px 10px; font-size: 0.72rem; border-radius: 14px;">&larr; Prev</a>
             {% endif %}
 
-            <span style="font-size: 0.8rem; color: var(--color-text-gray); align-self: center;">
+            <span style="font-size: 0.78rem; color: var(--color-text-gray); align-self: center;">
                 Page {{ reviews.number }} of {{ reviews.paginator.num_pages }}
             </span>
 
             {% if reviews.has_next %}
-            <a href="?page={{ reviews.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">Next &rarr;</a>
+            <a href="?page={{ reviews.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn-secondary" style="padding: 4px 10px; font-size: 0.72rem; border-radius: 14px;">Next &rarr;</a>
             {% endif %}
         </div>
         {% endif %}
     </div>
 
-    <!-- FIXED FOOTER WITH BACK BUTTON -->
-    <div style="flex-shrink: 0; padding-top: 14px; border-top: 1px solid var(--color-border); margin-top: 12px;">
-        <a href="{% url 'dashboard' %}" class="btn-secondary" style="padding: 9px 26px; font-size: 0.82rem; font-weight: 700; text-decoration: none; border-radius: 6px; display: inline-flex; align-items: center; gap: 6px; box-shadow: 0 4px 12px rgba(0,0,0,0.3);">
-            Back
+    <!-- PINNED FOOTER WITH BACK BUTTON -->
+    <div style="flex-shrink: 0; padding-top: 10px; border-top: 1px solid var(--color-border); display: flex; justify-content: flex-start;">
+        <a href="{% url 'dashboard' %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 4px 10px; font-size: 0.72rem; font-weight: 600; text-decoration: none; border-radius: 14px; display: inline-flex; align-items: center; justify-content: center; width: fit-content; max-width: max-content;">
+            &larr; Back
         </a>
     </div>
 
