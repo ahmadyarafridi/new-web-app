@@ -1303,12 +1303,12 @@ main {
 }
 
 .menu-item-desc {
-    font-size: 0.66rem;
+    font-size: 0.78rem;
     color: var(--color-text-gray);
-    font-weight: 300;
+    font-weight: 400;
     margin-bottom: 10px;
     flex-grow: 1;
-    line-height: 1.6;
+    line-height: 1.5;
 }
 
 .menu-item-actions {
@@ -1320,10 +1320,10 @@ main {
     background-color: transparent;
     border: 1px solid var(--color-border);
     color: var(--color-text-bright);
-    padding: 5px 9px;
+    padding: 7px 11px;
     border-radius: var(--border-radius-sm);
     font-family: var(--font-body);
-    font-size: 0.62rem;
+    font-size: 0.74rem;
     font-weight: 600;
     cursor: pointer;
     display: flex;
@@ -1335,10 +1335,14 @@ main {
 
 @media (min-width: 769px) {
 
+    .menu-item-desc {
+        font-size: 0.82rem;
+    }
+
     .add-to-cart-btn,
     .deal-card-footer .add-to-cart-btn {
-        padding: 7.5px 13px;
-        font-size: 0.8rem;
+        padding: 9px 15px;
+        font-size: 0.88rem;
     }
 }
 
