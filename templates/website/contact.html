@@ -74,20 +74,52 @@
         </div>
 
         {% if messages %}
-        <div style="max-width: 500px; margin: 0 auto 25px auto;">
-            {% for message in messages %}
-            <div style="background: rgba(201, 168, 76, 0.12); border: 1.5px solid var(--color-primary); border-radius: var(--border-radius-sm); padding: 20px 22px; text-align: center; color: #ffffff; box-shadow: 0 6px 22px rgba(0, 0, 0, 0.45); animation: fadeIn 0.4s ease;">
-                <div style="font-size: 2.2rem; color: #f5b301; margin-bottom: 8px;">
-                    <i class="fa-solid fa-circle-check"></i>
+        <!-- POPUP THANK YOU MODAL (MATCHES ORDER SAVED CONFIRMATION MODAL) -->
+        <div class="modal active" id="feedbackThankYouModal" style="display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999;">
+            <div class="modal-backdrop" id="feedbackModalBackdrop"></div>
+            <div class="modal-content" style="text-align: center; max-width: 440px; padding: 35px 25px; border-color: var(--color-primary); box-shadow: var(--shadow-lg); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+                <button class="modal-close-btn" id="closeFeedbackModalBtn" type="button"><i class="fa-solid fa-xmark"></i></button>
+                
+                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(201, 168, 76, 0.15); border: 2px solid var(--color-primary); color: #f5b301; display: flex; align-items: center; justify-content: center; font-size: 1.9rem; margin: 0 auto 16px auto; box-shadow: 0 0 25px rgba(201, 168, 76, 0.35);">
+                    <i class="fa-solid fa-check"></i>
                 </div>
-                <h3 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 1.15rem; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;">Thank You For Your Review!</h3>
-                <p style="font-size: 0.82rem; color: #e0e0e0; margin: 0; line-height: 1.5;">We truly appreciate your feedback! Your review has been submitted successfully and will be live on our website once reviewed.</p>
+                
+                <h3 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 1.35rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
+                    Thank You For Your Review!
+                </h3>
+                
+                <p style="font-size: 0.88rem; color: var(--color-text-gray); line-height: 1.6; margin-bottom: 22px;">
+                    We truly appreciate your feedback! Your review has been saved in our system and will appear live on our website once reviewed by our team.
+                </p>
+                
+                <button type="button" class="btn-primary" id="dismissFeedbackModalBtn" style="width: 100%; justify-content: center; padding: 12px; font-weight: 700; cursor: pointer;">
+                    Done
+                </button>
             </div>
-            {% endfor %}
         </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const modal = document.getElementById('feedbackThankYouModal');
+                const closeBtn = document.getElementById('closeFeedbackModalBtn');
+                const dismissBtn = document.getElementById('dismissFeedbackModalBtn');
+                const backdrop = document.getElementById('feedbackModalBackdrop');
+                
+                function closeModal() {
+                    if (modal) {
+                        modal.classList.remove('active');
+                        modal.style.display = 'none';
+                    }
+                }
+                
+                if (closeBtn) closeBtn.addEventListener('click', closeModal);
+                if (dismissBtn) dismissBtn.addEventListener('click', closeModal);
+                if (backdrop) backdrop.addEventListener('click', closeModal);
+            });
+        </script>
         {% endif %}
 
-        <form method="post" action="{% url 'contact' %}#customer-feedback" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
+        <form method="post" action="{% url 'contact' %}" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
             {% csrf_token %}
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
