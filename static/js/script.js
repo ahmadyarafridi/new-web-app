@@ -371,7 +371,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const dealCarouselDots = document.getElementById('dealCarouselDots');
 
     if (specialtiesGrid && dealCarouselDots) {
-        const dealCards = Array.from(specialtiesGrid.querySelectorAll('.specialty-card'));
+        const dealCards = Array.from(specialtiesGrid.querySelectorAll('.menu-item-card, .specialty-card'));
         const dotCount = Math.min(5, dealCards.length);
 
         for (let i = 0; i < dotCount; i++) {
