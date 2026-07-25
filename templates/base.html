@@ -225,7 +225,7 @@
                 </div>
                 <p style="color: var(--color-text-gray); font-size: 0.88rem; margin-bottom: 8px;">Fast Food & Pulao</p>
                 <p style="margin-bottom: 6px;"><i class="fa-solid fa-location-dot" style="color: var(--color-primary); margin-right: 6px;"></i> Jamrud, Khyber District</p>
-                <p style="margin-bottom: 6px;"><i class="fa-solid fa-phone" style="color: var(--color-primary); margin-right: 6px;"></i> +92 333 9342567</p>
+                <p style="margin-bottom: 6px;"><i class="fa-solid fa-phone" style="color: var(--color-primary); margin-right: 6px;"></i> <a href="tel:{{ restaurant.phone|default:'+923339342567' }}" style="color: inherit; text-decoration: underline;">{{ restaurant.phone|default:'+92 333 9342567' }}</a></p>
             </div>
 
             <div class="footer-links">
