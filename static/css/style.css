@@ -1226,7 +1226,7 @@ main {
     transition: var(--transition-smooth);
     display: flex;
     flex-direction: column;
-    flex: 0 0 235px;
+    flex: 0 0 200px;
     scroll-snap-align: start;
     scroll-snap-stop: always;
 }
@@ -1239,7 +1239,7 @@ main {
 
 .menu-item-img-wrapper {
     position: relative;
-    height: 135px;
+    height: 115px;
     overflow: hidden;
 }
 
@@ -2781,8 +2781,8 @@ footer hr {
     }
 
     .menu-item-card {
-        flex: 0 0 72% !important;
-        max-width: 235px !important;
+        flex: 0 0 62% !important;
+        max-width: 195px !important;
         scroll-snap-align: center !important;
         scroll-snap-stop: always !important;
         /* Scroll only one card at a time on swipe */

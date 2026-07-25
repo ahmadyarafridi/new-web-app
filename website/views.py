@@ -72,10 +72,36 @@ def api_products(request):
         page_num = int(page_num)
     except (ValueError, TypeError):
         page_num = 1
-        
+
+    if cat_slug == 'deals':
+        deals_qs = Deal.objects.filter(is_active=True)
+        if search_q:
+            from django.db.models import Q
+            deals_qs = deals_qs.filter(Q(title__icontains=search_q) | Q(description__icontains=search_q))
+        items_data = []
+        for deal in deals_qs:
+            img_url = deal.image_file.url if deal.image_file else static(deal.image)
+            items_data.append({
+                'item_code': deal.item_code,
+                'name': deal.title,
+                'price': int(round(deal.price)),
+                'description': deal.description or '',
+                'image_url': img_url,
+                'category_slug': 'deals',
+                'is_available': True,
+                'custom_style': '',
+            })
+        return JsonResponse({
+            'products': items_data,
+            'has_next': False,
+            'current_page': 1,
+            'total_pages': 1,
+            'total_count': len(items_data),
+        })
+
     qs = Product.objects.filter(category__is_active=True).select_related('category')
     
-    if cat_slug and cat_slug != 'all' and cat_slug != 'deals':
+    if cat_slug and cat_slug != 'all':
         qs = qs.filter(category__slug=cat_slug)
         
     if search_q:

@@ -207,25 +207,17 @@ document.addEventListener('DOMContentLoaded', function() {
                     menuGrid.innerHTML = '';
                 }
 
-                if (activeCategory === 'deals') {
-                    const allCards = menuGrid.querySelectorAll('.menu-item-card');
-                    allCards.forEach(card => {
-                        card.style.display = card.getAttribute('data-category') === 'deals' ? 'flex' : 'none';
-                    });
-                } else {
-                    data.products.forEach(prod => {
-                        menuGrid.insertAdjacentHTML('beforeend', createProductCardHtml(prod));
-                    });
+                data.products.forEach(prod => {
+                    menuGrid.insertAdjacentHTML('beforeend', createProductCardHtml(prod));
+                });
 
-                    if (data.has_next) {
-                        menuGrid.insertAdjacentHTML('beforeend', createLoadMoreCardHtml());
-                        attachLoadMoreCardListener();
-                    }
+                if (data.has_next) {
+                    menuGrid.insertAdjacentHTML('beforeend', createLoadMoreCardHtml());
+                    attachLoadMoreCardListener();
                 }
 
                 menuGrid.style.opacity = '1';
 
-                // Scroll right slightly if appending new items
                 if (append) {
                     menuGrid.scrollBy({ left: 300, behavior: 'smooth' });
                 }
