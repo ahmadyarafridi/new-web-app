@@ -558,9 +558,9 @@ def api_get_notifications(request):
     notifications_qs = OrderNotification.objects.filter(order__isnull=False).select_related('order')[:20]
 
     today = timezone.now().date()
-    orders_booked = Order.objects.count()
+    orders_booked = Order.objects.filter(order_status='completed').count()
     today_orders_count = Order.objects.filter(created_at__date=today).count()
-    income_aggregate = Order.objects.filter(created_at__date=today).aggregate(total=Sum('total_price'))
+    income_aggregate = Order.objects.filter(order_status='completed', created_at__date=today).aggregate(total=Sum('total_price'))
     today_income = float(income_aggregate['total'] or 0)
     
     items = []
