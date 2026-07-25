@@ -3,3 +3,4 @@ Pillow>=10.0.0
 gunicorn>=21.0.0
 dj-database-url>=2.1.0
 psycopg2-binary>=2.9.9
+whitenoise[brotli]>=6.7.0
