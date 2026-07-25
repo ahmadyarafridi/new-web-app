@@ -1,7 +1,11 @@
 from .models import RestaurantInfo
+from django.db import OperationalError, ProgrammingError
 
 def restaurant_info(request):
-    info = RestaurantInfo.objects.first()
+    try:
+        info = RestaurantInfo.objects.first()
+    except (OperationalError, ProgrammingError):
+        info = None
     if not info:
         # Fallback default info object if database isn't seeded yet
         info = RestaurantInfo()
