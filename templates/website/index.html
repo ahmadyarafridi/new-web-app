@@ -31,7 +31,7 @@
         {% for deal in deals %}
         <div class="specialty-card">
             <div class="specialty-img-wrapper">
-                <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}" loading="lazy" decoding="async">
+                <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}" loading="lazy" decoding="async" width="400" height="260">
             </div>
             <div class="deal-card-body">
                 <h4>{{ deal.title }}</h4>

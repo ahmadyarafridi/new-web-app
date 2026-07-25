@@ -19,7 +19,7 @@
         </div>
         <div class="about-image">
             <div class="about-image-frame">
-                <img src="{% static 'images/chef.jpg' %}" alt="{{ restaurant.name }} Kitchen Team">
+                <img src="{% static 'images/chef.jpg' %}" alt="{{ restaurant.name }} Kitchen Team" loading="lazy" decoding="async" width="800" height="880">
                 <div class="about-badge">
                     Quality First
                     <span>Since {{ restaurant.about_established_year }}</span>
@@ -42,7 +42,7 @@
         <!-- Chef 1 -->
         <div class="specialty-card" style="max-width: 320px; flex: 1; min-width: 250px;">
             <div class="specialty-img-wrapper" style="height: 280px;">
-                <img src="https://i.pravatar.cc/300?img=33" alt="Chef Elena Rostova" style="filter: grayscale(10%) brightness(0.95);">
+                <img src="https://i.pravatar.cc/300?img=33" alt="Chef Elena Rostova" loading="lazy" decoding="async" width="300" height="280" style="filter: grayscale(10%) brightness(0.95);">
             </div>
             <h4 style="padding: 15px 15px 5px;">Elena Rostova</h4>
             <p style="font-size: 0.78rem; text-transform: uppercase; color: var(--color-primary); letter-spacing: 1px; text-align: center; margin-bottom: 15px;">Head Pizzaiolo</p>
@@ -51,7 +51,7 @@
         <!-- Chef 2 -->
         <div class="specialty-card" style="max-width: 320px; flex: 1; min-width: 250px;">
             <div class="specialty-img-wrapper" style="height: 280px;">
-                <img src="https://i.pravatar.cc/300?img=12" alt="Chef Thomas Kincaid" style="filter: grayscale(10%) brightness(0.95);">
+                <img src="https://i.pravatar.cc/300?img=12" alt="Chef Thomas Kincaid" loading="lazy" decoding="async" width="300" height="280" style="filter: grayscale(10%) brightness(0.95);">
             </div>
             <h4 style="padding: 15px 15px 5px;">Thomas Kincaid</h4>
             <p style="font-size: 0.78rem; text-transform: uppercase; color: var(--color-primary); letter-spacing: 1px; text-align: center; margin-bottom: 15px;">Master Burger Chef</p>

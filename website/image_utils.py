@@ -47,56 +47,52 @@ def optimize_image(uploaded_file, prefix='img'):
     except Exception:
         pass
 
-    max_dim = getattr(settings, 'IMAGE_MAX_DIMENSION', 1600)
-    max_size = getattr(settings, 'MAX_UPLOAD_SIZE', 1 * 1024 * 1024)
+    # Target dimension mapping based on image upload type (prefix)
+    TARGET_DIMENSIONS = {
+        'prod': 600,     # Product cards (600px max)
+        'deal': 700,     # Special deals (700px max)
+        'cat': 500,      # Category previews (500px max)
+        'rev': 200,      # Customer review avatars (200px max)
+        'logo': 400,     # Restaurant logo (400px max)
+        'hero': 1200,    # Hero/Banner headers (1200px max)
+    }
 
-    # Initial resize if longest side exceeds 1600px
+    max_dim = TARGET_DIMENSIONS.get(prefix, getattr(settings, 'IMAGE_MAX_DIMENSION', 600))
+    max_size = getattr(settings, 'MAX_UPLOAD_SIZE', 500 * 1024)
+
+    # Initial resize if longest side exceeds target max_dim
     width, height = img.size
     if max(width, height) > max_dim:
         img.thumbnail((max_dim, max_dim), Image.Resampling.LANCZOS)
 
     output_io = BytesIO()
-    is_transparent = img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info)
-
-    if is_transparent:
-        try:
+    
+    # Try converting to WebP format (supports transparency & RGB)
+    try:
+        if img.mode not in ('RGB', 'RGBA'):
+            img = img.convert('RGBA' if 'transparency' in img.info or img.mode in ('LA', 'P') else 'RGB')
+        
+        quality = getattr(settings, 'IMAGE_QUALITY', 82)
+        img.save(output_io, format='WEBP', quality=quality, method=4)
+        ext = 'webp'
+        content_type = 'image/webp'
+    except Exception:
+        # Fallback to optimized JPEG/PNG if WebP conversion fails
+        is_transparent = img.mode in ('RGBA', 'LA') or (img.mode == 'P' and 'transparency' in img.info)
+        if is_transparent:
             img.save(output_io, format='PNG', optimize=True)
             ext = 'png'
             content_type = 'image/png'
-        except Exception:
-            img = img.convert('RGB')
-            img.save(output_io, format='JPEG', quality=85, optimize=True)
+        else:
+            if img.mode != 'RGB':
+                img = img.convert('RGB')
+            img.save(output_io, format='JPEG', quality=82, optimize=True)
             ext = 'jpg'
             content_type = 'image/jpeg'
-    else:
-        if img.mode != 'RGB':
-            img = img.convert('RGB')
-        
-        quality = getattr(settings, 'IMAGE_QUALITY', 85)
-        img.save(output_io, format='JPEG', quality=quality, optimize=True)
-        ext = 'jpg'
-        content_type = 'image/jpeg'
-
-        # If file size is still > 1 MB, iteratively compress quality & scale down until < 1 MB
-        current_quality = quality
-        while output_io.tell() > max_size and current_quality > 25:
-            current_quality -= 15
-            output_io = BytesIO()
-            img.save(output_io, format='JPEG', quality=current_quality, optimize=True)
-
-        if output_io.tell() > max_size:
-            # Further scale down dimensions if still > 1 MB
-            scale_factor = 0.75
-            while output_io.tell() > max_size and img.size[0] > 300 and img.size[1] > 300:
-                new_w = int(img.size[0] * scale_factor)
-                new_h = int(img.size[1] * scale_factor)
-                img = img.resize((new_w, new_h), Image.Resampling.LANCZOS)
-                output_io = BytesIO()
-                img.save(output_io, format='JPEG', quality=45, optimize=True)
 
     output_io.seek(0)
     
-    # SECURE RENAMING: Generate a safe, sanitized filename e.g., rev-a1b2c3d4.jpg
+    # SECURE RENAMING: Generate a safe, sanitized filename e.g., prod-a1b2c3d4.webp
     unique_id = uuid.uuid4().hex[:8]
     secure_filename = f"{prefix}-{unique_id}.{ext}"
 

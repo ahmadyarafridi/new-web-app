@@ -164,8 +164,8 @@ LOGOUT_REDIRECT_URL = 'index'
 # ==============================================================================
 # IMAGE UPLOAD VALIDATION & OPTIMIZATION SETTINGS
 # ==============================================================================
-MAX_UPLOAD_SIZE = 1 * 1024 * 1024  # 1 MB in bytes
-IMAGE_MAX_DIMENSION = 1600         # Max 1600px on longest side
-IMAGE_QUALITY = 85                 # JPEG / WebP quality (1-100)
+MAX_UPLOAD_SIZE = 500 * 1024         # 500 KB limit for uploaded images
+IMAGE_MAX_DIMENSION = 800          # Max 800px on longest side for optimal web thumbnails
+IMAGE_QUALITY = 82                 # WebP / JPEG quality (1-100)
 ALLOWED_IMAGE_FORMATS = ['JPEG', 'PNG', 'WEBP', 'GIF']
 
