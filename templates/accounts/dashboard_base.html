@@ -8,7 +8,7 @@
     <div class="header-container" style="overflow-x: auto; -webkit-overflow-scrolling: touch; scrollbar-width: none;">
         <nav id="admin-navbar">
             <ul>
-                <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="fa-solid fa-chart-line"></i> Overview</a></li>
+                <li><a href="{% url 'dashboard' %}" class="{% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"><i class="fa-solid fa-chart-line"></i> Dashboard</a></li>
                 <li><a href="{% url 'analytics_orders' %}" class="{% if 'order' in request.resolver_match.url_name %}active{% endif %}"><i class="fa-solid fa-box"></i> Orders</a></li>
                 <li><a href="{% url 'manage_products' %}" class="{% if 'product' in request.resolver_match.url_name %}active{% endif %}"><i class="fa-solid fa-utensils"></i> Products</a></li>
                 <li><a href="{% url 'manage_deals' %}" class="{% if 'deal' in request.resolver_match.url_name %}active{% endif %}"><i class="fa-solid fa-fire"></i> Deals</a></li>
