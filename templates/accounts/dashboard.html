@@ -6,15 +6,12 @@
     <!-- TOP CONTROL ROW: NOTIFICATION BELL (LEFT) & SMOOTH SLIDING STATUS TOGGLE (RIGHT) -->
     <div style="background: var(--color-bg-deep); border: 1px solid var(--color-border); border-radius: var(--border-radius-sm); padding: 10px 14px; margin-bottom: 22px; display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: nowrap;">
         
-        <!-- LEFT: NOTIFICATION BELL & EXPORT ZIP BUTTON -->
-        <div class="notif-wrapper" style="position: relative; display: flex; align-items: center; gap: 10px;">
+        <!-- LEFT: NOTIFICATION BELL & CENTERED MODAL -->
+        <div class="notif-wrapper" style="position: relative; display: flex; align-items: center;">
             <button id="notifBellBtn" title="Order Notifications" aria-label="Notifications" style="background: rgba(255,255,255,0.08); border: 1px solid var(--color-border); color: #fff; border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; position: relative; transition: all 0.2s ease;">
                 <i class="fa-solid fa-bell" style="font-size: 1.1rem; color: var(--color-primary);"></i>
                 <span id="notifBadge" class="notif-badge" style="display: none; position: absolute; top: -4px; right: -4px; background: #e53935; color: #fff; font-size: 0.65rem; font-weight: 700; border-radius: 10px; padding: 2px 6px; min-width: 18px; text-align: center; border: 1.5px solid #111;">0</span>
             </button>
-            <a href="{% url 'export_full_data_zip' %}" class="btn-secondary" title="Backup & Export All Data (.zip)" style="padding: 6px 14px; font-size: 0.75rem; font-weight: 700; border-color: var(--color-primary); color: var(--color-primary); display: inline-flex; align-items: center; gap: 6px; text-decoration: none; border-radius: 20px;">
-                <i class="fa-solid fa-file-zipper" style="font-size: 0.85rem;"></i> Export Zip
-            </a>
 
             <!-- BACKDROP BLUR OVERLAY FOR NOTIFICATIONS -->
             <div id="notifBlurOverlay" style="display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,0.6); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); z-index: 999990;"></div>
