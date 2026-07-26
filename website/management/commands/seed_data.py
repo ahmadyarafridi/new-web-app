@@ -9,12 +9,12 @@ class Command(BaseCommand):
 
         # 1. Restaurant Information
         info, created = RestaurantInfo.objects.get_or_create(id=1)
-        info.name = "Delicious Food Stop"
+        info.name = "Amazing Foods"
         info.tagline = "Fast Food & Pulao"
         info.phone = "+92 333 9342567"
         info.whatsapp_number = "923339342567"
         info.email = "info@deliciousfoodstop.pk"
-        info.address = "Jamrud, Khyber District, Khyber Pakhtunkhwa, Pakistan"
+        info.address = "Amazing foods jamrud"
         info.google_maps_plus_code = "292F+QRP Jamrud"
         info.google_rating = 4.4
         info.google_reviews_count = 39
@@ -23,7 +23,7 @@ class Command(BaseCommand):
         info.dinner_hours = "5:00 PM – 10:00 PM"
         info.hero_description = "Experience the finest fast food in Jamrud. From wood-fired pizzas and local shawarmas to aromatic chicken pulao, we cook every deal fresh with premium ingredients."
         info.about_established_year = 2018
-        info.about_history = "Delicious Food Stop opened in Jamrud in 2018 to serve flavorful, high-quality fast food—from wood-fired pizzas and shawarmas to crispy zinger burgers and aromatic chicken pulao."
+        info.about_history = "Amazing Foods opened in Jamrud in 2018 to serve flavorful, high-quality fast food—from wood-fired pizzas and shawarmas to crispy zinger burgers and aromatic chicken pulao."
         info.about_history_p2 = "We source fresh local ingredients, dry-age our beef in-house, and bake pizza dough from scratch daily to make every bite memorable."
         info.about_quality_promise = "All of our signature sauces and dips are prepared fresh by our chefs every single morning. We select fresh farm veggies and premium meats, bringing you gourmet quality at fast-food convenience. Drop by today and taste the difference!"
         info.save()

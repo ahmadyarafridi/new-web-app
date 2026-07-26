@@ -139,7 +139,7 @@ import urllib.parse
 def order_detail(request, pk):
     order = get_object_or_404(Order.objects.prefetch_related('items'), pk=pk)
     info = RestaurantInfo.objects.first()
-    rest_name = info.name if info else "Delicious Food Stop"
+    rest_name = info.name if info else "Amazing Foods"
 
     # Build formatted WhatsApp response message
     items = order.items.all()

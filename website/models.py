@@ -13,12 +13,12 @@ class DailyVisit(models.Model):
 
 
 class RestaurantInfo(models.Model):
-    name = models.CharField(max_length=100, default="Delicious Food Stop")
+    name = models.CharField(max_length=100, default="Amazing Foods")
     tagline = models.CharField(max_length=255, default="Fast Food & Pulao")
     phone = models.CharField(max_length=20, default="+92 333 9342567")
     whatsapp_number = models.CharField(max_length=20, default="923339342567")
     email = models.EmailField(default="info@deliciousfoodstop.pk")
-    address = models.CharField(max_length=255, default="Jamrud, Khyber District, Khyber Pakhtunkhwa, Pakistan")
+    address = models.CharField(max_length=255, default="Amazing foods jamrud")
     google_maps_plus_code = models.CharField(max_length=50, default="292F+QRP Jamrud")
     google_rating = models.DecimalField(max_digits=3, decimal_places=1, default=4.4)
     google_reviews_count = models.IntegerField(default=39)
@@ -30,7 +30,7 @@ class RestaurantInfo(models.Model):
     # Hero & About Page content
     hero_description = models.TextField(default="Experience the finest fast food in Jamrud. From wood-fired pizzas and local shawarmas to aromatic chicken pulao, we cook every deal fresh with premium ingredients.")
     about_established_year = models.IntegerField(default=2018)
-    about_history = models.TextField(default="Delicious Food Stop opened in Jamrud in 2018 to serve flavorful, high-quality fast food—from wood-fired pizzas and shawarmas to crispy zinger burgers and aromatic chicken pulao.")
+    about_history = models.TextField(default="Amazing Foods opened in Jamrud in 2018 to serve flavorful, high-quality fast food—from wood-fired pizzas and shawarmas to crispy zinger burgers and aromatic chicken pulao.")
     about_history_p2 = models.TextField(default="We source fresh local ingredients, dry-age our beef in-house, and bake pizza dough from scratch daily to make every bite memorable.")
     about_quality_promise = models.TextField(default="All of our signature sauces and dips are prepared fresh by our chefs every single morning. We select fresh farm veggies and premium meats, bringing you gourmet quality at fast-food convenience. Drop by today and taste the difference!")
     

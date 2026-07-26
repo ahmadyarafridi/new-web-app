@@ -627,7 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const customerCheckoutForm = document.getElementById('customerCheckoutForm');
 
     const buildWhatsAppMessage = (name, phone, address, notes) => {
-        let msg = `*DELICIOUS FOOD STOP - NEW ORDER*\n`;
+        let msg = `*AMAZING FOODS - NEW ORDER*\n`;
         msg += `------------------------------\n`;
         if (name) msg += `*Customer:* ${name}\n`;
         if (phone) msg += `*Phone:* ${phone}\n`;
