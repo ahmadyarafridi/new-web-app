@@ -827,6 +827,11 @@ def analytics_orders_today_completed(request):
 
 
 @login_required(login_url='login')
+def manage_security(request):
+    return render(request, 'accounts/security.html')
+
+
+@login_required(login_url='login')
 def export_full_data_zip(request):
     zip_buffer = io.BytesIO()
 
@@ -874,7 +879,23 @@ def export_full_data_zip(request):
             ])
         zip_file.writestr('products_catalog.csv', prod_csv_io.getvalue())
 
-        # 3. Orders & Income CSV
+        # 3. Special Deals CSV
+        deals_csv_io = io.StringIO()
+        d_writer = csv.writer(deals_csv_io)
+        d_writer.writerow(['ID', 'Item Code', 'Title', 'Price (Rs)', 'Status', 'Tag', 'Description'])
+        for d in deals_qs:
+            d_writer.writerow([
+                d.pk,
+                d.item_code,
+                d.title,
+                f"{d.price:.0f}",
+                'Active' if d.is_active else 'Inactive',
+                d.tag or '',
+                d.description or ''
+            ])
+        zip_file.writestr('special_deals.csv', deals_csv_io.getvalue())
+
+        # 4. Orders & Income CSV
         orders_csv_io = io.StringIO()
         o_writer = csv.writer(orders_csv_io)
         o_writer.writerow(['Order ID', 'Date & Time', 'Customer Name', 'Phone', 'Address', 'Status', 'Payment', 'Total Price (Rs)', 'Items Summary', 'Notes'])
@@ -893,7 +914,7 @@ def export_full_data_zip(request):
             ])
         zip_file.writestr('orders_and_income.csv', orders_csv_io.getvalue())
 
-        # 4. Customer Feedback & Reviews CSV
+        # 5. Customer Feedback & Reviews CSV
         fb_csv_io = io.StringIO()
         f_writer = csv.writer(fb_csv_io)
         f_writer.writerow(['ID', 'Date & Time', 'Customer Name', 'Email', 'Rating', 'Status', 'Comment'])
@@ -909,7 +930,7 @@ def export_full_data_zip(request):
             ])
         zip_file.writestr('customer_feedback.csv', fb_csv_io.getvalue())
 
-        # 5. Media Uploaded Images Folder
+        # 6. Media Uploaded Images Folder
         media_root = settings.MEDIA_ROOT
         if os.path.exists(media_root):
             for root, dirs, files in os.walk(media_root):

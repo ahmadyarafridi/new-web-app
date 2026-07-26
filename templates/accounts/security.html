@@ -1,0 +1,76 @@
+{% extends 'accounts/dashboard_base.html' %}
+
+{% block dashboard_content %}
+<div class="dashboard-card" style="max-width: 900px; margin: 0 auto;">
+
+    <div class="dashboard-header-row" style="margin-bottom: 25px;">
+        <div>
+            <h2 class="dashboard-title"><i class="fa-solid fa-shield-halved" style="color: var(--color-primary); margin-right: 8px;"></i> Security & Data Backup</h2>
+            <p style="font-size: 0.82rem; color: var(--color-text-gray); margin-top: 4px;">Manage system security status and generate complete offline data backups.</p>
+        </div>
+    </div>
+
+    <!-- 1. SYSTEM DATA EXPORT & BACKUP SECTION -->
+    <div style="background: var(--color-bg-deep); border: 1.5px solid var(--color-primary); border-radius: var(--border-radius-md); padding: 26px; margin-bottom: 28px; box-shadow: var(--shadow-md);">
+        <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 18px;">
+            <div>
+                <h3 style="font-family: var(--font-brand); color: #ffffff; font-size: 1.15rem; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-file-zipper" style="color: var(--color-primary);"></i> Full System Data Export (.zip)
+                </h3>
+                <p style="font-size: 0.84rem; color: var(--color-text-gray); margin: 0; line-height: 1.5;">
+                    Download a complete offline archive of your entire restaurant system, including all database records, product details, special deals, order history, customer feedback, and uploaded images.
+                </p>
+            </div>
+
+            <a href="{% url 'export_full_data_zip' %}" class="btn-primary" style="padding: 13px 26px; font-size: 0.88rem; font-weight: 700; text-decoration: none; border-radius: 8px; display: inline-flex; align-items: center; gap: 10px; box-shadow: 0 4px 18px rgba(201, 168, 76, 0.35);">
+                <i class="fa-solid fa-download" style="font-size: 1rem;"></i> Export All Data (.zip)
+            </a>
+        </div>
+
+        <div style="background: rgba(255,255,255,0.03); border: 1px dashed var(--color-border); border-radius: var(--border-radius-sm); padding: 18px; margin-top: 15px;">
+            <h5 style="color: var(--color-primary); font-size: 0.85rem; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.8px;">
+                📦 Included in your Exported ZIP File:
+            </h5>
+            <ul style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 10px; margin: 0; padding-left: 20px; font-size: 0.82rem; color: #ddd;">
+                <li><strong style="color: #fff;">restaurant_data_backup.json</strong> — Full database JSON backup</li>
+                <li><strong style="color: #fff;">products_catalog.csv</strong> — Complete menu products list</li>
+                <li><strong style="color: #fff;">special_deals.csv</strong> — All active & inactive special deals</li>
+                <li><strong style="color: #fff;">orders_and_income.csv</strong> — Complete orders & revenue log</li>
+                <li><strong style="color: #fff;">customer_feedback.csv</strong> — Customer reviews & ratings log</li>
+                <li><strong style="color: #fff;">images/ Folder</strong> — Uploaded product, deal & avatar images</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- 2. SECURITY STATUS & ACCOUNT PRIVACY CARD -->
+    <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--color-border); border-radius: var(--border-radius-md); padding: 24px;">
+        <h3 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 0.95rem; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+            <i class="fa-solid fa-lock"></i> Security & Environment Status
+        </h3>
+
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
+                <div style="font-size: 0.75rem; color: var(--color-text-gray); margin-bottom: 4px; text-transform: uppercase;">Owner Session</div>
+                <div style="font-weight: 700; color: #81c784; font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-circle-check"></i> Logged in as {{ request.user.username }}
+                </div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
+                <div style="font-size: 0.75rem; color: var(--color-text-gray); margin-bottom: 4px; text-transform: uppercase;">Database Concurrency</div>
+                <div style="font-weight: 700; color: #81c784; font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-database"></i> WAL Mode Active (60s Busy Timeout)
+                </div>
+            </div>
+
+            <div style="background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.08); border-radius: 8px; padding: 16px;">
+                <div style="font-size: 0.75rem; color: var(--color-text-gray); margin-bottom: 4px; text-transform: uppercase;">HTTPS & CSRF Protection</div>
+                <div style="font-weight: 700; color: #81c784; font-size: 0.92rem; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-shield"></i> Active & Protected
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
