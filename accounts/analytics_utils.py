@@ -65,14 +65,18 @@ def get_visitor_analytics_data():
         })
         yearly_total += m_cnt
 
-    # 5. Today Hourly Breakdown (11:00 AM to 11:00 PM)
+    # 5. Today Hourly Breakdown (24 Hours: 12:00 AM to 12:00 AM)
     today_hours = []
-    for h in range(11, 23):
+    for h in range(0, 24):
         start_period = "AM" if h < 12 else "PM"
-        h12 = h if (h <= 12 and h > 0) else (h - 12 if h > 12 else 12)
+        h12 = h % 12
+        if h12 == 0:
+            h12 = 12
         next_h = (h + 1) % 24
         end_period = "AM" if next_h < 12 else "PM"
-        next_h12 = next_h if (next_h <= 12 and next_h > 0) else (next_h - 12 if next_h > 12 else 12)
+        next_h12 = next_h % 12
+        if next_h12 == 0:
+            next_h12 = 12
         slot_label = f"{h12:02d}:00 {start_period} – {next_h12:02d}:00 {end_period}"
         today_hours.append({
             'label': slot_label,
@@ -153,14 +157,18 @@ def get_orders_analytics_data():
         })
         yearly_total += m_cnt
 
-    # 5. Today Hourly Breakdown (11:00 AM to 11:00 PM)
+    # 5. Today Hourly Breakdown (24 Hours: 12:00 AM to 12:00 AM)
     today_hours = []
-    for h in range(11, 23):
+    for h in range(0, 24):
         start_period = "AM" if h < 12 else "PM"
-        h12 = h if (h <= 12 and h > 0) else (h - 12 if h > 12 else 12)
+        h12 = h % 12
+        if h12 == 0:
+            h12 = 12
         next_h = (h + 1) % 24
         end_period = "AM" if next_h < 12 else "PM"
-        next_h12 = next_h if (next_h <= 12 and next_h > 0) else (next_h - 12 if next_h > 12 else 12)
+        next_h12 = next_h % 12
+        if next_h12 == 0:
+            next_h12 = 12
         slot_label = f"{h12:02d}:00 {start_period} – {next_h12:02d}:00 {end_period}"
 
         cnt = today_orders.filter(order_status='completed', created_at__hour=h).count()
@@ -243,14 +251,18 @@ def get_revenue_analytics_data():
         })
         yearly_total += m_rev
 
-    # 5. Today Hourly Breakdown (11:00 AM to 11:00 PM)
+    # 5. Today Hourly Breakdown (24 Hours: 12:00 AM to 12:00 AM)
     today_hours = []
-    for h in range(11, 23):
+    for h in range(0, 24):
         start_period = "AM" if h < 12 else "PM"
-        h12 = h if (h <= 12 and h > 0) else (h - 12 if h > 12 else 12)
+        h12 = h % 12
+        if h12 == 0:
+            h12 = 12
         next_h = (h + 1) % 24
         end_period = "AM" if next_h < 12 else "PM"
-        next_h12 = next_h if (next_h <= 12 and next_h > 0) else (next_h - 12 if next_h > 12 else 12)
+        next_h12 = next_h % 12
+        if next_h12 == 0:
+            next_h12 = 12
         slot_label = f"{h12:02d}:00 {start_period} – {next_h12:02d}:00 {end_period}"
 
         h_rev = float(today_completed_orders.filter(created_at__hour=h).aggregate(tot=Sum('total_price'))['tot'] or 0)
