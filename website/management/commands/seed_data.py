@@ -323,7 +323,7 @@ class Command(BaseCommand):
                 'customer_name': 'Zainab Khan',
                 'reviewer_role': 'Regular Diner',
                 'rating': 5,
-                'comment': '"The best Zinger burgers in Jamrud by far! Always hot, crispy, and cooked fresh. Their WhatsApp pre-ordering saves so much time."',
+                'comment': '"The best Zinger burgers in Jamrud! Always hot, crispy, and fresh. Fast WhatsApp ordering saves time!"',
                 'avatar_url': 'https://i.pravatar.cc/120?img=33',
                 'order': 1
             },
@@ -331,7 +331,7 @@ class Command(BaseCommand):
                 'customer_name': 'Hamza Afridi',
                 'reviewer_role': 'Local Guide',
                 'rating': 5,
-                'comment': '"Authentic local shawarma and amazing wood-fired pizzas. Great atmosphere and friendly staff. 5 stars rating well earned!"',
+                'comment': '"Authentic local shawarma and amazing wood-fired pizzas. Great atmosphere and friendly team!"',
                 'avatar_url': 'https://i.pravatar.cc/120?img=12',
                 'order': 2
             },
@@ -339,7 +339,7 @@ class Command(BaseCommand):
                 'customer_name': 'Muhammad Ali',
                 'reviewer_role': 'Food Enthusiast',
                 'rating': 5,
-                'comment': '"Their Special Chicken Pulao is unbeatable in flavor. Family deal pricing is extremely reasonable for the quality provided."',
+                'comment': '"Their Special Chicken Pulao is unbeatable in flavor. Great quality family deals!"',
                 'avatar_url': 'https://i.pravatar.cc/120?img=68',
                 'order': 3
             },
