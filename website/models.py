@@ -139,7 +139,7 @@ class Review(models.Model):
     rating = models.PositiveSmallIntegerField(default=5)
     comment = models.TextField()
     avatar_url = models.URLField(max_length=255, default="https://i.pravatar.cc/120?img=33")
-    avatar_file = models.FileField(upload_to='avatars/', blank=True, null=True, help_text="Or upload avatar image file directly")
+    avatar_file = models.FileField(upload_to='reviews/', blank=True, null=True, help_text="Or upload avatar image file directly")
     is_approved = models.BooleanField(default=True)
     display_order = models.PositiveIntegerField(default=0)
 
@@ -167,7 +167,7 @@ class CustomerFeedback(models.Model):
     email = models.EmailField(blank=True, null=True)
     rating = models.PositiveSmallIntegerField(default=5)
     comment = models.TextField()
-    avatar_file = models.FileField(upload_to='avatars/', blank=True, null=True, help_text="Uploaded customer photo/avatar")
+    avatar_file = models.FileField(upload_to='reviews/', blank=True, null=True, help_text="Uploaded customer photo/avatar")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
 
