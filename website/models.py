@@ -178,6 +178,19 @@ class CustomerFeedback(models.Model):
     def __str__(self):
         return f"{self.customer_name} ({self.rating}★) [{self.status.upper()}]"
 
+    @property
+    def avatar_src(self):
+        if self.avatar_file:
+            return self.avatar_file.url
+        name_lower = self.customer_name.lower()
+        if 'zainab' in name_lower:
+            return 'https://i.pravatar.cc/120?img=33'
+        elif 'hamza' in name_lower:
+            return 'https://i.pravatar.cc/120?img=12'
+        elif 'muhammad' in name_lower:
+            return 'https://i.pravatar.cc/120?img=68'
+        return f'https://i.pravatar.cc/120?img={(self.id * 7) % 70 + 1}'
+
 
 class Order(models.Model):
     STATUS_CHOICES = [

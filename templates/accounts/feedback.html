@@ -81,9 +81,7 @@
                 <!-- CARD HEADER (USER INFO & STATUS) -->
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap; gap: 6px;">
                     <div style="display: flex; align-items: center; gap: 10px;">
-                        <div style="width: 36px; height: 36px; border-radius: 50%; background: rgba(201,168,76,0.15); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 0.95rem; border: 1px solid rgba(201,168,76,0.3); flex-shrink: 0;">
-                            <i class="fa-solid fa-user"></i>
-                        </div>
+                        <img src="{{ item.avatar_src }}" alt="{{ item.customer_name }}" style="width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 1.5px solid var(--color-primary); flex-shrink: 0;">
                         <div>
                             <h4 style="font-family: var(--font-brand); color: #fff; font-size: 0.88rem; margin: 0; line-height: 1.2;">{{ item.customer_name }}</h4>
                             <span style="font-size: 0.7rem; color: var(--color-text-gray);">{{ item.created_at|date:"M d, Y" }} &bull; {{ item.created_at|date:"g:i A" }}</span>
