@@ -112,23 +112,38 @@
             outline: none !important;
         }
 
+        /* --- COMPLETE AUTOFILL & PRE-FILLED PASSWORD INPUT OVERRIDE --- */
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus,
         input:-webkit-autofill:active,
+        input:-internal-autofill-previewed,
         input:-internal-autofill-selected,
         textarea:-webkit-autofill,
         textarea:-webkit-autofill:hover,
         textarea:-webkit-autofill:focus,
         textarea:-webkit-autofill:active,
-        select:-webkit-autofill {
+        select:-webkit-autofill,
+        select:-webkit-autofill:hover,
+        select:-webkit-autofill:focus {
             -webkit-box-shadow: 0 0 0 1000px #0d0d0d inset !important;
             box-shadow: 0 0 0 1000px #0d0d0d inset !important;
             -webkit-text-fill-color: #ffffff !important;
             color: #ffffff !important;
-            caret-color: #ffffff !important;
+            caret-color: #c9a84c !important;
             background-color: #0d0d0d !important;
-            transition: background-color 5000s ease-in-out 0s !important;
+            border-color: #c9a84c !important;
+            transition: background-color 50000s ease-in-out 0s, color 50000s ease-in-out 0s !important;
+        }
+
+        /* --- FLOATING LABEL AUTOFILL FIX --- */
+        .floating-group input:-webkit-autofill ~ label.floating-label,
+        .floating-group input:-webkit-autofill:focus ~ label.floating-label,
+        .floating-group input:autofill ~ label.floating-label {
+            top: 2px !important;
+            transform: translateY(0) !important;
+            font-size: 0.7rem !important;
+            color: #c9a84c !important;
         }
 
         ::selection {
