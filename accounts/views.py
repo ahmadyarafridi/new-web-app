@@ -431,19 +431,7 @@ def deal_delete(request, pk):
 # ==============================================================================
 @login_required(login_url='login')
 def manage_reviews(request):
-    search_query = request.GET.get('q', '').strip()
-    reviews_qs = Review.objects.all().order_by('display_order', '-id')
-
-    if search_query:
-        from django.db.models import Q
-        reviews_qs = reviews_qs.filter(
-            Q(customer_name__icontains=search_query) | Q(comment__icontains=search_query) | Q(reviewer_role__icontains=search_query)
-        )
-
-    return render(request, 'accounts/reviews.html', {
-        'reviews': reviews_qs,
-        'search_query': search_query,
-    })
+    return redirect('manage_feedback')
 
 
 @login_required(login_url='login')
@@ -510,7 +498,18 @@ def manage_feedback(request):
     status_filter = request.GET.get('status', None)
     search_query = request.GET.get('q', '').strip()
 
-    feedback_qs = CustomerFeedback.objects.all()
+    # Sync any Review objects into CustomerFeedback if missing
+    for rev in Review.objects.all():
+        if not CustomerFeedback.objects.filter(customer_name=rev.customer_name).exists():
+            CustomerFeedback.objects.create(
+                customer_name=rev.customer_name,
+                rating=rev.rating,
+                comment=rev.comment,
+                avatar_file=rev.avatar_file,
+                status='approved' if rev.is_approved else 'pending'
+            )
+
+    feedback_qs = CustomerFeedback.objects.all().order_by('-created_at', '-id')
 
     if status_filter in ['all', 'pending', 'approved', 'rejected']:
         if status_filter != 'all':
