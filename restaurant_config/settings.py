@@ -185,17 +185,30 @@ STATICFILES_DIRS = [
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
 # Media files (Uploaded images & Cloudinary Storage)
-CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME')
-CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY')
-CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET')
+CLOUDINARY_URL = os.environ.get('CLOUDINARY_URL', '').strip()
+CLOUDINARY_CLOUD_NAME = os.environ.get('CLOUDINARY_CLOUD_NAME', '').strip()
+CLOUDINARY_API_KEY = os.environ.get('CLOUDINARY_API_KEY', '').strip()
+CLOUDINARY_API_SECRET = os.environ.get('CLOUDINARY_API_SECRET', '').strip()
+
+if CLOUDINARY_URL and (not CLOUDINARY_CLOUD_NAME or not CLOUDINARY_API_KEY or not CLOUDINARY_API_SECRET):
+    try:
+        clean_url = CLOUDINARY_URL.replace('cloudinary://', '')
+        creds, cloud_name = clean_url.split('@')
+        api_key, api_secret = creds.split(':')
+        CLOUDINARY_CLOUD_NAME = cloud_name
+        CLOUDINARY_API_KEY = api_key
+        CLOUDINARY_API_SECRET = api_secret
+    except Exception as e:
+        print(f"[CLOUDINARY PARSE WARNING] Failed to parse CLOUDINARY_URL: {e}")
 
 USE_CLOUDINARY = bool(CLOUDINARY_CLOUD_NAME and CLOUDINARY_API_KEY and CLOUDINARY_API_SECRET)
 
 if USE_CLOUDINARY:
-    INSTALLED_APPS += [
-        'cloudinary_storage',
-        'cloudinary',
-    ]
+    if 'cloudinary_storage' not in INSTALLED_APPS:
+        INSTALLED_APPS.insert(0, 'cloudinary_storage')
+    if 'cloudinary' not in INSTALLED_APPS:
+        INSTALLED_APPS.append('cloudinary')
+
     CLOUDINARY_STORAGE = {
         'CLOUD_NAME': CLOUDINARY_CLOUD_NAME,
         'API_KEY': CLOUDINARY_API_KEY,
@@ -211,9 +224,11 @@ if USE_CLOUDINARY:
         },
     }
     MEDIA_URL = '/media/'
+    print(f"[MEDIA STORAGE] Cloudinary ACTIVE for Cloud Name: '{CLOUDINARY_CLOUD_NAME}'")
 else:
     MEDIA_URL = '/media/'
     MEDIA_ROOT = BASE_DIR / 'media'
+    print("[MEDIA STORAGE] Cloudinary NOT active. Using local FileSystemStorage.")
 
 # Authentication Redirect Settings
 LOGIN_URL = 'login'
