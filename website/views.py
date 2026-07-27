@@ -41,6 +41,16 @@ def index(request):
         first_page = paginator.get_page(1)
         deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
         curated_reviews = list(Review.objects.filter(is_approved=True))
+        short_comments = {
+            'Zainab': '"The best Zinger burgers in Jamrud! Always hot, crispy, and fresh. Fast WhatsApp ordering saves time!"',
+            'Hamza': '"Authentic local shawarma and amazing wood-fired pizzas. Great atmosphere and friendly team!"',
+            'Muhammad': '"Their Special Chicken Pulao is unbeatable in flavor. Great quality family deals!"',
+        }
+        for rev in curated_reviews:
+            for key_name, short_txt in short_comments.items():
+                if key_name in rev.customer_name and rev.comment != short_txt:
+                    rev.comment = short_txt
+                    Review.objects.filter(pk=rev.pk).update(comment=short_txt)
         approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
     except (OperationalError, ProgrammingError):
         ensure_db_ready()
