@@ -72,14 +72,32 @@
             box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.2) !important;
         }
 
-        .floating-group input.floating-input:-webkit-autofill,
-        .floating-group input.floating-input:-webkit-autofill:hover, 
-        .floating-group input.floating-input:-webkit-autofill:focus, 
-        .floating-group input.floating-input:-webkit-autofill:active {
+        /* --- UNIVERSAL INPUT TEXT & AUTOFILL FIX --- */
+        input, textarea, select {
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            caret-color: #c9a84c !important;
+        }
+
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus,
+        input:-webkit-autofill:active,
+        textarea:-webkit-autofill,
+        textarea:-webkit-autofill:hover,
+        textarea:-webkit-autofill:focus,
+        textarea:-webkit-autofill:active,
+        select:-webkit-autofill {
             -webkit-box-shadow: 0 0 0 1000px #0d0d0d inset !important;
+            box-shadow: 0 0 0 1000px #0d0d0d inset !important;
             -webkit-text-fill-color: #ffffff !important;
             caret-color: #ffffff !important;
             transition: background-color 5000s ease-in-out 0s !important;
+        }
+
+        ::selection {
+            background-color: #c9a84c !important;
+            color: #000000 !important;
         }
 
         .floating-group label.floating-label {
@@ -303,7 +321,7 @@
             <div style="text-align: center; margin-bottom: 16px;">
                 <h3 style="font-family: var(--font-brand); color: #fff; font-size: 1.25rem; margin: 0;">Customer Information</h3>
             </div>
-            <form id="customerCheckoutForm" style="display: flex; flex-direction: column; gap: 0;">
+            <form id="customerCheckoutForm" spellcheck="false" style="display: flex; flex-direction: column; gap: 0;">
                 <div class="floating-group" style="margin-bottom: 14px !important;">
                     <input type="text" id="custName" class="floating-input" placeholder=" " required>
                     <label for="custName" class="floating-label">Your Full Name</label>

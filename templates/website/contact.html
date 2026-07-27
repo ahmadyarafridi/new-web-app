@@ -136,7 +136,7 @@
         </script>
         {% endif %}
 
-        <form method="post" action="{% url 'contact' %}" onsubmit="sessionStorage.removeItem('feedback_submitted_modal_closed');" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
+        <form method="post" action="{% url 'contact' %}" spellcheck="false" onsubmit="sessionStorage.removeItem('feedback_submitted_modal_closed');" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
             {% csrf_token %}
             
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
