@@ -151,11 +151,71 @@ def api_products(request):
 def about(request):
     return render(request, 'website/about.html')
 
+def legal_document(request, doc_type):
+    info = RestaurantInfo.objects.first()
+    rest_name = info.name if info else "Amazing Foods"
+    rest_email = info.email if info else "info@deliciousfoodstop.pk"
+    rest_phone = info.phone if info else "+92 333 9342567"
+
+    if doc_type == 'privacy':
+        context = {
+            'page_title': 'Privacy Policy',
+            'section_tag': 'Privacy & Data Security',
+            'updated_date': 'July 2026',
+            'legal_items': [
+                {
+                    'title': '1. Information We Collect',
+                    'content': f'When you place a WhatsApp pre-order on {rest_name}, we collect your full name, phone number, delivery address, and order notes to fulfill your food order.'
+                },
+                {
+                    'title': '2. How We Use Your Information',
+                    'content': 'Your details are used strictly to prepare your meal, process food delivery, and communicate order updates via WhatsApp. We never sell, rent, or trade your personal information with third-party advertisers.'
+                },
+                {
+                    'title': '3. Cookies & Local Storage',
+                    'content': 'We use standard browser LocalStorage solely to keep track of your active shopping cart items while browsing our menu. No tracking cookies are used to monitor external web activity.'
+                },
+                {
+                    'title': '4. Contact Us',
+                    'content': f'If you have any questions regarding your personal privacy, feel free to reach out to us at {rest_email} or via phone at {rest_phone}.'
+                },
+            ]
+        }
+    else:
+        context = {
+            'page_title': 'Terms of Service',
+            'section_tag': 'Legal Information',
+            'updated_date': 'July 2026',
+            'legal_items': [
+                {
+                    'title': '1. Order Placement & WhatsApp Confirmation',
+                    'content': f'All online pre-orders placed through {rest_name} are transmitted via WhatsApp for final kitchen confirmation. Your order is officially accepted once our team confirms your order details and delivery address on WhatsApp.'
+                },
+                {
+                    'title': '2. Pricing & Currency',
+                    'content': 'All prices listed on our menu are in Pakistani Rupees (PKR / Rs.) and include applicable local service taxes. We reserve the right to modify menu prices or daily deal promotions without prior notice.'
+                },
+                {
+                    'title': '3. Operating Hours & Stock Availability',
+                    'content': 'Our online pre-ordering operates during active kitchen hours (Lunch: 11:00 AM – 4:00 PM | Dinner: 5:00 PM – 11:00 PM). Item availability is subject to daily fresh ingredients. If an ordered item is out of stock, our team will offer a substitute or adjustment on WhatsApp.'
+                },
+                {
+                    'title': '4. Order Cancellation',
+                    'content': f'Orders can be canceled free of charge before food preparation begins by contacting our kitchen on WhatsApp at {rest_phone}. Once cooking has started, cancellations cannot be processed.'
+                },
+                {
+                    'title': '5. Dietary Allergies & Special Instructions',
+                    'content': 'Customers are responsible for specifying any severe food allergies (nuts, dairy, gluten, spices) in the special order notes when submitting their pre-order.'
+                },
+            ]
+        }
+    return render(request, 'website/legal.html', context)
+
 def privacy(request):
-    return render(request, 'website/privacy.html')
+    return legal_document(request, 'privacy')
 
 def terms(request):
-    return render(request, 'website/terms.html')
+    return legal_document(request, 'terms')
 
 def contact(request):
     if request.method == 'POST':
