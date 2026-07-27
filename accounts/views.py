@@ -538,7 +538,10 @@ def manage_feedback(request):
 
 @login_required(login_url='login')
 def feedback_approve(request, pk):
-    item = get_object_or_404(CustomerFeedback, pk=pk)
+    item = CustomerFeedback.objects.filter(pk=pk).first()
+    if not item:
+        messages.info(request, "Review not found or already processed.")
+        return redirect('manage_feedback')
     item.status = 'approved'
     item.save()
     Review.objects.filter(customer_name=item.customer_name).update(is_approved=True)
@@ -548,7 +551,10 @@ def feedback_approve(request, pk):
 
 @login_required(login_url='login')
 def feedback_reject(request, pk):
-    item = get_object_or_404(CustomerFeedback, pk=pk)
+    item = CustomerFeedback.objects.filter(pk=pk).first()
+    if not item:
+        messages.info(request, "Review not found or already processed.")
+        return redirect('manage_feedback')
     item.status = 'rejected'
     item.save()
     Review.objects.filter(customer_name=item.customer_name).update(is_approved=False)
@@ -558,7 +564,11 @@ def feedback_reject(request, pk):
 
 @login_required(login_url='login')
 def feedback_delete(request, pk):
-    item = get_object_or_404(CustomerFeedback, pk=pk)
+    item = CustomerFeedback.objects.filter(pk=pk).first()
+    if not item:
+        messages.info(request, "Review has already been deleted.")
+        return redirect('manage_feedback')
+
     if request.method == 'POST':
         name = item.customer_name
         item.delete()
