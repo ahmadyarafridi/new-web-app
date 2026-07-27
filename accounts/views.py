@@ -541,6 +541,7 @@ def feedback_approve(request, pk):
     item = get_object_or_404(CustomerFeedback, pk=pk)
     item.status = 'approved'
     item.save()
+    Review.objects.filter(customer_name=item.customer_name).update(is_approved=True)
     messages.success(request, f'Feedback from "{item.customer_name}" has been APPROVED and is now live on the website!')
     return redirect('manage_feedback')
 
@@ -550,6 +551,7 @@ def feedback_reject(request, pk):
     item = get_object_or_404(CustomerFeedback, pk=pk)
     item.status = 'rejected'
     item.save()
+    Review.objects.filter(customer_name=item.customer_name).update(is_approved=False)
     messages.info(request, f'Feedback from "{item.customer_name}" has been REJECTED.')
     return redirect('manage_feedback')
 
@@ -560,6 +562,7 @@ def feedback_delete(request, pk):
     if request.method == 'POST':
         name = item.customer_name
         item.delete()
+        Review.objects.filter(customer_name=name).delete()
         messages.success(request, f'Feedback from "{name}" has been deleted.')
         return redirect('manage_feedback')
     return render(request, 'accounts/confirm_delete.html', {'object_name': item.customer_name, 'type': 'Customer Feedback', 'cancel_url': 'manage_feedback'})

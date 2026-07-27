@@ -40,7 +40,20 @@ def index(request):
         paginator = Paginator(products_qs, PER_PAGE)
         first_page = paginator.get_page(1)
         deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
-        curated_reviews = list(Review.objects.filter(is_approved=True).order_by('display_order', '-id'))
+        approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
+        if not approved_feedback:
+            curated_reviews = list(Review.objects.filter(is_approved=True).order_by('display_order', '-id'))
+        else:
+            curated_reviews = [
+                {
+                    'customer_name': fb.customer_name,
+                    'reviewer_role': 'Verified Diner',
+                    'rating': fb.rating,
+                    'comment': fb.comment,
+                    'avatar_url': fb.avatar_src
+                }
+                for fb in approved_feedback
+            ]
     except (OperationalError, ProgrammingError):
         ensure_db_ready()
         categories = list(Category.objects.filter(is_active=True))
@@ -48,7 +61,17 @@ def index(request):
         paginator = Paginator(products_qs, PER_PAGE)
         first_page = paginator.get_page(1)
         deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
-        curated_reviews = list(Review.objects.filter(is_approved=True).order_by('display_order', '-id'))
+        approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
+        curated_reviews = [
+            {
+                'customer_name': fb.customer_name,
+                'reviewer_role': 'Verified Diner',
+                'rating': fb.rating,
+                'comment': fb.comment,
+                'avatar_url': fb.avatar_src
+            }
+            for fb in approved_feedback
+        ] if approved_feedback else list(Review.objects.filter(is_approved=True).order_by('display_order', '-id'))
 
     return render(request, 'website/index.html', {
         'categories': categories,
