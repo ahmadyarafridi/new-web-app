@@ -41,19 +41,31 @@ def index(request):
         first_page = paginator.get_page(1)
         deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
         approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
-        if not approved_feedback:
-            curated_reviews = list(Review.objects.filter(is_approved=True).order_by('display_order', '-id'))
-        else:
-            curated_reviews = [
-                {
+        curated_reviews = list(Review.objects.filter(is_approved=True).order_by('display_order', '-id'))
+
+        seen_names = set()
+        all_approved = []
+        for fb in approved_feedback:
+            if fb.customer_name not in seen_names:
+                all_approved.append({
                     'customer_name': fb.customer_name,
                     'reviewer_role': 'Verified Diner',
                     'rating': fb.rating,
                     'comment': fb.comment,
                     'avatar_url': fb.avatar_src
-                }
-                for fb in approved_feedback
-            ]
+                })
+                seen_names.add(fb.customer_name)
+
+        for rev in curated_reviews:
+            if rev.customer_name not in seen_names:
+                all_approved.append({
+                    'customer_name': rev.customer_name,
+                    'reviewer_role': getattr(rev, 'reviewer_role', None) or 'Food Enthusiast',
+                    'rating': rev.rating,
+                    'comment': rev.comment,
+                    'avatar_url': rev.avatar_file.url if rev.avatar_file else (rev.avatar_url or 'https://i.pravatar.cc/120?img=68')
+                })
+                seen_names.add(rev.customer_name)
     except (OperationalError, ProgrammingError):
         ensure_db_ready()
         categories = list(Category.objects.filter(is_active=True))
@@ -62,16 +74,29 @@ def index(request):
         first_page = paginator.get_page(1)
         deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
         approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
-        curated_reviews = [
-            {
-                'customer_name': fb.customer_name,
-                'reviewer_role': 'Verified Diner',
-                'rating': fb.rating,
-                'comment': fb.comment,
-                'avatar_url': fb.avatar_src
-            }
-            for fb in approved_feedback
-        ] if approved_feedback else list(Review.objects.filter(is_approved=True).order_by('display_order', '-id'))
+        curated_reviews = list(Review.objects.filter(is_approved=True).order_by('display_order', '-id'))
+        seen_names = set()
+        all_approved = []
+        for fb in approved_feedback:
+            if fb.customer_name not in seen_names:
+                all_approved.append({
+                    'customer_name': fb.customer_name,
+                    'reviewer_role': 'Verified Diner',
+                    'rating': fb.rating,
+                    'comment': fb.comment,
+                    'avatar_url': fb.avatar_src
+                })
+                seen_names.add(fb.customer_name)
+        for rev in curated_reviews:
+            if rev.customer_name not in seen_names:
+                all_approved.append({
+                    'customer_name': rev.customer_name,
+                    'reviewer_role': getattr(rev, 'reviewer_role', None) or 'Food Enthusiast',
+                    'rating': rev.rating,
+                    'comment': rev.comment,
+                    'avatar_url': rev.avatar_file.url if rev.avatar_file else (rev.avatar_url or 'https://i.pravatar.cc/120?img=68')
+                })
+                seen_names.add(rev.customer_name)
 
     return render(request, 'website/index.html', {
         'categories': categories,
@@ -79,7 +104,7 @@ def index(request):
         'has_more': first_page.has_next(),
         'total_count': paginator.count,
         'deals': deals,
-        'reviews': curated_reviews,
+        'reviews': all_approved,
     })
 
 def menu(request):
