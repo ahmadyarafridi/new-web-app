@@ -51,6 +51,32 @@ def index(request):
                 if key_name in rev.customer_name and rev.comment != short_txt:
                     rev.comment = short_txt
                     Review.objects.filter(pk=rev.pk).update(comment=short_txt)
+
+        # Sync seed feedback to CustomerFeedback DB model if empty
+        if not CustomerFeedback.objects.exists():
+            feedback_data = [
+                {
+                    'customer_name': 'Zainab Khan',
+                    'rating': 5,
+                    'comment': '"The best Zinger burgers in Jamrud! Always hot, crispy, and fresh. Fast WhatsApp ordering saves time!"',
+                    'status': 'approved'
+                },
+                {
+                    'customer_name': 'Hamza Afridi',
+                    'rating': 5,
+                    'comment': '"Authentic local shawarma and amazing wood-fired pizzas. Great atmosphere and friendly team!"',
+                    'status': 'approved'
+                },
+                {
+                    'customer_name': 'Muhammad Ali',
+                    'rating': 5,
+                    'comment': '"Their Special Chicken Pulao is unbeatable in flavor. Great quality family deals!"',
+                    'status': 'approved'
+                },
+            ]
+            for fbdata in feedback_data:
+                CustomerFeedback.objects.create(**fbdata)
+
         approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
     except (OperationalError, ProgrammingError):
         ensure_db_ready()

@@ -431,7 +431,19 @@ def deal_delete(request, pk):
 # ==============================================================================
 @login_required(login_url='login')
 def manage_reviews(request):
-    return redirect('manage_feedback')
+    search_query = request.GET.get('q', '').strip()
+    reviews_qs = Review.objects.all().order_by('display_order', '-id')
+
+    if search_query:
+        from django.db.models import Q
+        reviews_qs = reviews_qs.filter(
+            Q(customer_name__icontains=search_query) | Q(comment__icontains=search_query) | Q(reviewer_role__icontains=search_query)
+        )
+
+    return render(request, 'accounts/reviews.html', {
+        'reviews': reviews_qs,
+        'search_query': search_query,
+    })
 
 
 @login_required(login_url='login')
