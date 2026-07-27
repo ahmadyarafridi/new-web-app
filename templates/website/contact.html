@@ -74,7 +74,20 @@
         </div>
 
         {% if messages %}
-        <!-- POPUP THANK YOU MODAL (MATCHES ORDER SAVED CONFIRMATION MODAL) -->
+        <!-- IN-PAGE THANK YOU BANNER DIRECTLY ABOVE FORM -->
+        <div id="feedbackSuccessBanner" style="background: rgba(201, 168, 76, 0.12); border: 1.5px solid var(--color-primary); border-radius: var(--border-radius-sm); padding: 20px 24px; margin-bottom: 25px; text-align: center; max-width: 500px; margin-left: auto; margin-right: auto; box-shadow: 0 0 20px rgba(201, 168, 76, 0.2);">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(201, 168, 76, 0.2); border: 1.5px solid var(--color-primary); color: #f5b301; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin: 0 auto 10px auto;">
+                <i class="fa-solid fa-check"></i>
+            </div>
+            <h4 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 1.15rem; margin-bottom: 6px; text-transform: uppercase; letter-spacing: 1px;">
+                Thank You For Your Review!
+            </h4>
+            <p style="font-size: 0.85rem; color: #ffffff; line-height: 1.5; margin: 0;">
+                We truly appreciate your feedback! Your review has been saved in our system and will appear live on our website once reviewed by our team.
+            </p>
+        </div>
+
+        <!-- POPUP THANK YOU MODAL (CENTERED OVER REVIEW FORM) -->
         <div class="modal active" id="feedbackThankYouModal" style="display: flex; align-items: center; justify-content: center; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 99999;">
             <div class="modal-backdrop" id="feedbackModalBackdrop"></div>
             <div class="modal-content" style="text-align: center; max-width: 440px; padding: 35px 25px; border-color: var(--color-primary); box-shadow: var(--shadow-lg); animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
@@ -101,24 +114,17 @@
         <script>
             document.addEventListener('DOMContentLoaded', function() {
                 const modal = document.getElementById('feedbackThankYouModal');
+                const banner = document.getElementById('feedbackSuccessBanner');
                 const closeBtn = document.getElementById('closeFeedbackModalBtn');
                 const dismissBtn = document.getElementById('dismissFeedbackModalBtn');
                 const backdrop = document.getElementById('feedbackModalBackdrop');
                 const fbSection = document.getElementById('customer-feedback');
                 
-                // Prevent modal from reappearing on page refresh or after user clicks Done / X
-                if (sessionStorage.getItem('feedback_submitted_modal_closed') === 'true') {
-                    if (modal) {
-                        modal.classList.remove('active');
-                        modal.style.display = 'none';
-                    }
-                } else {
-                    if (fbSection) {
-                        fbSection.scrollIntoView({ behavior: 'instant', block: 'center' });
-                    }
-                    if (window.history && window.history.replaceState) {
-                        window.history.replaceState(null, null, window.location.pathname);
-                    }
+                // Instantly scroll directly to the review form when submitted
+                if (fbSection) {
+                    setTimeout(function() {
+                        fbSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
                 }
 
                 function closeModal() {

@@ -59,6 +59,26 @@
             height: 58px !important;
             padding-top: 22px !important;
             cursor: pointer !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+        }
+
+        /* --- FILE SELECTOR BUTTON TEXT COLOR BLACK FIX --- */
+        .floating-group input[type="file"].floating-input::file-selector-button,
+        input[type="file"]::file-selector-button {
+            background-color: #c9a84c !important;
+            color: #000000 !important;
+            -webkit-text-fill-color: #000000 !important;
+            border: none !important;
+            font-weight: 700 !important;
+            padding: 6px 12px !important;
+            border-radius: 4px !important;
+            cursor: pointer !important;
+            margin-right: 10px !important;
+            font-family: inherit !important;
+            font-size: 0.8rem !important;
+            text-transform: uppercase !important;
+            letter-spacing: 0.5px !important;
         }
 
         .floating-group input.floating-input:focus,
@@ -72,7 +92,7 @@
             box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.2) !important;
         }
 
-        /* --- UNIVERSAL INPUT TEXT, FOCUS & AUTOFILL FIX --- */
+        /* --- UNIVERSAL INPUT TEXT, FOCUS, BLUR, EDIT & AUTOFILL LOCK --- */
         input, textarea, select {
             color: #ffffff !important;
             -webkit-text-fill-color: #ffffff !important;
@@ -82,7 +102,8 @@
 
         input:focus, textarea:focus, select:focus,
         input:active, textarea:active, select:active,
-        input:hover, textarea:hover, select:hover {
+        input:hover, textarea:hover, select:hover,
+        input:not(:placeholder-shown), textarea:not(:placeholder-shown) {
             background-color: #0d0d0d !important;
             color: #ffffff !important;
             -webkit-text-fill-color: #ffffff !important;
