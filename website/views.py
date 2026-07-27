@@ -27,15 +27,28 @@ def track_visit(request):
     except Exception:
         pass
 
+from django.core.paginator import Paginator
+from django.templatetags.static import static
+
+PER_PAGE = 9
+
 def index(request):
     track_visit(request)
     try:
-        deals = list(Deal.objects.filter(is_active=True))
+        categories = list(Category.objects.filter(is_active=True))
+        products_qs = Product.objects.filter(category__is_active=True).select_related('category').order_by('-id')
+        paginator = Paginator(products_qs, PER_PAGE)
+        first_page = paginator.get_page(1)
+        deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
         curated_reviews = list(Review.objects.filter(is_approved=True))
         approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
     except (OperationalError, ProgrammingError):
         ensure_db_ready()
-        deals = list(Deal.objects.filter(is_active=True))
+        categories = list(Category.objects.filter(is_active=True))
+        products_qs = Product.objects.filter(category__is_active=True).select_related('category').order_by('-id')
+        paginator = Paginator(products_qs, PER_PAGE)
+        first_page = paginator.get_page(1)
+        deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
         curated_reviews = list(Review.objects.filter(is_approved=True))
         approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
         
@@ -54,37 +67,16 @@ def index(request):
     combined_reviews = feedback_reviews + curated_reviews
 
     return render(request, 'website/index.html', {
-        'deals': deals,
-        'reviews': combined_reviews,
-    })
-
-from django.core.paginator import Paginator
-from django.templatetags.static import static
-
-PER_PAGE = 9
-
-def menu(request):
-    try:
-        categories = list(Category.objects.filter(is_active=True))
-        products_qs = Product.objects.filter(category__is_active=True).select_related('category')
-        paginator = Paginator(products_qs, PER_PAGE)
-        first_page = paginator.get_page(1)
-        deals = list(Deal.objects.filter(is_active=True))
-    except (OperationalError, ProgrammingError):
-        ensure_db_ready()
-        categories = list(Category.objects.filter(is_active=True))
-        products_qs = Product.objects.filter(category__is_active=True).select_related('category')
-        paginator = Paginator(products_qs, PER_PAGE)
-        first_page = paginator.get_page(1)
-        deals = list(Deal.objects.filter(is_active=True))
-
-    return render(request, 'website/menu.html', {
         'categories': categories,
         'products': first_page.object_list,
         'has_more': first_page.has_next(),
         'total_count': paginator.count,
         'deals': deals,
+        'reviews': combined_reviews,
     })
+
+def menu(request):
+    return redirect('/#menu')
 
 def api_products(request):
     cat_slug = request.GET.get('category', 'all')
@@ -97,7 +89,7 @@ def api_products(request):
         page_num = 1
 
     if cat_slug == 'deals':
-        deals_qs = Deal.objects.filter(is_active=True)
+        deals_qs = Deal.objects.filter(is_active=True).order_by('-id')
         if search_q:
             from django.db.models import Q
             deals_qs = deals_qs.filter(Q(title__icontains=search_q) | Q(description__icontains=search_q))
@@ -122,7 +114,7 @@ def api_products(request):
             'total_count': len(items_data),
         })
 
-    qs = Product.objects.filter(category__is_active=True).select_related('category')
+    qs = Product.objects.filter(category__is_active=True).select_related('category').order_by('-id')
     
     if cat_slug and cat_slug != 'all':
         qs = qs.filter(category__slug=cat_slug)
