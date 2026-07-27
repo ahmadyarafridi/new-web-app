@@ -72,17 +72,30 @@
             box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.2) !important;
         }
 
-        /* --- UNIVERSAL INPUT TEXT & AUTOFILL FIX --- */
+        /* --- UNIVERSAL INPUT TEXT, FOCUS & AUTOFILL FIX --- */
         input, textarea, select {
             color: #ffffff !important;
             -webkit-text-fill-color: #ffffff !important;
             caret-color: #c9a84c !important;
+            background-color: #0d0d0d !important;
+        }
+
+        input:focus, textarea:focus, select:focus,
+        input:active, textarea:active, select:active,
+        input:hover, textarea:hover, select:hover {
+            background-color: #0d0d0d !important;
+            color: #ffffff !important;
+            -webkit-text-fill-color: #ffffff !important;
+            border-color: #c9a84c !important;
+            box-shadow: 0 0 0 3px rgba(201, 168, 76, 0.2) !important;
+            outline: none !important;
         }
 
         input:-webkit-autofill,
         input:-webkit-autofill:hover,
         input:-webkit-autofill:focus,
         input:-webkit-autofill:active,
+        input:-internal-autofill-selected,
         textarea:-webkit-autofill,
         textarea:-webkit-autofill:hover,
         textarea:-webkit-autofill:focus,
@@ -91,7 +104,9 @@
             -webkit-box-shadow: 0 0 0 1000px #0d0d0d inset !important;
             box-shadow: 0 0 0 1000px #0d0d0d inset !important;
             -webkit-text-fill-color: #ffffff !important;
+            color: #ffffff !important;
             caret-color: #ffffff !important;
+            background-color: #0d0d0d !important;
             transition: background-color 5000s ease-in-out 0s !important;
         }
 
