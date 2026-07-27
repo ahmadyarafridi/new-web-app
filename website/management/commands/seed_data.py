@@ -359,6 +359,19 @@ class Command(BaseCommand):
             )
         self.stdout.write(self.style.SUCCESS('[OK] Reviews created/updated'))
 
+        # 6. Customer Feedback
+        from website.models import CustomerFeedback
+        for rdata in reviews_data:
+            CustomerFeedback.objects.update_or_create(
+                customer_name=rdata['customer_name'],
+                defaults={
+                    'rating': rdata['rating'],
+                    'comment': rdata['comment'],
+                    'status': 'approved',
+                }
+            )
+        self.stdout.write(self.style.SUCCESS('[OK] CustomerFeedback created/updated'))
+
         # 6. Default Admin Superuser
         from django.contrib.auth.models import User
         admin_user, created = User.objects.get_or_create(username='admin')
