@@ -7,50 +7,61 @@ from website.image_utils import optimize_image
 
 
 class Command(BaseCommand):
-    help = 'Safely migrates local media files from MEDIA_ROOT to Cloudinary storage after optimizing with Pillow.'
+    help = 'Migrates all existing local media files to Cloudinary CDN storage with detailed progress tracking.'
 
     def handle(self, *args, **options):
         if not getattr(settings, 'USE_CLOUDINARY', False):
             self.stdout.write(self.style.ERROR(
                 '[ERROR] Cloudinary is not configured in settings. '
-                'Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET first.'
+                'Please set CLOUDINARY_CLOUD_NAME, CLOUDINARY_API_KEY, and CLOUDINARY_API_SECRET.'
             ))
             return
 
-        self.stdout.write(self.style.SUCCESS('[START] Migrating local media files to Cloudinary...'))
+        self.stdout.write(self.style.SUCCESS('\n=================================================='))
+        self.stdout.write(self.style.SUCCESS('   CLOUDINARY MEDIA MIGRATION IN PROGRESS'))
+        self.stdout.write(self.style.SUCCESS('==================================================\n'))
         
         models_to_check = [
-            (Category, 'image_file', 'cat'),
-            (Product, 'image_file', 'prod'),
-            (Deal, 'image_file', 'deal'),
-            (Review, 'avatar_file', 'rev'),
-            (CustomerFeedback, 'avatar_file', 'rev'),
+            (Category, 'image_file', 'cat', 'categories'),
+            (Product, 'image_file', 'prod', 'products'),
+            (Deal, 'image_file', 'deal', 'deals'),
+            (Review, 'avatar_file', 'rev', 'reviews'),
+            (CustomerFeedback, 'avatar_file', 'rev', 'reviews'),
         ]
 
+        total_found = 0
         migrated_count = 0
         skipped_count = 0
+        failed_count = 0
 
-        for model_cls, field_name, prefix in models_to_check:
+        for model_cls, field_name, prefix, folder in models_to_check:
             records = model_cls.objects.all()
             for record in records:
                 file_field = getattr(record, field_name, None)
                 if not file_field or not file_field.name:
                     continue
 
-                # Check if file URL is already a Cloudinary URL
+                total_found += 1
                 file_url = str(file_field.url) if hasattr(file_field, 'url') else ''
+
+                # Skip if already migrated to Cloudinary
                 if 'cloudinary' in file_url or 'res.cloudinary.com' in file_url:
                     skipped_count += 1
+                    self.stdout.write(f'  [SKIPPED - Already Cloudinary] {model_cls.__name__} (ID: {record.pk}) -> {file_url}')
                     continue
 
-                # Check local media file path
+                # Locate local file
                 local_path = os.path.join(settings.BASE_DIR, 'media', file_field.name)
+                if not os.path.exists(local_path):
+                    # Check if path is relative to BASE_DIR
+                    local_path = os.path.join(settings.BASE_DIR, file_field.name)
+
                 if os.path.exists(local_path):
                     try:
-                        self.stdout.write(f'  - Uploading {model_cls.__name__} (ID: {record.pk}, File: {file_field.name})...')
+                        self.stdout.write(f'  [MIGRATING] {model_cls.__name__} (ID: {record.pk}, File: {file_field.name})...')
                         
                         with open(local_path, 'rb') as f:
-                            # Skip re-compression if file is already WebP
+                            # Skip re-compression if file is already optimized WebP
                             if file_field.name.lower().endswith('.webp'):
                                 from django.core.files.uploadedfile import SimpleUploadedFile
                                 file_to_upload = SimpleUploadedFile(
@@ -61,17 +72,25 @@ class Command(BaseCommand):
                             else:
                                 file_to_upload = optimize_image(f, prefix=prefix)
 
-                            saved_name = default_storage.save(f"{prefix}s/{file_to_upload.name}", file_to_upload)
+                            saved_name = default_storage.save(f"{folder}/{file_to_upload.name}", file_to_upload)
                             setattr(record, field_name, saved_name)
                             record.save(update_fields=[field_name])
                             
                         migrated_count += 1
-                        self.stdout.write(self.style.SUCCESS(f'    [OK] Uploaded to Cloudinary: {saved_name}'))
+                        new_url = getattr(record, field_name).url
+                        self.stdout.write(self.style.SUCCESS(f'    [OK] Uploaded to Cloudinary: {new_url}'))
                     except Exception as e:
+                        failed_count += 1
                         self.stdout.write(self.style.ERROR(f'    [FAILED] {file_field.name}: {e}'))
                 else:
                     skipped_count += 1
+                    self.stdout.write(self.style.WARNING(f'  [SKIPPED - File not found locally] {model_cls.__name__} (ID: {record.pk}, Path: {local_path})'))
 
-        self.stdout.write(self.style.SUCCESS(
-            f'\n[COMPLETE] Migration finished! Migrated: {migrated_count} files, Skipped/Already Cloudinary: {skipped_count} files.'
-        ))
+        self.stdout.write(self.style.SUCCESS('\n=================================================='))
+        self.stdout.write(self.style.SUCCESS('            CLOUDINARY MIGRATION REPORT'))
+        self.stdout.write(self.style.SUCCESS('=================================================='))
+        self.stdout.write(f'  - Total Images Found:          {total_found}')
+        self.stdout.write(f'  - Successfully Migrated:       {migrated_count}')
+        self.stdout.write(f'  - Skipped (Already Cloudinary): {skipped_count}')
+        self.stdout.write(f'  - Failed:                       {failed_count}')
+        self.stdout.write(self.style.SUCCESS('==================================================\n'))
