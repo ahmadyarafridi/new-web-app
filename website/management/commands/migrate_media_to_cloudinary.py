@@ -7,7 +7,7 @@ from website.image_utils import optimize_image
 
 
 class Command(BaseCommand):
-    help = 'Migrates all existing local media files to Cloudinary CDN storage with detailed progress tracking.'
+    help = 'Migrates all existing local media files to Cloudinary CDN storage with a tabular breakdown report.'
 
     def handle(self, *args, **options):
         if not getattr(settings, 'USE_CLOUDINARY', False):
@@ -22,46 +22,50 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('==================================================\n'))
         
         models_to_check = [
-            (Category, 'image_file', 'cat', 'categories'),
-            (Product, 'image_file', 'prod', 'products'),
-            (Deal, 'image_file', 'deal', 'deals'),
-            (Review, 'avatar_file', 'rev', 'reviews'),
-            (CustomerFeedback, 'avatar_file', 'rev', 'reviews'),
+            (Category, 'image_file', 'cat', 'categories', 'Categories'),
+            (Product, 'image_file', 'prod', 'products', 'Products'),
+            (Deal, 'image_file', 'deal', 'deals', 'Deals'),
+            (Review, 'avatar_file', 'rev', 'reviews', 'Reviews'),
+            (CustomerFeedback, 'avatar_file', 'rev', 'reviews', 'Reviews'),
         ]
 
-        total_found = 0
-        migrated_count = 0
-        skipped_count = 0
-        failed_count = 0
+        counts_by_type = {
+            'Products': 0,
+            'Categories': 0,
+            'Deals': 0,
+            'Reviews': 0,
+        }
+        
+        total_migrated = 0
+        total_failed = 0
+        total_skipped = 0
 
-        for model_cls, field_name, prefix, folder in models_to_check:
+        for model_cls, field_name, prefix, folder, display_type in models_to_check:
             records = model_cls.objects.all()
             for record in records:
                 file_field = getattr(record, field_name, None)
                 if not file_field or not file_field.name:
                     continue
 
-                total_found += 1
                 file_url = str(file_field.url) if hasattr(file_field, 'url') else ''
 
                 # Skip if already migrated to Cloudinary
                 if 'cloudinary' in file_url or 'res.cloudinary.com' in file_url:
-                    skipped_count += 1
-                    self.stdout.write(f'  [SKIPPED - Already Cloudinary] {model_cls.__name__} (ID: {record.pk}) -> {file_url}')
+                    total_skipped += 1
+                    self.stdout.write(f'  [SKIPPED - Already Cloudinary] {display_type} (ID: {record.pk}) -> {file_url}')
                     continue
 
                 # Locate local file
                 local_path = os.path.join(settings.BASE_DIR, 'media', file_field.name)
                 if not os.path.exists(local_path):
-                    # Check if path is relative to BASE_DIR
                     local_path = os.path.join(settings.BASE_DIR, file_field.name)
 
                 if os.path.exists(local_path):
                     try:
-                        self.stdout.write(f'  [MIGRATING] {model_cls.__name__} (ID: {record.pk}, File: {file_field.name})...')
+                        self.stdout.write(f'  [MIGRATING] {display_type} (ID: {record.pk}, File: {file_field.name})...')
                         
                         with open(local_path, 'rb') as f:
-                            # Skip re-compression if file is already optimized WebP
+                            # Skip re-compression if file is already WebP
                             if file_field.name.lower().endswith('.webp'):
                                 from django.core.files.uploadedfile import SimpleUploadedFile
                                 file_to_upload = SimpleUploadedFile(
@@ -76,21 +80,25 @@ class Command(BaseCommand):
                             setattr(record, field_name, saved_name)
                             record.save(update_fields=[field_name])
                             
-                        migrated_count += 1
+                        counts_by_type[display_type] += 1
+                        total_migrated += 1
                         new_url = getattr(record, field_name).url
                         self.stdout.write(self.style.SUCCESS(f'    [OK] Uploaded to Cloudinary: {new_url}'))
                     except Exception as e:
-                        failed_count += 1
+                        total_failed += 1
                         self.stdout.write(self.style.ERROR(f'    [FAILED] {file_field.name}: {e}'))
                 else:
-                    skipped_count += 1
-                    self.stdout.write(self.style.WARNING(f'  [SKIPPED - File not found locally] {model_cls.__name__} (ID: {record.pk}, Path: {local_path})'))
+                    total_skipped += 1
+                    self.stdout.write(self.style.WARNING(f'  [SKIPPED - File not found locally] {display_type} (ID: {record.pk}, Path: {local_path})'))
 
         self.stdout.write(self.style.SUCCESS('\n=================================================='))
         self.stdout.write(self.style.SUCCESS('            CLOUDINARY MIGRATION REPORT'))
         self.stdout.write(self.style.SUCCESS('=================================================='))
-        self.stdout.write(f'  - Total Images Found:          {total_found}')
-        self.stdout.write(f'  - Successfully Migrated:       {migrated_count}')
-        self.stdout.write(f'  - Skipped (Already Cloudinary): {skipped_count}')
-        self.stdout.write(f'  - Failed:                       {failed_count}')
+        self.stdout.write(f"{'Type':<18} {'Count'}")
+        self.stdout.write('--------------------------------------------------')
+        for asset_type in ['Products', 'Categories', 'Deals', 'Reviews']:
+            self.stdout.write(f"{asset_type:<18} {counts_by_type[asset_type]}")
+        self.stdout.write('--------------------------------------------------')
+        self.stdout.write(f"{'Total migrated':<18} {total_migrated}")
+        self.stdout.write(f"{'Failed':<18} {total_failed}")
         self.stdout.write(self.style.SUCCESS('==================================================\n'))
