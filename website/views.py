@@ -40,44 +40,7 @@ def index(request):
         paginator = Paginator(products_qs, PER_PAGE)
         first_page = paginator.get_page(1)
         deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
-        curated_reviews = list(Review.objects.filter(is_approved=True))
-        short_comments = {
-            'Zainab': '"The best Zinger burgers in Jamrud! Always hot, crispy, and fresh. Fast WhatsApp ordering saves time!"',
-            'Hamza': '"Authentic local shawarma and amazing wood-fired pizzas. Great atmosphere and friendly team!"',
-            'Muhammad': '"Their Special Chicken Pulao is unbeatable in flavor. Great quality family deals!"',
-        }
-        for rev in curated_reviews:
-            for key_name, short_txt in short_comments.items():
-                if key_name in rev.customer_name and rev.comment != short_txt:
-                    rev.comment = short_txt
-                    Review.objects.filter(pk=rev.pk).update(comment=short_txt)
-
-        # Sync seed feedback to CustomerFeedback DB model if empty
-        if not CustomerFeedback.objects.exists():
-            feedback_data = [
-                {
-                    'customer_name': 'Zainab Khan',
-                    'rating': 5,
-                    'comment': '"The best Zinger burgers in Jamrud! Always hot, crispy, and fresh. Fast WhatsApp ordering saves time!"',
-                    'status': 'approved'
-                },
-                {
-                    'customer_name': 'Hamza Afridi',
-                    'rating': 5,
-                    'comment': '"Authentic local shawarma and amazing wood-fired pizzas. Great atmosphere and friendly team!"',
-                    'status': 'approved'
-                },
-                {
-                    'customer_name': 'Muhammad Ali',
-                    'rating': 5,
-                    'comment': '"Their Special Chicken Pulao is unbeatable in flavor. Great quality family deals!"',
-                    'status': 'approved'
-                },
-            ]
-            for fbdata in feedback_data:
-                CustomerFeedback.objects.create(**fbdata)
-
-        approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
+        curated_reviews = list(Review.objects.filter(is_approved=True).order_by('display_order', '-id'))
     except (OperationalError, ProgrammingError):
         ensure_db_ready()
         categories = list(Category.objects.filter(is_active=True))
@@ -85,22 +48,7 @@ def index(request):
         paginator = Paginator(products_qs, PER_PAGE)
         first_page = paginator.get_page(1)
         deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
-        curated_reviews = list(Review.objects.filter(is_approved=True))
-        approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
-        
-    feedback_reviews = [
-        {
-            'customer_name': fb.customer_name,
-            'reviewer_role': 'Verified Diner',
-            'rating': fb.rating,
-            'comment': f'"{fb.comment}"' if not fb.comment.startswith('"') else fb.comment,
-            'avatar_url': fb.avatar_file.url if fb.avatar_file else f'https://i.pravatar.cc/120?img={(fb.id * 7) % 70 + 1}'
-        }
-        for fb in approved_feedback
-    ]
-    
-    # Put newly approved customer reviews FIRST in the testimonials slider
-    combined_reviews = feedback_reviews + curated_reviews
+        curated_reviews = list(Review.objects.filter(is_approved=True).order_by('display_order', '-id'))
 
     return render(request, 'website/index.html', {
         'categories': categories,
@@ -108,7 +56,7 @@ def index(request):
         'has_more': first_page.has_next(),
         'total_count': paginator.count,
         'deals': deals,
-        'reviews': combined_reviews,
+        'reviews': curated_reviews,
     })
 
 def menu(request):
