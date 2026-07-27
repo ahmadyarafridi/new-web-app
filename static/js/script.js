@@ -778,10 +778,9 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
-    checkLiveOperatingStatus();
-    setInterval(checkLiveOperatingStatus, 60000);
+    // Initialize floating labels
+    initFloatingLabels();
 });
-
 
 // Floating label logic
 function initFloatingLabels() {
@@ -803,4 +802,3 @@ function initFloatingLabels() {
         updateState();
     });
 }
-document.addEventListener('DOMContentLoaded', initFloatingLabels);
