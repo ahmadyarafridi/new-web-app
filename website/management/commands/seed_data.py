@@ -13,7 +13,7 @@ class Command(BaseCommand):
         info.tagline = "Fast Food & Pulao"
         info.phone = "+92 333 9342567"
         info.whatsapp_number = "923339342567"
-        info.email = "info@deliciousfoodstop.pk"
+        info.email = "info@amazingfoods.pk"
         info.address = "Amazing foods jamrud"
         info.google_maps_plus_code = "292F+QRP Jamrud"
         info.google_rating = 4.4

@@ -1,4 +1,4 @@
-# 🍔 Delicious Food Stop — Django Web Application
+# 🍔 Amazing Foods — Django Web Application
 
 [![Django](https://img.shields.io/badge/Django-6.0+-092E20?style=for-the-badge&logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)](https://developer.mozilla.org/en-US/docs/Web/HTML)
@@ -6,7 +6,7 @@
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 
-A production-ready full-stack Django web application built for **Delicious Food Stop**, a popular fast-food restaurant based in Jamrud, Khyber Pakhtunkhwa. Designed with a luxury dark & gold aesthetic, seamless page transitions, interactive menu filtering, direct WhatsApp ordering, and restaurant owner authentication.
+A production-ready full-stack Django web application built for **Amazing Foods**, a popular fast-food restaurant based in Jamrud, Khyber Pakhtunkhwa. Designed with a luxury dark & gold aesthetic, seamless page transitions, interactive menu filtering, direct WhatsApp ordering, and restaurant owner authentication.
 
 ---
 
@@ -84,4 +84,4 @@ Restaurant_Website/
 
 ## 📄 License & Credits
 
-Developed by **Muhammad Haris Afridi** for **Delicious Food Stop**. All rights reserved.
+Developed by **Muhammad Haris Afridi** for **Amazing Foods**. All rights reserved.
