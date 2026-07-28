@@ -28,6 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 CSRF_TRUSTED_ORIGINS = [
+    'https://*.vercel.app',
     'https://delicious-food-stop.up.railway.app',
     'https://*.up.railway.app',
     'http://localhost:8000',
