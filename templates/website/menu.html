@@ -24,12 +24,12 @@
             </div>
             <ul class="custom-options" id="customMobileOptions">
                 <li class="custom-option selected" data-value="all">All Items</li>
-                {% for category in categories %}
-                <li class="custom-option" data-value="{{ category.slug }}">{{ category.name }}</li>
-                {% endfor %}
                 {% if deals %}
                 <li class="custom-option" data-value="deals">Deals</li>
                 {% endif %}
+                {% for category in categories %}
+                <li class="custom-option" data-value="{{ category.slug }}">{{ category.name }}</li>
+                {% endfor %}
             </ul>
         </div>
     </div>
@@ -38,6 +38,30 @@
         <p class="menu-swipe-hint"><i class="fa-solid fa-arrow-right"></i> Swipe to right</p>
     </div>
     <div class="menu-grid" id="menuGrid">
+        {% if deals %}
+        {% for deal in deals %}
+        <div class="menu-item-card" data-category="deals" data-id="{{ deal.item_code }}">
+            <div class="menu-item-img-wrapper">
+                <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}" class="menu-item-img" loading="lazy" decoding="async" width="400" height="260">
+            </div>
+            <div class="menu-item-info">
+                <div class="menu-item-title-row">
+                    <h4>{{ deal.title }}</h4>
+                    <span class="menu-item-price">Rs. {{ deal.price|floatformat:0 }}</span>
+                </div>
+                {% if deal.description %}
+                <p class="menu-item-desc" style="font-size:0.75rem; color:var(--color-text-gray); margin-bottom:10px;">{{ deal.description }}</p>
+                {% endif %}
+                <div class="menu-item-actions">
+                    <button class="add-to-cart-btn" data-id="{{ deal.item_code }}" data-name="{{ deal.title }}" data-price="{{ deal.price|floatformat:0 }}" data-img="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}">
+                        <i class="fa-solid fa-plus"></i> Add to Order
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        {% endif %}
+
         {% for product in products %}
         <div class="menu-item-card" data-category="{{ product.category.slug }}" data-id="{{ product.item_code }}" data-in-stock="{% if product.is_available %}true{% else %}false{% endif %}">
             <div class="menu-item-img-wrapper" style="position: relative;">
@@ -68,30 +92,6 @@
             </div>
         </div>
         {% endfor %}
-
-        {% if deals %}
-        {% for deal in deals %}
-        <div class="menu-item-card" data-category="deals" data-id="{{ deal.item_code }}">
-            <div class="menu-item-img-wrapper">
-                <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}" class="menu-item-img">
-            </div>
-            <div class="menu-item-info">
-                <div class="menu-item-title-row">
-                    <h4>{{ deal.title }}</h4>
-                    <span class="menu-item-price">Rs. {{ deal.price|floatformat:0 }}</span>
-                </div>
-                {% if deal.description %}
-                <p class="menu-item-desc" style="font-size:0.75rem; color:var(--color-text-gray); margin-bottom:10px;">{{ deal.description }}</p>
-                {% endif %}
-                <div class="menu-item-actions">
-                    <button class="add-to-cart-btn" data-id="{{ deal.item_code }}" data-name="{{ deal.title }}" data-price="{{ deal.price|floatformat:0 }}" data-img="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}">
-                        <i class="fa-solid fa-plus"></i> Add to Order
-                    </button>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-        {% endif %}
 
         {% if has_more %}
         <!-- INITIAL HORIZONTAL LOAD MORE BUTTON -->
