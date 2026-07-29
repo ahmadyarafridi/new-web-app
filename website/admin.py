@@ -48,8 +48,15 @@ class OrderItemInline(admin.TabularInline):
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
     list_display = ('order_id', 'customer_name', 'customer_phone', 'total_price', 'order_status', 'payment_status', 'created_at')
-    list_editable = ('order_status', 'payment_status')
     list_filter = ('order_status', 'payment_status', 'created_at')
     search_fields = ('order_id', 'customer_name', 'customer_phone')
     inlines = [OrderItemInline]
+
+    def save_model(self, request, obj, form, change):
+        if change and 'order_status' in form.changed_data:
+            new_status = form.cleaned_data.get('order_status')
+            from website.services.order_service import OrderService
+            OrderService.update_status(obj, new_status, updated_by=request.user.username if request.user else 'admin')
+        else:
+            super().save_model(request, obj, form, change)
 

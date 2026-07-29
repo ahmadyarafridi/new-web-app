@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'website',
     'accounts',
+    'whatsapp',
 ]
 
 MIDDLEWARE = [
@@ -235,6 +236,14 @@ else:
 LOGIN_URL = 'login'
 LOGIN_REDIRECT_URL = 'dashboard'
 LOGOUT_REDIRECT_URL = 'index'
+
+# ==============================================================================
+# WHATSAPP META CLOUD API CONFIGURATION
+# ==============================================================================
+WHATSAPP_TOKEN = os.environ.get('WHATSAPP_TOKEN', '').strip()
+WHATSAPP_PHONE_NUMBER_ID = os.environ.get('WHATSAPP_PHONE_NUMBER_ID', '').strip()
+WHATSAPP_VERIFY_TOKEN = os.environ.get('WHATSAPP_VERIFY_TOKEN', 'amazing_foods_wa_secret_2026').strip()
+WHATSAPP_APP_SECRET = os.environ.get('WHATSAPP_APP_SECRET', '').strip()
 
 # ==============================================================================
 # IMAGE UPLOAD VALIDATION & OPTIMIZATION SETTINGS

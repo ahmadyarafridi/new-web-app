@@ -1,0 +1,100 @@
+{% extends 'accounts/base.html' %}
+{% block title %}WhatsApp & Notification Settings - Owner Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="h3 mb-0 text-gray-800">📱 WhatsApp & Notification Engine Settings</h2>
+            <p class="text-muted small mb-0">Configure Meta Cloud API credentials and edit automated message templates.</p>
+        </div>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags }}{% endif %} alert-dismissible fade show mb-4" role="alert">
+                {{ message }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <form method="POST" action="{% url 'whatsapp_settings' %}">
+        {% csrf_token %}
+        <div class="row">
+            <!-- API Credentials Column -->
+            <div class="col-lg-5 mb-4">
+                <div class="card shadow-sm border-0 rounded-3">
+                    <div class="card-header bg-dark text-white py-3">
+                        <h5 class="card-title mb-0 h6">🔑 Meta WhatsApp Cloud API Credentials</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Phone Number ID</label>
+                            <input type="text" name="phone_number_id" class="form-control" value="{{ config.phone_number_id }}" placeholder="e.g. 109283746591823">
+                            <div class="form-text">From Meta Business Manager WhatsApp API settings.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Permanent Access Token</label>
+                            <textarea name="access_token" class="form-control" rows="3" placeholder="EAAG...">{{ config.access_token }}</textarea>
+                            <div class="form-text">Meta System User access token with whatsapp_business_messaging.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Webhook Verify Token</label>
+                            <input type="text" name="verify_token" class="form-control" value="{{ config.verify_token }}">
+                            <div class="form-text">Secret matching Meta Webhook Configuration.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Meta App Secret</label>
+                            <input type="password" name="app_secret" class="form-control" value="{{ config.app_secret }}" placeholder="Meta App Secret for HMAC check">
+                            <div class="form-text">Used for production HMAC SHA-256 signature verification.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Estimated Preparation Time</label>
+                            <input type="text" name="estimated_prep_time" class="form-control" value="{{ config.estimated_prep_time }}">
+                            <div class="form-text">Shown in WhatsApp order confirmation summaries.</div>
+                        </div>
+
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" name="auto_reply_enabled" id="autoReplySwitch" {% if config.auto_reply_enabled %}checked{% endif %}>
+                            <label class="form-check-label fw-bold" for="autoReplySwitch">Enable Automated WhatsApp Assistant Replies</label>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Templates Column -->
+            <div class="col-lg-7 mb-4">
+                <div class="card shadow-sm border-0 rounded-3">
+                    <div class="card-header bg-dark text-white py-3">
+                        <h5 class="card-title mb-0 h6">📝 Versioned Notification Templates</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info py-2 mb-3 small">
+                            <strong>Allowed Placeholders:</strong> <code>{customer_name}</code>, <code>{order_id}</code>, <code>{total}</code>, <code>{prep_time}</code>, <code>{order_type}</code>. Invalid placeholders will be rejected fail-fast.
+                        </div>
+
+                        {% for key, tpl in templates.items %}
+                            <div class="mb-4 p-3 border rounded bg-light">
+                                <div class="d-flex justify-content-between align-items-center mb-2">
+                                    <label class="form-label fw-bold mb-0 text-primary">{{ tpl.label }}</label>
+                                    <span class="badge bg-secondary">v{{ tpl.version }}</span>
+                                </div>
+                                <textarea name="template_{{ key }}" class="form-control font-monospace" rows="3">{{ tpl.body }}</textarea>
+                            </div>
+                        {% endfor %}
+
+                        <div class="d-grid mt-4">
+                            <button type="submit" class="btn btn-primary btn-lg">💾 Save Settings & Templates</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+{% endblock %}

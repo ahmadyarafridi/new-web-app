@@ -178,13 +178,14 @@ def order_update_status(request, pk):
         new_status = request.POST.get('order_status')
         new_payment = request.POST.get('payment_status')
 
-        if new_status in dict(Order.STATUS_CHOICES):
-            order.order_status = new_status
-
         if new_payment in dict(Order.PAYMENT_CHOICES):
             order.payment_status = new_payment
+            order.save(update_fields=['payment_status', 'updated_at'])
 
-        order.save()
+        if new_status in dict(Order.STATUS_CHOICES):
+            from website.services.order_service import OrderService
+            OrderService.update_status(order, new_status, updated_by=request.user.username if request.user else 'admin')
+
     return redirect('order_detail', pk=pk)
 
 
@@ -192,9 +193,12 @@ def order_update_status(request, pk):
 def order_complete(request, pk):
     order = get_object_or_404(Order, pk=pk)
     if request.method == 'POST':
-        order.order_status = 'completed'
         order.payment_status = 'paid'
-        order.save()
+        order.save(update_fields=['payment_status', 'updated_at'])
+
+        from website.services.order_service import OrderService
+        OrderService.update_status(order, 'completed', updated_by=request.user.username if request.user else 'admin')
+
     return redirect('analytics_orders_today')
 
 
