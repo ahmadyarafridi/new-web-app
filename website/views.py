@@ -66,10 +66,12 @@ def index(request):
                     'avatar_url': rev.avatar_file.url if rev.avatar_file else (rev.avatar_url or 'https://i.pravatar.cc/120?img=68')
                 })
                 seen_names.add(rev.customer_name)
+        all_products = list(products_qs)
     except (OperationalError, ProgrammingError):
         ensure_db_ready()
         categories = list(Category.objects.filter(is_active=True))
         products_qs = Product.objects.filter(category__is_active=True).select_related('category').order_by('-id')
+        all_products = list(products_qs)
         paginator = Paginator(products_qs, PER_PAGE)
         first_page = paginator.get_page(1)
         deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
@@ -101,6 +103,7 @@ def index(request):
     return render(request, 'website/index.html', {
         'categories': categories,
         'products': first_page.object_list,
+        'all_products': all_products,
         'has_more': first_page.has_next(),
         'total_count': paginator.count,
         'deals': deals,
@@ -187,7 +190,7 @@ def legal_document(request, doc_type):
     info = RestaurantInfo.objects.first()
     rest_name = info.name if info else "Amazing Foods"
     rest_email = info.email if info else "info@amazingfoods.pk"
-    rest_phone = info.phone if info else "+92 333 9342567"
+    rest_phone = info.phone if info else "+92 323 2870355"
 
     if doc_type == 'privacy':
         context = {

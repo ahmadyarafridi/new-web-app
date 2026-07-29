@@ -25,6 +25,11 @@
                 <label for="{{ form.name.id_for_label }}" class="floating-label">Category Name</label>
             </div>
 
+            <div class="floating-group" style="margin-bottom: 8px !important;">
+                {{ form.display_order }}
+                <label for="{{ form.display_order.id_for_label }}" class="floating-label">Order Position (e.g. 1, 2, 3...)</label>
+            </div>
+
             <div class="dashboard-form-group full-width" style="margin-bottom: 8px !important;">
                 <label class="dashboard-label" style="margin-bottom: 4px;">Upload Category Image (Optional)</label>
                 {{ form.image_file }}

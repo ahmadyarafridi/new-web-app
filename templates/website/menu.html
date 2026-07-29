@@ -6,31 +6,34 @@
 {% block content %}
 <!-- DYNAMIC TABBED MENU SECTION -->
 <section id="menu" style="padding-top: 20px;">
-    <!-- Menu Filter Controls Row (Left: Search Bar, Right: Category Select Dropdown) -->
-    <div class="menu-controls-wrapper">
-        <!-- Left Side: Live Search Input & Button -->
-        <div class="menu-search-box">
+    <!-- STICKY SECOND HORIZONTAL CATEGORY NAVBAR -->
+    <div class="category-nav-bar-wrapper">
+        <div class="category-nav-track" id="categoryNavTrack">
+            <button type="button" class="category-nav-tab custom-option selected" data-value="all">
+                <i class="fa-solid fa-utensils"></i> All Items
+            </button>
+            {% if deals %}
+            <button type="button" class="category-nav-tab custom-option" data-value="deals">
+                <i class="fa-solid fa-fire"></i> Deals
+            </button>
+            {% endif %}
+            {% for category in categories %}
+            {% if category.slug != 'deals' %}
+            <button type="button" class="category-nav-tab custom-option" data-value="{{ category.slug }}">
+                {{ category.name }}
+            </button>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- FULL-WIDTH SEARCH BAR -->
+    <div class="menu-search-box-full">
+        <div class="menu-search-inner">
             <input type="text" id="menuSearchInput" class="menu-search-input" placeholder="Search menu or deals...">
             <button type="button" id="menuSearchBtn" class="search-icon-btn" aria-label="Search">
                 <i class="fa-solid fa-magnifying-glass"></i>
             </button>
-        </div>
-
-        <!-- Right Side: Custom Branded Category Selector Dropdown -->
-        <div class="custom-select-wrapper" id="customMobileSelectWrapper">
-            <div class="custom-select-trigger" id="customMobileSelectTrigger">
-                <span>All Items</span>
-                <i class="fa-solid fa-chevron-down"></i>
-            </div>
-            <ul class="custom-options" id="customMobileOptions">
-                <li class="custom-option selected" data-value="all">All Items</li>
-                {% if deals %}
-                <li class="custom-option" data-value="deals">Deals</li>
-                {% endif %}
-                {% for category in categories %}
-                <li class="custom-option" data-value="{{ category.slug }}">{{ category.name }}</li>
-                {% endfor %}
-            </ul>
         </div>
     </div>
 

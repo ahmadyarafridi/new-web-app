@@ -15,8 +15,8 @@ class DailyVisit(models.Model):
 class RestaurantInfo(models.Model):
     name = models.CharField(max_length=100, default="Amazing Foods")
     tagline = models.CharField(max_length=255, default="Fast Food & Pulao")
-    phone = models.CharField(max_length=20, default="+92 333 9342567")
-    whatsapp_number = models.CharField(max_length=20, default="923339342567")
+    phone = models.CharField(max_length=20, default="+92 323 2870355")
+    whatsapp_number = models.CharField(max_length=20, default="923232870355")
     email = models.EmailField(default="info@amazingfoods.pk")
     address = models.CharField(max_length=255, default="Amazing foods jamrud")
     google_maps_plus_code = models.CharField(max_length=50, default="292F+QRP Jamrud")
@@ -121,7 +121,7 @@ class Deal(models.Model):
     display_order = models.PositiveIntegerField(default=0)
 
     class Meta:
-        ordering = ['display_order', 'title']
+        ordering = ['-id']
 
     def __str__(self):
         return f"{self.title} (Rs. {self.price:.0f})"

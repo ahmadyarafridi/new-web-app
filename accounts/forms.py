@@ -102,6 +102,12 @@ class ProductForm(forms.ModelForm):
 
 
 class CategoryForm(forms.ModelForm):
+    display_order = forms.IntegerField(
+        required=False,
+        min_value=1,
+        widget=forms.NumberInput(attrs={'class': 'floating-input', 'placeholder': ' '}),
+        label="Order Position"
+    )
     image_file = forms.FileField(
         required=False,
         widget=forms.FileInput(attrs={'class': 'dashboard-input', 'accept': 'image/*'})
@@ -109,7 +115,7 @@ class CategoryForm(forms.ModelForm):
 
     class Meta:
         model = Category
-        fields = ['name', 'image_file']
+        fields = ['name', 'display_order', 'image_file']
         widgets = {
             'name': forms.TextInput(attrs={'class': 'floating-input', 'placeholder': ' '}),
         }
@@ -124,8 +130,9 @@ class CategoryForm(forms.ModelForm):
     def save(self, commit=True):
         instance = super().save(commit=False)
         from django.utils.text import slugify
-        from django.db.models import Max
+        from django.db.models import Max, F
         import uuid
+
         if not instance.slug and instance.name:
             instance.slug = slugify(instance.name) or f"cat-{uuid.uuid4().hex[:6]}"
         
@@ -136,11 +143,36 @@ class CategoryForm(forms.ModelForm):
             instance.slug = f"{original_slug}-{counter}"
             counter += 1
 
-        # For brand new category, place it at the last order position (max + 1)
-        if not instance.pk:
-            max_order = Category.objects.aggregate(Max('display_order'))['display_order__max']
-            instance.display_order = (max_order or 0) + 1
+        is_new = instance.pk is None
+        requested_order = self.cleaned_data.get('display_order')
+
+        if is_new:
+            max_order = Category.objects.aggregate(Max('display_order'))['display_order__max'] or 0
+            if requested_order is None or requested_order <= 0:
+                target_order = max_order + 1
+            else:
+                target_order = requested_order
+
+            # Shift all categories with order >= target_order down by +1
+            Category.objects.filter(display_order__gte=target_order).update(display_order=F('display_order') + 1)
+            instance.display_order = target_order
             instance.is_active = True
+        else:
+            old_order = Category.objects.get(pk=instance.pk).display_order
+            if requested_order is not None and requested_order > 0 and requested_order != old_order:
+                target_order = requested_order
+                if target_order < old_order:
+                    Category.objects.filter(
+                        display_order__gte=target_order,
+                        display_order__lt=old_order
+                    ).exclude(pk=instance.pk).update(display_order=F('display_order') + 1)
+                else:
+                    Category.objects.filter(
+                        display_order__gt=old_order,
+                        display_order__lte=target_order
+                    ).exclude(pk=instance.pk).update(display_order=F('display_order') - 1)
+                
+                instance.display_order = target_order
 
         if commit:
             instance.save()

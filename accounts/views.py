@@ -222,7 +222,7 @@ def manage_products(request):
     if category_slug:
         selected_category = Category.objects.filter(slug=category_slug).first()
 
-    products_qs = Product.objects.select_related('category').all()
+    products_qs = Product.objects.select_related('category').all().order_by('-id')
 
     if search_query:
         products_qs = products_qs.filter(
@@ -374,7 +374,7 @@ def category_delete(request, pk):
 @login_required(login_url='login')
 def manage_deals(request):
     search_query = request.GET.get('q', '').strip()
-    deals_qs = Deal.objects.all()
+    deals_qs = Deal.objects.all().order_by('-id')
 
     if search_query:
         deals_qs = deals_qs.filter(

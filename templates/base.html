@@ -294,7 +294,7 @@
                 </div>
                 <p style="color: var(--color-text-gray); font-size: 0.88rem; margin-bottom: 8px;">Fast Food & Pulao</p>
                 <p style="margin-bottom: 6px;"><i class="fa-solid fa-location-dot" style="color: var(--color-primary); margin-right: 6px;"></i> {{ restaurant.address|default:"Amazing foods jamrud" }}</p>
-                <p style="margin-bottom: 6px;"><i class="fa-solid fa-phone" style="color: var(--color-primary); margin-right: 6px;"></i> <a href="tel:{{ restaurant.phone|default:'+923339342567' }}" style="color: inherit; text-decoration: underline;">{{ restaurant.phone|default:'+92 333 9342567' }}</a></p>
+                <p style="margin-bottom: 6px;"><i class="fa-solid fa-phone" style="color: var(--color-primary); margin-right: 6px;"></i> <a href="tel:{{ restaurant.phone|default:'+923232870355' }}" style="color: inherit; text-decoration: underline;">{{ restaurant.phone|default:'+92 323 2870355' }}</a></p>
             </div>
 
             <div class="footer-links">
@@ -364,38 +364,6 @@
     </div>
     <div class="cart-overlay" id="cartOverlay"></div>
 
-    <!-- CUSTOMER CHECKOUT DETAILS MODAL -->
-    <div class="modal" id="customerCheckoutModal">
-        <div class="modal-backdrop" id="checkoutBackdrop"></div>
-        <div class="modal-content" style="max-width: 460px; padding: 24px;">
-            <button class="modal-close-btn" id="closeCheckoutModalBtn"><i class="fa-solid fa-xmark"></i></button>
-            <div style="text-align: center; margin-bottom: 16px;">
-                <h3 style="font-family: var(--font-brand); color: #fff; font-size: 1.25rem; margin: 0;">Customer Information</h3>
-            </div>
-            <form id="customerCheckoutForm" spellcheck="false" style="display: flex; flex-direction: column; gap: 0;">
-                <div class="floating-group" style="margin-bottom: 14px !important;">
-                    <input type="text" id="custName" class="floating-input" placeholder=" " required>
-                    <label for="custName" class="floating-label">Your Full Name</label>
-                </div>
-                <div class="floating-group" style="margin-bottom: 14px !important;">
-                    <input type="tel" id="custPhone" class="floating-input" placeholder=" " required>
-                    <label for="custPhone" class="floating-label">Phone Number</label>
-                </div>
-                <div class="floating-group" style="margin-bottom: 14px !important;">
-                    <input type="text" id="custAddress" class="floating-input" placeholder=" " required>
-                    <label for="custAddress" class="floating-label">Delivery Address</label>
-                </div>
-                <div class="floating-group" style="margin-bottom: 14px !important;">
-                    <input type="text" id="custNotes" class="floating-input" placeholder=" ">
-                    <label for="custNotes" class="floating-label">Special Notes / Requests (Optional)</label>
-                </div>
-                <button type="submit" id="submitOrderBtn" class="btn-primary" style="margin-top: 6px; width: 100%; justify-content: center; padding: 13px;">
-                    <i class="fa-brands fa-whatsapp"></i> Confirm & Send Order via WhatsApp
-                </button>
-            </form>
-        </div>
-    </div>
-
     <!-- PRE-ORDER CONFIRMATION MODAL -->
     <div class="modal" id="orderConfirmModal">
         <div class="modal-backdrop" id="orderConfirmBackdrop"></div>
@@ -428,6 +396,24 @@
 
     <!-- INSTANT.PAGE FAST PRE-FETCHER SCRIPT -->
     <script src="https://cdn.jsdelivr.net/npm/instant.page@5.2.0/instantpage.js" type="module"></script>
+    <!-- FLOATING BACK TO TOP BUTTON -->
+    <button id="backToTopBtn" type="button" class="back-to-top-btn" aria-label="Back to Top">
+        <i class="fa-solid fa-chevron-up"></i>
+    </button>
+
+    <!-- CART TOAST NOTIFICATION POPUP -->
+    <div id="cartToast" class="cart-toast-popup" role="status" aria-live="polite">
+        <div class="cart-toast-content">
+            <div class="cart-toast-text">
+                <span class="cart-toast-title">Added to Cart</span>
+                <span id="cartToastName" class="cart-toast-name">Item Name</span>
+            </div>
+            <button id="cartToastViewBtn" type="button" class="cart-toast-view-btn">
+                View Cart
+            </button>
+        </div>
+    </div>
+
     {% block body_end %}{% endblock %}
     {% block extra_js %}{% endblock %}
 </body>

@@ -11,8 +11,8 @@ class Command(BaseCommand):
         info, created = RestaurantInfo.objects.get_or_create(id=1)
         info.name = "Amazing Foods"
         info.tagline = "Fast Food & Pulao"
-        info.phone = "+92 333 9342567"
-        info.whatsapp_number = "923339342567"
+        info.phone = "+92 323 2870355"
+        info.whatsapp_number = "923232870355"
         info.email = "info@amazingfoods.pk"
         info.address = "Amazing foods jamrud"
         info.google_maps_plus_code = "292F+QRP Jamrud"

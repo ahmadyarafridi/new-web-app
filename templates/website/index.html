@@ -9,118 +9,125 @@
     <div class="hero-bg-wrapper">
         <img src="{% static 'images/Restaurant.avif' %}" alt="{{ restaurant.name }} Interior" fetchpriority="high" decoding="async">
     </div>
-    <div class="home-overlay">
-        <p>{{ restaurant.hero_description }}</p>
-        <div class="hero-actions">
-            <a href="/#menu" class="btn-primary">Order Online</a>
-            <a href="{% url 'contact' %}" class="btn-secondary">Find Our Location</a>
-        </div>
-    </div>
 </section>
 
-<!-- DYNAMIC TABBED MENU SECTION (MERGED INTO HOME PAGE) -->
+<!-- CONTINUOUS VERTICAL MENU SECTION -->
 <section id="menu" style="padding-top: 15px; border-bottom: 1px solid var(--color-border);">
 
-    <!-- Menu Filter Controls Row (Left: Search Bar, Right: Category Select Dropdown) -->
-    <div class="menu-controls-wrapper">
-        <!-- Left Side: Live Search Input & Button -->
-        <div class="menu-search-box">
+    <!-- STICKY SECOND HORIZONTAL CATEGORY NAVBAR -->
+    <div class="category-nav-bar-wrapper">
+        <div class="category-nav-track" id="categoryNavTrack">
+            {% if deals %}
+            <button type="button" class="category-nav-tab nav-scroll-spy-link active" data-target-section="category-section-deals">
+                <i class="fa-solid fa-fire text-gold"></i> Deals
+            </button>
+            {% endif %}
+            {% for category in categories %}
+            {% if category.slug != 'deals' %}
+            <button type="button" class="category-nav-tab nav-scroll-spy-link {% if not deals and forloop.first %}active{% endif %}" data-target-section="category-section-{{ category.slug }}">
+                {{ category.name }}
+            </button>
+            {% endif %}
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- FULL-WIDTH SEARCH BAR -->
+    <div class="menu-search-box-full">
+        <div class="menu-search-inner">
             <input type="text" id="menuSearchInput" class="menu-search-input" placeholder="Search menu or deals...">
             <button type="button" id="menuSearchBtn" class="search-icon-btn" aria-label="Search">
                 <i class="fa-solid fa-magnifying-glass"></i>
             </button>
         </div>
+    </div>
 
-        <!-- Right Side: Custom Branded Category Selector Dropdown -->
-        <div class="custom-select-wrapper" id="customMobileSelectWrapper">
-            <div class="custom-select-trigger" id="customMobileSelectTrigger">
-                <span>All Items</span>
-                <i class="fa-solid fa-chevron-down"></i>
+    <!-- CONTINUOUS MENU SECTIONS CONTAINER -->
+    <div id="continuous-menu-container" style="max-width: 1250px; margin: 0 auto; padding: 0 16px;">
+        
+        {% if deals %}
+        <!-- SPECIAL DEALS CATEGORY SECTION -->
+        <div class="category-menu-section" id="category-section-deals" data-category-slug="deals">
+            <div class="category-section-header">
+                <h3 class="category-section-title">
+                    <i class="fa-solid fa-fire text-gold" style="margin-right: 8px;"></i> Special Deals
+                </h3>
+                <span class="category-section-divider"></span>
+                <span class="category-section-count">{{ deals|length }} Items</span>
             </div>
-            <ul class="custom-options" id="customMobileOptions">
-                <li class="custom-option selected" data-value="all">All Items</li>
-                {% if deals %}
-                <li class="custom-option" data-value="deals">Special Deals</li>
-                {% endif %}
-                {% for category in categories %}
-                {% if category.slug != 'deals' %}
-                <li class="custom-option" data-value="{{ category.slug }}">{{ category.name }}</li>
+            <div class="menu-grid">
+                {% for deal in deals %}
+                <div class="menu-item-card" data-category="deals" data-id="{{ deal.item_code }}">
+                    <div class="menu-item-img-wrapper">
+                        <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}" class="menu-item-img" loading="lazy" decoding="async" width="400" height="260">
+                    </div>
+                    <div class="menu-item-info">
+                        <div class="menu-item-title-row">
+                            <h4>{{ deal.title }}</h4>
+                            <span class="menu-item-price">Rs. {{ deal.price|floatformat:0 }}</span>
+                        </div>
+                        {% if deal.description %}
+                        <p class="menu-item-desc" style="font-size:0.75rem; color:var(--color-text-gray); margin-bottom:10px;">{{ deal.description }}</p>
+                        {% endif %}
+                        <div class="menu-item-actions">
+                            <button class="add-to-cart-btn" data-id="{{ deal.item_code }}" data-name="{{ deal.title }}" data-price="{{ deal.price|floatformat:0 }}" data-img="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}">
+                                <i class="fa-solid fa-plus"></i> Add to Order
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        {% for category in categories %}
+        {% if category.slug != 'deals' %}
+        <!-- CATEGORY SECTION: {{ category.name }} -->
+        <div class="category-menu-section" id="category-section-{{ category.slug }}" data-category-slug="{{ category.slug }}">
+            <div class="category-section-header">
+                <h3 class="category-section-title">{{ category.name }}</h3>
+                <span class="category-section-divider"></span>
+            </div>
+            <div class="menu-grid">
+                {% for product in all_products %}
+                {% if product.category_id == category.id %}
+                <div class="menu-item-card" data-category="{{ category.slug }}" data-id="{{ product.item_code }}" data-in-stock="{% if product.is_available %}true{% else %}false{% endif %}">
+                    <div class="menu-item-img-wrapper" style="position: relative;">
+                        <img src="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}" alt="{{ product.name }}" class="menu-item-img" loading="lazy" decoding="async" width="400" height="260" {% if product.custom_style %}style="{{ product.custom_style }}"{% endif %}>
+                        {% if not product.is_available %}
+                        <span class="badge-status badge-inactive" style="position: absolute; top: 10px; right: 10px; background: rgba(229,57,53,0.85); color: #ffffff; padding: 3px 8px; font-size: 0.65rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(4px);">Out of Stock</span>
+                        {% endif %}
+                    </div>
+                    <div class="menu-item-info">
+                        <div class="menu-item-title-row">
+                            <h4>{{ product.name }}</h4>
+                            <span class="menu-item-price">Rs. {{ product.price|floatformat:0 }}</span>
+                        </div>
+                        {% if product.description %}
+                        <p class="menu-item-desc">{{ product.description }}</p>
+                        {% endif %}
+                        <div class="menu-item-actions">
+                            {% if product.is_available %}
+                            <button class="add-to-cart-btn" data-id="{{ product.item_code }}" data-name="{{ product.name }}" data-price="{{ product.price|floatformat:0 }}" data-img="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}">
+                                <i class="fa-solid fa-plus"></i> Add to Order
+                            </button>
+                            {% else %}
+                            <button class="add-to-cart-btn disabled" disabled style="background: #222222 !important; color: #777777 !important; border: 1px solid #444444 !important; opacity: 0.6; cursor: not-allowed; pointer-events: none; width: 100%;">
+                                Out of Stock
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
                 {% endif %}
                 {% endfor %}
-            </ul>
-        </div>
-    </div>
-
-    <div class="swipe-guidance menu-swipe-guidance">
-        <p class="menu-swipe-hint"><i class="fa-solid fa-arrow-right"></i> Swipe to right</p>
-    </div>
-    <div class="menu-grid" id="menuGrid">
-        {% if deals %}
-        {% for deal in deals %}
-        <div class="menu-item-card" data-category="deals" data-id="{{ deal.item_code }}">
-            <div class="menu-item-img-wrapper">
-                <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}" class="menu-item-img" loading="lazy" decoding="async" width="400" height="260">
             </div>
-            <div class="menu-item-info">
-                <div class="menu-item-title-row">
-                    <h4>{{ deal.title }}</h4>
-                    <span class="menu-item-price">Rs. {{ deal.price|floatformat:0 }}</span>
-                </div>
-                {% if deal.description %}
-                <p class="menu-item-desc" style="font-size:0.75rem; color:var(--color-text-gray); margin-bottom:10px;">{{ deal.description }}</p>
-                {% endif %}
-                <div class="menu-item-actions">
-                    <button class="add-to-cart-btn" data-id="{{ deal.item_code }}" data-name="{{ deal.title }}" data-price="{{ deal.price|floatformat:0 }}" data-img="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}">
-                        <i class="fa-solid fa-plus"></i> Add to Order
-                    </button>
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-        {% endif %}
-
-        {% for product in products %}
-        <div class="menu-item-card" data-category="{{ product.category.slug }}" data-id="{{ product.item_code }}" data-in-stock="{% if product.is_available %}true{% else %}false{% endif %}">
-            <div class="menu-item-img-wrapper" style="position: relative;">
-                <img src="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}" alt="{{ product.name }}" class="menu-item-img" loading="lazy" decoding="async" width="400" height="260" {% if product.custom_style %}style="{{ product.custom_style }}"{% endif %}>
-                {% if not product.is_available %}
-                <span class="badge-status badge-inactive" style="position: absolute; top: 10px; right: 10px; background: rgba(229,57,53,0.85); color: #ffffff; padding: 3px 8px; font-size: 0.65rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(4px);">Out of Stock</span>
-                {% endif %}
-            </div>
-            <div class="menu-item-info">
-                <div class="menu-item-title-row">
-                    <h4>{{ product.name }}</h4>
-                    <span class="menu-item-price">Rs. {{ product.price|floatformat:0 }}</span>
-                </div>
-                {% if product.description %}
-                <p class="menu-item-desc" {% if product.category.slug == 'deals' %}style="font-size:0.75rem; color:var(--color-text-gray); margin-bottom:10px;"{% endif %}>{{ product.description }}</p>
-                {% endif %}
-                <div class="menu-item-actions">
-                    {% if product.is_available %}
-                    <button class="add-to-cart-btn" data-id="{{ product.item_code }}" data-name="{{ product.name }}" data-price="{{ product.price|floatformat:0 }}" data-img="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}">
-                        <i class="fa-solid fa-plus"></i> Add to Order
-                    </button>
-                    {% else %}
-                    <button class="add-to-cart-btn disabled" disabled style="background: #222222 !important; color: #777777 !important; border: 1px solid #444444 !important; opacity: 0.6; cursor: not-allowed; pointer-events: none; width: 100%;">
-                        Out of Stock
-                    </button>
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-        {% endfor %}
-
-        {% if has_more %}
-        <!-- INITIAL HORIZONTAL LOAD MORE BUTTON -->
-        <div class="load-more-card" id="loadMoreCard" style="flex: 0 0 130px; min-width: 130px; background: transparent !important; border: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; scroll-snap-align: start; text-align: center; padding: 12px; align-self: center;">
-            <div style="width: 46px; height: 46px; border-radius: 50%; background: rgba(201,168,76,0.12); border: 1.5px solid var(--color-primary); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 8px;">
-                <i class="fa-solid fa-arrow-right" id="loadMoreCardIcon" style="animation: swipeHint 1.3s ease-in-out infinite; display: inline-block;"></i>
-            </div>
-            <span style="font-size: 0.78rem; font-weight: 600; color: var(--color-primary); white-space: nowrap;" id="loadMoreCardText">Tap for Next Items</span>
         </div>
         {% endif %}
+        {% endfor %}
+
     </div>
-    <div class="carousel-dots menu-carousel-dots" id="menuCarouselDots" aria-label="Menu carousel navigation"></div>
 </section>
 
 <!-- REVIEWS / TESTIMONIALS SLIDER SECTION -->
@@ -157,157 +164,7 @@
     </div>
 </section>
 
-<script>
-document.addEventListener('DOMContentLoaded', function() {
-    let currentPage = 1;
-    let activeCategory = 'all';
-    let currentSearch = '';
+<!-- Continuous menu search & scroll-spy are now handled by script.js -->
 
-    const menuGrid = document.getElementById('menuGrid');
-
-    const searchInput = document.getElementById('menuSearchInput');
-    const searchBtn = document.getElementById('menuSearchBtn');
-    const customOptions = document.querySelectorAll('#customMobileOptions .custom-option');
-
-    function escapeHtml(str) {
-        if (!str) return '';
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;');
-    }
-
-    function createProductCardHtml(prod) {
-        const isAvailable = prod.is_available;
-        const descHtml = prod.description ? `<p class="menu-item-desc">${escapeHtml(prod.description)}</p>` : '';
-        const styleAttr = prod.custom_style ? `style="${escapeHtml(prod.custom_style)}"` : '';
-        
-        const outOfStockBadge = !isAvailable ? 
-            `<span class="badge-status badge-inactive" style="position: absolute; top: 10px; right: 10px; background: rgba(229,57,53,0.85); color: #ffffff; padding: 3px 8px; font-size: 0.65rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(4px);">Out of Stock</span>` : '';
-
-        const actionBtn = isAvailable ?
-            `<button class="add-to-cart-btn" data-id="${escapeHtml(prod.item_code)}" data-name="${escapeHtml(prod.name)}" data-price="${prod.price}" data-img="${escapeHtml(prod.image_url)}">
-                <i class="fa-solid fa-plus"></i> Add to Order
-            </button>` :
-            `<button class="add-to-cart-btn disabled" disabled style="background: #222222 !important; color: #777777 !important; border: 1px solid #444444 !important; opacity: 0.6; cursor: not-allowed; pointer-events: none; width: 100%;">
-                Out of Stock
-            </button>`;
-
-        return `
-            <div class="menu-item-card" data-category="${escapeHtml(prod.category_slug)}" data-id="${escapeHtml(prod.item_code)}" data-in-stock="${isAvailable}">
-                <div class="menu-item-img-wrapper" style="position: relative;">
-                    <img src="${escapeHtml(prod.image_url)}" alt="${escapeHtml(prod.name)}" class="menu-item-img" loading="lazy" decoding="async" width="400" height="260" ${styleAttr}>
-                    ${outOfStockBadge}
-                </div>
-                <div class="menu-item-info">
-                    <div class="menu-item-title-row">
-                        <h4>${escapeHtml(prod.name)}</h4>
-                        <span class="menu-item-price">Rs. ${prod.price}</span>
-                    </div>
-                    ${descHtml}
-                    <div class="menu-item-actions">
-                        ${actionBtn}
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-
-    function createLoadMoreCardHtml() {
-        return `
-            <div class="load-more-card" id="loadMoreCard" style="flex: 0 0 130px; min-width: 130px; background: transparent !important; border: none !important; display: flex; flex-direction: column; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; scroll-snap-align: start; text-align: center; padding: 12px; align-self: center;">
-                <div style="width: 46px; height: 46px; border-radius: 50%; background: rgba(201,168,76,0.12); border: 1.5px solid var(--color-primary); color: var(--color-primary); display: flex; align-items: center; justify-content: center; font-size: 1.1rem; margin-bottom: 8px;">
-                    <i class="fa-solid fa-arrow-right" id="loadMoreCardIcon" style="animation: swipeHint 1.3s ease-in-out infinite; display: inline-block;"></i>
-                </div>
-                <span style="font-size: 0.78rem; font-weight: 600; color: var(--color-primary); white-space: nowrap;" id="loadMoreCardText">Tap for Next Items</span>
-            </div>
-        `;
-    }
-
-    function attachLoadMoreCardListener() {
-        const loadMoreCard = document.getElementById('loadMoreCard');
-        if (loadMoreCard) {
-            loadMoreCard.addEventListener('click', function() {
-                const icon = document.getElementById('loadMoreCardIcon');
-                const text = document.getElementById('loadMoreCardText');
-                if (icon) icon.className = 'fa-solid fa-spinner fa-spin';
-                if (text) text.textContent = 'Loading...';
-
-                currentPage++;
-                fetchProducts(currentPage, true);
-            });
-        }
-    }
-
-    function fetchProducts(page, append = false) {
-        if (!append) {
-            menuGrid.style.opacity = '0.4';
-        }
-
-        const url = `/api/products/?category=${encodeURIComponent(activeCategory)}&page=${page}&search=${encodeURIComponent(currentSearch)}`;
-
-        fetch(url)
-            .then(res => res.json())
-            .then(data => {
-                const existingCard = document.getElementById('loadMoreCard');
-                if (existingCard) existingCard.remove();
-
-                if (!append) {
-                    menuGrid.innerHTML = '';
-                }
-
-                data.products.forEach(prod => {
-                    menuGrid.insertAdjacentHTML('beforeend', createProductCardHtml(prod));
-                });
-
-                if (data.has_next) {
-                    menuGrid.insertAdjacentHTML('beforeend', createLoadMoreCardHtml());
-                    attachLoadMoreCardListener();
-                }
-
-                menuGrid.style.opacity = '1';
-
-                if (append) {
-                    menuGrid.scrollBy({ left: 300, behavior: 'smooth' });
-                }
-            })
-            .catch(err => {
-                console.error('Error loading products:', err);
-                menuGrid.style.opacity = '1';
-            });
-    }
-
-    attachLoadMoreCardListener();
-
-    customOptions.forEach(opt => {
-        opt.addEventListener('click', function() {
-            activeCategory = this.getAttribute('data-value');
-            currentPage = 1;
-            fetchProducts(1, false);
-        });
-    });
-
-    if (searchInput) {
-        let searchTimeout;
-        searchInput.addEventListener('input', function() {
-            clearTimeout(searchTimeout);
-            searchTimeout = setTimeout(() => {
-                currentSearch = this.value.trim();
-                currentPage = 1;
-                fetchProducts(1, false);
-            }, 300);
-        });
-    }
-
-    if (searchBtn) {
-        searchBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            currentSearch = searchInput ? searchInput.value.trim() : '';
-            currentPage = 1;
-            fetchProducts(1, false);
-        });
-    }
-});
-</script>
+<!-- FLOATING BACK TO TOP BUTTON -->
 {% endblock %}

@@ -7,15 +7,29 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     // ==========================================
-    // 2. SCROLL TRIGGERED STICKY NAVIGATION
+    // 1. DYNAMIC HEADER HEIGHT FOR STICKY OFFSET
     // ==========================================
     const header = document.querySelector('header');
+
+    function updateHeaderHeight() {
+        if (header) {
+            const h = header.offsetHeight;
+            document.documentElement.style.setProperty('--header-height', h + 'px');
+        }
+    }
+    updateHeaderHeight();
+    window.addEventListener('resize', updateHeaderHeight, { passive: true });
+
+    // ==========================================
+    // 2. SCROLL TRIGGERED STICKY NAVIGATION
+    // ==========================================
     window.addEventListener('scroll', () => {
         if (window.scrollY > 50) {
             header.classList.add('scroll-nav');
         } else {
             header.classList.remove('scroll-nav');
         }
+        updateHeaderHeight();
     });
 
     // ==========================================
@@ -365,6 +379,166 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // ==========================================
+    // STICKY CATEGORY NAVBAR DRAG & MOUSE WHEEL SCROLL
+    // ==========================================
+    const categoryNavTrack = document.getElementById('categoryNavTrack');
+    if (categoryNavTrack) {
+        let isDown = false;
+        let startX;
+        let scrollLeft;
+
+        // Mouse Drag to Scroll
+        categoryNavTrack.addEventListener('mousedown', (e) => {
+            isDown = true;
+            categoryNavTrack.classList.add('active-drag');
+            startX = e.pageX - categoryNavTrack.offsetLeft;
+            scrollLeft = categoryNavTrack.scrollLeft;
+        });
+
+        categoryNavTrack.addEventListener('mouseleave', () => {
+            isDown = false;
+            categoryNavTrack.classList.remove('active-drag');
+        });
+
+        categoryNavTrack.addEventListener('mouseup', () => {
+            isDown = false;
+            categoryNavTrack.classList.remove('active-drag');
+        });
+
+        categoryNavTrack.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            e.preventDefault();
+            const x = e.pageX - categoryNavTrack.offsetLeft;
+            const walk = (x - startX) * 1.8;
+            categoryNavTrack.scrollLeft = scrollLeft - walk;
+        });
+
+        // Mouse Wheel Horizontal Scroll
+        categoryNavTrack.addEventListener('wheel', (e) => {
+            if (e.deltaY !== 0) {
+                e.preventDefault();
+                categoryNavTrack.scrollLeft += e.deltaY;
+            }
+        }, { passive: false });
+    }
+
+    // ==========================================
+    // CONTINUOUS MENU SCROLL-SPY & NAVIGATOR
+    // ==========================================
+    const spyLinks = document.querySelectorAll('.nav-scroll-spy-link');
+    const menuSections = document.querySelectorAll('.category-menu-section');
+
+    // 1. Smooth Scroll On Category Tab Click
+    spyLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            e.preventDefault();
+            const targetId = link.getAttribute('data-target-section');
+            const targetEl = document.getElementById(targetId);
+
+            if (targetEl) {
+                const categoryBar = document.querySelector('.category-nav-bar-wrapper');
+                const headerH = header ? header.offsetHeight : 96;
+                const catBarH = categoryBar ? categoryBar.offsetHeight : 45;
+                const headerOffset = headerH + catBarH + 10;
+                const elementPosition = targetEl.getBoundingClientRect().top;
+                const offsetPosition = elementPosition + window.pageYOffset - headerOffset;
+
+                window.scrollTo({
+                    top: offsetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        });
+    });
+
+    // 2. IntersectionObserver Scroll-Spy
+    if (menuSections.length > 0 && 'IntersectionObserver' in window) {
+        const observerOptions = {
+            root: null,
+            rootMargin: '-100px 0px -55% 0px',
+            threshold: 0.1
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const activeId = entry.target.getAttribute('id');
+                    
+                    spyLinks.forEach(link => {
+                        const target = link.getAttribute('data-target-section');
+                        if (target === activeId) {
+                            link.classList.add('active', 'selected');
+                            if (categoryNavTrack) {
+                                const linkLeft = link.offsetLeft;
+                                const linkWidth = link.offsetWidth;
+                                const trackWidth = categoryNavTrack.offsetWidth;
+                                categoryNavTrack.scrollTo({
+                                    left: linkLeft - (trackWidth / 2) + (linkWidth / 2),
+                                    behavior: 'smooth'
+                                });
+                            }
+                        } else {
+                            link.classList.remove('active', 'selected');
+                        }
+                    });
+                }
+            });
+        }, observerOptions);
+
+        menuSections.forEach(section => observer.observe(section));
+    }
+
+    // 3. Floating Back to Top Button
+    const backToTopBtn = document.getElementById('backToTopBtn');
+    if (backToTopBtn) {
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 400) {
+                backToTopBtn.classList.add('visible');
+            } else {
+                backToTopBtn.classList.remove('visible');
+            }
+        }, { passive: true });
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    }
+
+    // 4. Universal Continuous Menu Search Handler
+    const searchInput = document.getElementById('menuSearchInput');
+    if (searchInput && menuSections.length > 0) {
+        searchInput.addEventListener('input', function() {
+            const query = this.value.toLowerCase().trim();
+
+            menuSections.forEach(section => {
+                const cards = section.querySelectorAll('.menu-item-card');
+                let matchCount = 0;
+
+                cards.forEach(card => {
+                    const title = card.querySelector('h4') ? card.querySelector('h4').textContent.toLowerCase() : '';
+                    const desc = card.querySelector('.menu-item-desc') ? card.querySelector('.menu-item-desc').textContent.toLowerCase() : '';
+                    
+                    if (title.includes(query) || desc.includes(query)) {
+                        card.style.display = '';
+                        matchCount++;
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+
+                if (matchCount === 0 && query !== '') {
+                    section.style.display = 'none';
+                } else {
+                    section.style.display = '';
+                }
+            });
+        });
+    }
+
+    // ==========================================
     // 7. HOME DEALS SWIPE INDICATOR (MOBILE)
     // ==========================================
     const specialtiesGrid = document.querySelector('.specialties-grid');
@@ -481,6 +655,35 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 1200);
     });
 
+    let toastTimeout;
+    const showCartToast = (name, img) => {
+        const toast = document.getElementById('cartToast');
+        const toastName = document.getElementById('cartToastName');
+        const toastImg = document.getElementById('cartToastImg');
+
+        if (!toast) return;
+
+        if (toastName) toastName.textContent = name;
+        if (toastImg) {
+            toastImg.src = img || '/static/images/logo.png';
+        }
+
+        toast.classList.add('show');
+        clearTimeout(toastTimeout);
+        toastTimeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3200);
+    };
+
+    const cartToastViewBtn = document.getElementById('cartToastViewBtn');
+    if (cartToastViewBtn) {
+        cartToastViewBtn.addEventListener('click', () => {
+            const toast = document.getElementById('cartToast');
+            if (toast) toast.classList.remove('show');
+            toggleCart();
+        });
+    }
+
     const addItemToCart = (id, name, price, img) => {
         const existingItem = cart.find(item => item.id === id);
 
@@ -492,6 +695,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         saveCartToStorage();
         updateCartUI();
+        showCartToast(name, img);
     };
 
     const removeItemFromCart = (id) => {
@@ -619,20 +823,10 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalOrderTotal = document.getElementById('modalOrderTotal');
 
     // Real WhatsApp order handoff
-    const WHATSAPP_NUMBER = '923339342567'; // +92 333 9342567, no leading + or 0
+    const WHATSAPP_NUMBER = '923232870355'; // +92 323 2870355, no leading + or 0
 
-    const customerCheckoutModal = document.getElementById('customerCheckoutModal');
-    const closeCheckoutModalBtn = document.getElementById('closeCheckoutModalBtn');
-    const checkoutBackdrop = document.getElementById('checkoutBackdrop');
-    const customerCheckoutForm = document.getElementById('customerCheckoutForm');
-
-    const buildWhatsAppMessage = (name, phone, address, notes) => {
+    const buildWhatsAppMessage = () => {
         let msg = `*AMAZING FOODS - NEW ORDER*\n`;
-        msg += `------------------------------\n`;
-        if (name) msg += `*Customer:* ${name}\n`;
-        if (phone) msg += `*Phone:* ${phone}\n`;
-        if (address) msg += `*Address:* ${address}\n`;
-        if (notes) msg += `*Notes:* ${notes}\n`;
         msg += `------------------------------\n`;
         msg += `*Order Items:*\n`;
         cart.forEach((item, index) => {
@@ -651,51 +845,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 return false;
             }
             if (cart.length === 0) return;
-            toggleCart();
-            if (customerCheckoutModal) {
-                customerCheckoutModal.classList.add('active');
-            }
-        });
-    }
-
-    const closeCustomerCheckoutModal = () => {
-        if (customerCheckoutModal) customerCheckoutModal.classList.remove('active');
-    };
-
-    if (closeCheckoutModalBtn) closeCheckoutModalBtn.addEventListener('click', closeCustomerCheckoutModal);
-    if (checkoutBackdrop) checkoutBackdrop.addEventListener('click', closeCustomerCheckoutModal);
-
-    if (customerCheckoutForm) {
-        customerCheckoutForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            if (!isRestaurantOpen) {
-                alert('Ordering is currently unavailable because the restaurant is closed. Please visit again during our opening hours.');
-                return false;
-            }
-            if (cart.length === 0) return;
-
-            const name = document.getElementById('custName') ? document.getElementById('custName').value.trim() : '';
-            const phone = document.getElementById('custPhone') ? document.getElementById('custPhone').value.trim() : '';
-            const address = document.getElementById('custAddress') ? document.getElementById('custAddress').value.trim() : '';
-            const notes = document.getElementById('custNotes') ? document.getElementById('custNotes').value.trim() : '';
-
-            if (!name || !phone || !address) {
-                alert('Please fill out all required fields (Name, Phone Number, and Delivery Address).');
-                return false;
-            }
-
-            const submitBtn = document.getElementById('submitOrderBtn');
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                submitBtn.innerHTML = '<i class="fa-solid fa-check"></i> Order Sent!';
-                setTimeout(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fa-brands fa-whatsapp"></i> Confirm & Send Order via WhatsApp';
-                }, 2500);
-            }
 
             // 1. Open WhatsApp INSTANTLY (0ms delay) so mobile browser popup blocker never triggers
-            const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(name, phone, address, notes))}`;
+            const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage())}`;
             window.open(waUrl, '_blank');
 
             // 2. Save order to backend database in parallel background (fire and forget)
@@ -705,10 +857,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    customer_name: name,
-                    customer_phone: phone,
-                    delivery_address: address,
-                    order_notes: notes,
+                    customer_name: 'WhatsApp Customer',
+                    customer_phone: '',
+                    delivery_address: '',
+                    order_notes: '',
                     cart_items: cart
                 })
             }).catch(err => console.log('Background order sync error:', err));
@@ -731,8 +883,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalOrderTotal.textContent = cartTotal ? cartTotal.textContent : '';
             }
 
-            // 4. Close checkout modal & show confirmation modal
-            closeCustomerCheckoutModal();
+            // 4. Close cart drawer & show confirmation modal
+            toggleCart();
             if (orderConfirmModal) orderConfirmModal.classList.add('active');
 
             // 5. Clear cart
