@@ -1,5 +1,6 @@
 import requests
 import logging
+import re
 from requests.adapters import HTTPAdapter
 from urllib3.util import Retry
 from django.conf import settings
@@ -64,10 +65,11 @@ class WhatsAppService:
 
     @classmethod
     def send_text_message(cls, recipient_phone: str, message_text: str) -> dict:
+        clean_phone = re.sub(r'\D', '', str(recipient_phone))
         phone_id, token = cls.get_credentials()
         if not phone_id or not token:
-            logger.warning(f"[WhatsAppService] Meta API credentials missing. Mocking text send to {recipient_phone}")
-            return {'status': 'mocked', 'recipient': recipient_phone}
+            logger.warning(f"[WhatsAppService] Meta API credentials missing. Mocking text send to {clean_phone}")
+            return {'status': 'mocked', 'recipient': clean_phone}
 
         url = f"{cls.GRAPH_API_URL}/{phone_id}/messages"
         headers = {
@@ -77,7 +79,7 @@ class WhatsAppService:
         payload = {
             "messaging_product": "whatsapp",
             "recipient_type": "individual",
-            "to": recipient_phone,
+            "to": clean_phone,
             "type": "text",
             "text": {
                 "preview_url": False,
@@ -91,10 +93,10 @@ class WhatsAppService:
             res_data = res.json()
             if res.status_code == 200:
                 msg_id = res_data.get('messages', [{}])[0].get('id', 'outbound-id')
-                cls._log_outbound(recipient_phone, message_text, msg_id, 'sent')
+                cls._log_outbound(clean_phone, message_text, msg_id, 'sent')
                 return res_data
             else:
-                logger.error(f"[WhatsAppService] Meta API error ({res.status_code}): {res_data}")
+                logger.error(f"[WhatsAppService Error {res.status_code}] Meta API error for {clean_phone}: {res_data}")
                 return res_data
         except Exception as e:
             logger.error(f"[WhatsAppService] Exception sending text message: {e}")
@@ -106,9 +108,10 @@ class WhatsAppService:
         Sends quick reply buttons (max 3 buttons).
         buttons format: [{'id': 'btn_1', 'title': 'Confirm'}, ...]
         """
+        clean_phone = re.sub(r'\D', '', str(recipient_phone))
         phone_id, token = cls.get_credentials()
         if not phone_id or not token:
-            logger.warning(f"[WhatsAppService] Mocking interactive buttons to {recipient_phone}")
+            logger.warning(f"[WhatsAppService] Mocking interactive buttons to {clean_phone}")
             return {'status': 'mocked'}
 
         url = f"{cls.GRAPH_API_URL}/{phone_id}/messages"
@@ -130,7 +133,7 @@ class WhatsAppService:
         payload = {
             "messaging_product": "whatsapp",
             "recipient_type": "individual",
-            "to": recipient_phone,
+            "to": clean_phone,
             "type": "interactive",
             "interactive": {
                 "type": "button",
@@ -142,7 +145,10 @@ class WhatsAppService:
         try:
             session = get_http_session()
             res = session.post(url, json=payload, headers=headers, timeout=10)
-            return res.json()
+            res_data = res.json()
+            if res.status_code != 200:
+                logger.error(f"[WhatsAppService Error {res.status_code}] Buttons error for {clean_phone}: {res_data}")
+            return res_data
         except Exception as e:
             logger.error(f"[WhatsAppService] Exception sending buttons: {e}")
             return {'error': str(e)}
@@ -153,9 +159,10 @@ class WhatsAppService:
         Sends an interactive list picker dropdown menu.
         sections format: [{'title': 'Categories', 'rows': [{'id': 'cat_1', 'title': 'Pizzas', 'description': 'Delish pizzas'}]}]
         """
+        clean_phone = re.sub(r'\D', '', str(recipient_phone))
         phone_id, token = cls.get_credentials()
         if not phone_id or not token:
-            logger.warning(f"[WhatsAppService] Mocking interactive list to {recipient_phone}")
+            logger.warning(f"[WhatsAppService] Mocking interactive list to {clean_phone}")
             return {'status': 'mocked'}
 
         url = f"{cls.GRAPH_API_URL}/{phone_id}/messages"
@@ -167,12 +174,12 @@ class WhatsAppService:
         payload = {
             "messaging_product": "whatsapp",
             "recipient_type": "individual",
-            "to": recipient_phone,
+            "to": clean_phone,
             "type": "interactive",
             "interactive": {
                 "type": "list",
                 "header": {"type": "text", "text": header_text[:60]},
-                "body": {"text": body_text},
+                "body": {"text": body_text[:1024]},
                 "action": {
                     "button": button_title[:20],
                     "sections": sections
@@ -183,9 +190,12 @@ class WhatsAppService:
         try:
             session = get_http_session()
             res = session.post(url, json=payload, headers=headers, timeout=10)
-            return res.json()
+            res_data = res.json()
+            if res.status_code != 200:
+                logger.error(f"[WhatsAppService Error {res.status_code}] List error for {clean_phone}: {res_data}")
+            return res_data
         except Exception as e:
-            logger.error(f"[WhatsAppService] Exception sending interactive list: {e}")
+            logger.error(f"[WhatsAppService] Exception sending list: {e}")
             return {'error': str(e)}
 
     @classmethod
