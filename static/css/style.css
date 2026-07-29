@@ -3487,7 +3487,7 @@ ul, ol {
 }
 
 /* ==========================================================================
-   CART TOAST NOTIFICATION POPUP (Compact Bottom-Center Pill)
+   CART TOAST NOTIFICATION POPUP (Gold Banner Pop-up)
    ========================================================================== */
 .cart-toast-popup {
     position: fixed !important;
@@ -3496,16 +3496,16 @@ ul, ol {
     right: auto !important;
     top: auto !important;
     z-index: 999999 !important;
-    background: #141414;
-    border: 1.5px solid var(--color-primary);
+    background: var(--color-primary) !important;
+    border: 1.5px solid #dfb958 !important;
     border-radius: 30px;
-    padding: 6px 14px 6px 14px;
-    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.85), 0 0 15px rgba(201, 168, 76, 0.3);
+    padding: 10px 18px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.7), 0 0 20px rgba(201, 168, 76, 0.4);
     opacity: 0;
     pointer-events: none;
     transform: translate(-50%, 15px) scale(0.95);
     transition: opacity 0.3s cubic-bezier(0.16, 1, 0.3, 1), transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-    max-width: 280px;
+    max-width: 320px;
     width: max-content;
 }
 
@@ -3518,54 +3518,37 @@ ul, ol {
 .cart-toast-content {
     display: flex;
     align-items: center;
-    gap: 10px;
-}
-
-.cart-toast-text {
-    display: flex;
-    flex-direction: column;
-    flex: 1;
-    min-width: 0;
+    gap: 14px;
 }
 
 .cart-toast-title {
-    font-size: 0.65rem;
+    font-size: 0.92rem;
     font-weight: 700;
-    color: var(--color-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    line-height: 1.1;
-}
-
-.cart-toast-name {
-    font-size: 0.78rem;
-    color: #ffffff;
-    font-weight: 600;
+    color: #ffffff !important;
+    letter-spacing: 0.3px;
+    line-height: 1;
     white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    line-height: 1.2;
-    max-width: 130px;
 }
 
 .cart-toast-view-btn {
-    background: var(--color-primary);
-    color: var(--color-bg-deep);
+    background: #ffffff !important;
+    color: #000000 !important;
     border: none;
     border-radius: 20px;
-    padding: 4px 11px;
-    font-size: 0.7rem;
-    font-weight: 700;
+    padding: 6px 14px;
+    font-size: 0.78rem;
+    font-weight: 800;
     letter-spacing: 0.5px;
     cursor: pointer;
     flex-shrink: 0;
     transition: transform 0.2s ease, background-color 0.2s ease;
     white-space: nowrap;
+    text-transform: uppercase;
 }
 
 .cart-toast-view-btn:hover {
-    transform: scale(1.05);
-    background: #e5be53;
+    transform: scale(1.06);
+    background: #f0f0f0 !important;
 }
 
 @media (max-width: 768px) {

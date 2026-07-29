@@ -656,17 +656,9 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     let toastTimeout;
-    const showCartToast = (name, img) => {
+    const showCartToast = () => {
         const toast = document.getElementById('cartToast');
-        const toastName = document.getElementById('cartToastName');
-        const toastImg = document.getElementById('cartToastImg');
-
         if (!toast) return;
-
-        if (toastName) toastName.textContent = name;
-        if (toastImg) {
-            toastImg.src = img || '/static/images/logo.png';
-        }
 
         toast.classList.add('show');
         clearTimeout(toastTimeout);
@@ -695,7 +687,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         saveCartToStorage();
         updateCartUI();
-        showCartToast(name, img);
+        showCartToast();
     };
 
     const removeItemFromCart = (id) => {
