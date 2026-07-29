@@ -276,14 +276,11 @@ def api_create_order(request):
                 return JsonResponse({'status': 'error', 'message': 'Ordering is currently unavailable because the restaurant is closed. Please visit again during our opening hours.'}, status=403)
 
             data = json.loads(request.body)
-            customer_name = data.get('customer_name', '').strip()
-            customer_phone = data.get('customer_phone', '').strip()
-            delivery_address = data.get('delivery_address', '').strip()
+            customer_name = data.get('customer_name', '').strip() or 'Website Customer'
+            customer_phone = data.get('customer_phone', '').strip() or 'N/A (Website Order)'
+            delivery_address = data.get('delivery_address', '').strip() or 'Website Direct Order'
             order_notes = data.get('order_notes', '').strip()
             cart_items = data.get('cart_items', [])
-
-            if not customer_name or not customer_phone or not delivery_address:
-                return JsonResponse({'status': 'error', 'message': 'Customer Name, Phone Number, and Delivery Address are required.'}, status=400)
 
             if not cart_items:
                 return JsonResponse({'status': 'error', 'message': 'Cart is empty.'}, status=400)
@@ -295,8 +292,11 @@ def api_create_order(request):
 
             # Validate stock availability for all cart items first
             for item_data in cart_items:
-                item_code = item_data.get('id', '')
+                item_code = str(item_data.get('id', ''))
                 product_obj = Product.objects.filter(item_code=item_code).first()
+                if not product_obj and item_code.isdigit():
+                    product_obj = Product.objects.filter(id=int(item_code)).first()
+
                 if product_obj and not product_obj.is_available:
                     return JsonResponse({
                         'status': 'error',
@@ -317,7 +317,7 @@ def api_create_order(request):
 
             for item_data in cart_items:
                 name = item_data.get('name', 'Item')
-                item_code = item_data.get('id', '')
+                item_code = str(item_data.get('id', ''))
                 qty = int(item_data.get('quantity', 1))
                 price = float(item_data.get('price', 0))
                 subtotal = price * qty
@@ -325,6 +325,8 @@ def api_create_order(request):
 
                 # Try matching product
                 product_obj = Product.objects.filter(item_code=item_code).first()
+                if not product_obj and item_code.isdigit():
+                    product_obj = Product.objects.filter(id=int(item_code)).first()
 
                 OrderItem.objects.create(
                     order=order,
@@ -341,7 +343,7 @@ def api_create_order(request):
             # Create Real-Time Order Notification
             OrderNotification.objects.create(
                 order=order,
-                title=order.items_summary or "New Order",
+                title=f"New Web Order #{order.order_id}",
                 message=f"Received order from {order.customer_name} for Rs. {total_price:.0f}",
                 customer_name=order.customer_name,
                 total_price=total_price,
