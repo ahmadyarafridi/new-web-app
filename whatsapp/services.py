@@ -52,14 +52,16 @@ class WhatsAppService:
 
     @classmethod
     def get_credentials(cls):
-        phone_id = getattr(settings, 'WHATSAPP_PHONE_NUMBER_ID', '')
-        token = getattr(settings, 'WHATSAPP_TOKEN', '')
+        phone_id = getattr(settings, 'WHATSAPP_PHONE_NUMBER_ID', '').strip()
+        token = getattr(settings, 'WHATSAPP_TOKEN', '').strip()
 
-        if not phone_id or not token:
-            config = WhatsAppSetting.objects.first()
-            if config:
-                phone_id = phone_id or config.phone_number_id
-                token = token or config.access_token
+        if phone_id and token:
+            return phone_id, token
+
+        config = WhatsAppSetting.objects.first()
+        if config:
+            phone_id = phone_id or config.phone_number_id
+            token = token or config.access_token
 
         return phone_id, token
 
