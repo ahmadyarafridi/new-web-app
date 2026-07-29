@@ -38,7 +38,10 @@ def verify_signature(raw_body: bytes, signature_header: str) -> bool:
             msg=raw_body,
             digestmod=hashlib.sha256
         ).hexdigest()
-        return hmac.compare_digest(expected_hash, calculated_hash)
+        match = hmac.compare_digest(expected_hash, calculated_hash)
+        if not match:
+            logger.warning("[Meta Webhook HMAC Mismatch] Provided signature does not match WHATSAPP_APP_SECRET.")
+        return match
     except Exception as e:
         logger.error(f"[Meta Webhook] HMAC comparison error: {e}")
         return False

@@ -49,7 +49,10 @@ def whatsapp_webhook(request):
         parsed_msg = extract_incoming_message(payload)
         if not parsed_msg:
             # Event was status/receipt update (sent/delivered/read), return 200 OK to Meta
+            logger.info(f"[Meta Webhook] Received status/receipt event from Meta.")
             return HttpResponse('EVENT_RECEIVED', status=200)
+
+        logger.info(f"[Meta Webhook] Processing message from '{parsed_msg['sender_phone']}' ({parsed_msg['sender_name']}): '{parsed_msg['text_body']}'")
 
         # Idempotency check: drop if message_id already processed
         msg_id = parsed_msg['message_id']
@@ -77,12 +80,13 @@ def whatsapp_webhook(request):
 
         if auto_reply and parsed_msg['text_body']:
             from .state_machine import WhatsAppStateMachine
-            WhatsAppStateMachine.process_incoming(
+            reply_res = WhatsAppStateMachine.process_incoming(
                 sender_phone=parsed_msg['sender_phone'],
                 sender_name=parsed_msg['sender_name'],
                 message_text=parsed_msg['text_body'],
                 interactive_id=parsed_msg.get('interactive_id')
             )
+            logger.info(f"[Meta Webhook] State machine replied to {parsed_msg['sender_phone']}")
 
         return HttpResponse('EVENT_RECEIVED', status=200)
 
