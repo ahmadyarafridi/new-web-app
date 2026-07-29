@@ -463,40 +463,68 @@ document.addEventListener('DOMContentLoaded', () => {
     let previousUnreadCount = 0;
     let isFirstLoad = true;
 
-    // Web Audio Synthesizer for 2-tone "Ding" sound (no external file needed)
+    // Web Audio Synthesizer for 3-tone Loud "Ding" sound (Auto-resumes browser audio context)
     function playDingSound() {
         try {
             const AudioContext = window.AudioContext || window.webkitAudioContext;
             if (!AudioContext) return;
             const ctx = new AudioContext();
+            if (ctx.state === 'suspended') {
+                ctx.resume();
+            }
+
+            const now = ctx.currentTime;
             
-            // Tone 1 (High bell chime)
+            // Tone 1 (High bell C6)
             const osc1 = ctx.createOscillator();
             const gain1 = ctx.createGain();
             osc1.type = 'sine';
-            osc1.frequency.setValueAtTime(880, ctx.currentTime); // A5 note
-            gain1.gain.setValueAtTime(0.3, ctx.currentTime);
-            gain1.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc1.frequency.setValueAtTime(1046.50, now);
+            gain1.gain.setValueAtTime(0.5, now);
+            gain1.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
             osc1.connect(gain1);
             gain1.connect(ctx.destination);
-            osc1.start(ctx.currentTime);
-            osc1.stop(ctx.currentTime + 0.4);
+            osc1.start(now);
+            osc1.stop(now + 0.5);
 
-            // Tone 2 (Harmonic response)
+            // Tone 2 (E6 note chime)
             const osc2 = ctx.createOscillator();
             const gain2 = ctx.createGain();
             osc2.type = 'sine';
-            osc2.frequency.setValueAtTime(1318.5, ctx.currentTime + 0.12); // E6 note
-            gain2.gain.setValueAtTime(0.35, ctx.currentTime + 0.12);
-            gain2.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.7);
+            osc2.frequency.setValueAtTime(1318.51, now + 0.15);
+            gain2.gain.setValueAtTime(0.6, now + 0.15);
+            gain2.gain.exponentialRampToValueAtTime(0.001, now + 0.65);
             osc2.connect(gain2);
             gain2.connect(ctx.destination);
-            osc2.start(ctx.currentTime + 0.12);
-            osc2.stop(ctx.currentTime + 0.7);
+            osc2.start(now + 0.15);
+            osc2.stop(now + 0.65);
+
+            // Tone 3 (G6 note flourish)
+            const osc3 = ctx.createOscillator();
+            const gain3 = ctx.createGain();
+            osc3.type = 'sine';
+            osc3.frequency.setValueAtTime(1567.98, now + 0.3);
+            gain3.gain.setValueAtTime(0.7, now + 0.3);
+            gain3.gain.exponentialRampToValueAtTime(0.001, now + 0.9);
+            osc3.connect(gain3);
+            gain3.connect(ctx.destination);
+            osc3.start(now + 0.3);
+            osc3.stop(now + 0.9);
         } catch (e) {
             console.log('Audio notification error:', e);
         }
     }
+
+    // Unlock browser audio context on first click anywhere on dashboard
+    document.addEventListener('click', () => {
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (AudioContext && !window._audioUnlocked) {
+            const tempCtx = new AudioContext();
+            tempCtx.resume().then(() => {
+                window._audioUnlocked = true;
+            });
+        }
+    }, { once: true });
 
     const blurOverlay = document.getElementById('notifBlurOverlay');
 
