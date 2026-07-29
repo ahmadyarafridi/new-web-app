@@ -80,13 +80,21 @@ def whatsapp_webhook(request):
 
         if auto_reply and parsed_msg['text_body']:
             from .state_machine import WhatsAppStateMachine
-            reply_res = WhatsAppStateMachine.process_incoming(
-                sender_phone=parsed_msg['sender_phone'],
-                sender_name=parsed_msg['sender_name'],
-                message_text=parsed_msg['text_body'],
-                interactive_id=parsed_msg.get('interactive_id')
-            )
-            logger.info(f"[Meta Webhook] State machine replied to {parsed_msg['sender_phone']}")
+            from .services import WhatsAppService
+            try:
+                reply_res = WhatsAppStateMachine.process_incoming(
+                    sender_phone=parsed_msg['sender_phone'],
+                    sender_name=parsed_msg['sender_name'],
+                    message_text=parsed_msg['text_body'],
+                    interactive_id=parsed_msg.get('interactive_id')
+                )
+                logger.info(f"[Meta Webhook] State machine replied to {parsed_msg['sender_phone']}")
+            except Exception as e:
+                logger.error(f"[Meta Webhook StateMachine Error] {e}", exc_info=True)
+                WhatsAppService.send_text_message(
+                    parsed_msg['sender_phone'],
+                    "Welcome to Amazing Foods! 🍔✨\n\nReply *menu* anytime to browse items and place an order!"
+                )
 
         return HttpResponse('EVENT_RECEIVED', status=200)
 
