@@ -81,6 +81,12 @@ def whatsapp_webhook(request):
         if auto_reply and parsed_msg['text_body']:
             from .state_machine import WhatsAppStateMachine
             from .services import WhatsAppService
+            from website.models import Category
+            from website.views import ensure_db_ready
+
+            if Category.objects.count() == 0:
+                ensure_db_ready()
+
             try:
                 reply_res = WhatsAppStateMachine.process_incoming(
                     sender_phone=parsed_msg['sender_phone'],
