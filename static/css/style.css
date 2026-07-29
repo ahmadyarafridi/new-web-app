@@ -3531,9 +3531,9 @@ ul, ol {
 }
 
 .cart-toast-view-btn {
-    background: #ffffff !important;
-    color: #000000 !important;
-    border: none;
+    background: #070707 !important;
+    color: var(--color-primary) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 20px;
     padding: 6px 14px;
     font-size: 0.78rem;
@@ -3548,7 +3548,7 @@ ul, ol {
 
 .cart-toast-view-btn:hover {
     transform: scale(1.06);
-    background: #f0f0f0 !important;
+    background: #141414 !important;
 }
 
 @media (max-width: 768px) {
