@@ -12,6 +12,7 @@ def restaurant_info(request):
     else:
         info.name = "Amazing Foods"
         info.address = "Amazing Foods Peshawar"
+        info.google_maps_plus_code = "Peshawar, Pakistan"
         if info.about_history and "Delicious Food Stop" in info.about_history:
             info.about_history = info.about_history.replace("Delicious Food Stop", "Amazing Foods")
         if info.about_history and "Jamrud" in info.about_history:

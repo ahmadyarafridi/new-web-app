@@ -53,13 +53,13 @@
         </div>
 
         <div class="contact-map-frame">
-            <!-- Real embedded Google Map, using the confirmed Plus Code (292F+QRP Jamrud) -->
+            <!-- Embedded Google Map centered on Peshawar -->
             <iframe
-                src="https://maps.google.com/maps?q={{ restaurant.google_maps_plus_code|urlencode }}&z=16&output=embed"
+                src="https://maps.google.com/maps?q={{ restaurant.google_maps_plus_code|default:'Peshawar, Pakistan'|urlencode }}&z=14&output=embed"
                 width="100%" height="100%" style="border:0; min-height:320px;"
                 allowfullscreen="" loading="lazy"
                 referrerpolicy="no-referrer-when-downgrade"
-                title="{{ restaurant.name }} location map">
+                title="{{ restaurant.name }} Peshawar location map">
             </iframe>
         </div>
     </div>
