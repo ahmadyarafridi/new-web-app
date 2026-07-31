@@ -73,55 +73,7 @@
             <span class="section-tag" style="margin-bottom: 6px;">We Value Your Feedback</span>
         </div>
 
-        {% if messages %}
-        <!-- POPUP THANK YOU MODAL DIRECTLY OVER REVIEW FORM -->
-        <div id="feedbackThankYouModal" style="display: flex; align-items: center; justify-content: center; position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 999; background: rgba(10, 10, 10, 0.92); backdrop-filter: blur(8px); padding: 20px; box-sizing: border-box; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
-            <div style="text-align: center; max-width: 440px; width: 100%; padding: 35px 25px; background: var(--color-bg-card); border: 1.5px solid var(--color-primary); border-radius: var(--border-radius-md); box-shadow: 0 0 35px rgba(201, 168, 76, 0.3); position: relative;">
-                <button id="closeFeedbackModalBtn" type="button" style="position: absolute; top: 14px; right: 16px; background: transparent; border: none; color: var(--color-text-gray); font-size: 1.2rem; cursor: pointer;"><i class="fa-solid fa-xmark"></i></button>
-                
-                <div style="width: 64px; height: 64px; border-radius: 50%; background: rgba(201, 168, 76, 0.15); border: 2px solid var(--color-primary); color: #f5b301; display: flex; align-items: center; justify-content: center; font-size: 1.9rem; margin: 0 auto 16px auto; box-shadow: 0 0 25px rgba(201, 168, 76, 0.35);">
-                    <i class="fa-solid fa-check"></i>
-                </div>
-                
-                <h3 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 1.35rem; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px;">
-                    Thank You For Your Review!
-                </h3>
-                
-                <p style="font-size: 0.88rem; color: #ffffff; line-height: 1.6; margin-bottom: 22px;">
-                    We truly appreciate your feedback! Your review has been saved in our system and will appear live on our website once reviewed by our team.
-                </p>
-                
-                <button type="button" class="btn-primary" id="dismissFeedbackModalBtn" style="width: 100%; justify-content: center; padding: 12px; font-weight: 700; cursor: pointer;">
-                    Done
-                </button>
-            </div>
-        </div>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', function() {
-                const modal = document.getElementById('feedbackThankYouModal');
-                const closeBtn = document.getElementById('closeFeedbackModalBtn');
-                const dismissBtn = document.getElementById('dismissFeedbackModalBtn');
-                const fbSection = document.getElementById('customer-feedback');
-                
-                // Instantly scroll directly to the review form when submitted
-                if (fbSection) {
-                    setTimeout(function() {
-                        fbSection.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                    }, 100);
-                }
-
-                function closeModal() {
-                    if (modal) {
-                        modal.style.display = 'none';
-                    }
-                }
-                
-                if (closeBtn) closeBtn.addEventListener('click', closeModal);
-                if (dismissBtn) dismissBtn.addEventListener('click', closeModal);
-            });
-        </script>
-        {% endif %}
 
         <form method="post" action="{% url 'contact' %}" spellcheck="false" onsubmit="sessionStorage.removeItem('feedback_submitted_modal_closed');" enctype="multipart/form-data" style="display: flex; flex-direction: column; gap: 0px; max-width: 500px; margin: 0 auto;">
             {% csrf_token %}

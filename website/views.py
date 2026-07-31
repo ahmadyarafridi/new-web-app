@@ -259,7 +259,6 @@ def contact(request):
             feedback = form.save(commit=False)
             feedback.status = 'pending'
             feedback.save()
-            messages.success(request, 'Thank you! Your feedback has been received and is currently pending review by our team.')
             return redirect('contact')
     else:
         form = CustomerFeedbackForm()
