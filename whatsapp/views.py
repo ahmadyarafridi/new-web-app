@@ -16,6 +16,8 @@ def whatsapp_webhook(request):
     GET: Responds to Meta verification challenge.
     POST: Validates HMAC-SHA256 signature, enforces message_id idempotency, logs message, returns 200 OK.
     """
+    logger.info(f"[WEBHOOK HIT] method={request.method} path={request.path} content_length={len(request.body)}")
+
     # 1. GET Request: Meta Webhook Verification Challenge
     if request.method == 'GET':
         mode = request.GET.get('hub.mode')
