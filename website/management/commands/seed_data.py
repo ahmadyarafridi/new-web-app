@@ -13,7 +13,7 @@ class Command(BaseCommand):
         info.tagline = "Fast Food & Pulao"
         info.phone = "+92 323 2870355"
         info.whatsapp_number = "923232870355"
-        info.email = "info@amazingfoods.pk"
+        info.email = "mharisyar.ai@gmail.com"
         info.address = "Amazing Foods Peshawar"
         info.google_maps_plus_code = "Peshawar, Pakistan"
         info.google_rating = 4.4

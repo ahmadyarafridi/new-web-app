@@ -17,7 +17,7 @@ class RestaurantInfo(models.Model):
     tagline = models.CharField(max_length=255, default="Fast Food & Pulao")
     phone = models.CharField(max_length=20, default="+92 323 2870355")
     whatsapp_number = models.CharField(max_length=20, default="923232870355")
-    email = models.EmailField(default="info@amazingfoods.pk")
+    email = models.EmailField(default="mharisyar.ai@gmail.com")
     address = models.CharField(max_length=255, default="Amazing Foods Peshawar")
     google_maps_plus_code = models.CharField(max_length=50, default="Peshawar, Pakistan")
     google_rating = models.DecimalField(max_digits=3, decimal_places=1, default=4.4)

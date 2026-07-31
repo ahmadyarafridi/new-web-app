@@ -189,7 +189,7 @@ def about(request):
 def legal_document(request, doc_type):
     info = RestaurantInfo.objects.first()
     rest_name = info.name if info else "Amazing Foods"
-    rest_email = info.email if info else "info@amazingfoods.pk"
+    rest_email = info.email if info else "mharisyar.ai@gmail.com"
     rest_phone = info.phone if info else "+92 323 2870355"
 
     if doc_type == 'privacy':
