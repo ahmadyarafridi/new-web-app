@@ -7,12 +7,12 @@
     <title>{% block title %}{{ restaurant.name|default:"Amazing Foods" }} — Fast Food & Pulao{% endblock %}</title>
 
     <!-- SEO -->
-    <meta name="description" content="{% block meta_description %}{{ restaurant.name|default:"Amazing Foods" }} — Fast food restaurant in Jamrud rated 4.4/5 on Google. Order Zinger burgers, pizza, BBQ and chicken pulao straight to WhatsApp.{% endblock %}">
+    <meta name="description" content="{% block meta_description %}{{ restaurant.name|default:"Amazing Foods" }} — Fast food restaurant in Peshawar rated 4.4/5 on Google. Order Zinger burgers, pizza, BBQ and chicken pulao straight to WhatsApp.{% endblock %}">
 
     <!-- Open Graph (for WhatsApp / Facebook link previews) -->
     <meta property="og:type" content="restaurant.restaurant">
     <meta property="og:title" content="{% block og_title %}{{ restaurant.name|default:"Amazing Foods" }} — Fast Food & Pulao{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}{{ restaurant.name|default:"Amazing Foods" }} — Fast food restaurant in Jamrud rated 4.4/5 on Google. Order Zinger burgers, pizza, BBQ and chicken pulao straight to WhatsApp.{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{{ restaurant.name|default:"Amazing Foods" }} — Fast food restaurant in Peshawar rated 4.4/5 on Google. Order Zinger burgers, pizza, BBQ and chicken pulao straight to WhatsApp.{% endblock %}">
     <meta property="og:image" content="{% static 'images/logo.png' %}">
 
     <!-- Font Awesome -->
@@ -293,7 +293,7 @@
                     <span class="brand-sub">Foods</span>
                 </div>
                 <p style="color: var(--color-text-gray); font-size: 0.88rem; margin-bottom: 8px;">Fast Food & Pulao</p>
-                <p style="margin-bottom: 6px;"><i class="fa-solid fa-location-dot" style="color: var(--color-primary); margin-right: 6px;"></i> {{ restaurant.address|default:"Amazing foods jamrud" }}</p>
+                <p style="margin-bottom: 6px;"><i class="fa-solid fa-location-dot" style="color: var(--color-primary); margin-right: 6px;"></i> {{ restaurant.address|default:"Amazing Foods Peshawar" }}</p>
                 <p style="margin-bottom: 6px;"><i class="fa-solid fa-phone" style="color: var(--color-primary); margin-right: 6px;"></i> <a href="tel:{{ restaurant.phone|default:'+923232870355' }}" style="color: inherit; text-decoration: underline;">{{ restaurant.phone|default:'+92 323 2870355' }}</a></p>
             </div>
 

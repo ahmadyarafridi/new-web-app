@@ -6,7 +6,7 @@
 [![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
 [![SQLite](https://img.shields.io/badge/SQLite-003B57?style=for-the-badge&logo=sqlite&logoColor=white)](https://www.sqlite.org/)
 
-A production-ready full-stack Django web application built for **Amazing Foods**, a popular fast-food restaurant based in Jamrud, Khyber Pakhtunkhwa. Designed with a luxury dark & gold aesthetic, seamless page transitions, interactive menu filtering, direct WhatsApp ordering, and restaurant owner authentication.
+A production-ready full-stack Django web application built for **Amazing Foods**, a popular fast-food restaurant based in Peshawar, Khyber Pakhtunkhwa. Designed with a luxury dark & gold aesthetic, seamless page transitions, interactive menu filtering, direct WhatsApp ordering, and restaurant owner authentication.
 
 ---
 
@@ -19,7 +19,7 @@ A production-ready full-stack Django web application built for **Amazing Foods**
 - 💬 **Direct WhatsApp Checkout**: 1-Click order confirmation that automatically pre-fills item details, quantities, and totals into WhatsApp.
 - 🍕 **Interactive Food Menu**: Instant keyword search and custom category filters for pizzas, burgers, shawarmas, appetizers, beverages, and desserts.
 - 🎨 **Luxury Dark Theme**: Custom CSS design system with HSL gold accents, smooth hover micro-interactions, and 60fps animations.
-- 📍 **Location & Operational Hours**: Embedded Google Maps location (Jamrud), contact channels, and live status badge.
+- 📍 **Location & Operational Hours**: Embedded Google Maps location (Peshawar), contact channels, and live status badge.
 
 ---
 
