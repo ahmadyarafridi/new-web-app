@@ -203,3 +203,77 @@ class OrderServiceTransactionTestCase(TransactionTestCase):
 
         logs = NotificationLog.objects.filter(order=order)
         self.assertGreaterEqual(logs.count(), 1)
+
+
+import hmac
+import hashlib
+import json
+
+class WebhookSignatureTestCase(TestCase):
+    """Automated unit tests for Meta Webhook HMAC SHA-256 signature verification."""
+
+    def setUp(self):
+        self.secret = "test_meta_app_secret_12345"
+        WhatsAppSetting.objects.create(
+            phone_number_id="1319137847940310",
+            access_token="EAAP_TEST_TOKEN",
+            app_secret=self.secret,
+            verify_token="test_verify_token"
+        )
+        self.payload = {
+            "object": "whatsapp_business_account",
+            "entry": [{
+                "id": "2464752690672704",
+                "changes": [{
+                    "value": {
+                        "messaging_product": "whatsapp",
+                        "metadata": {"display_phone_number": "15556691242", "phone_number_id": "1319137847940310"},
+                        "messages": [{
+                            "from": "923232870355",
+                            "id": "wamid.HBgMOTIzMjMyODcwMzU1FQIAEhggMTIzNDU2Nzg5MAA=",
+                            "timestamp": "1722300000",
+                            "text": {"body": "Hi"},
+                            "type": "text"
+                        }]
+                    },
+                    "field": "messages"
+                }]
+            }]
+        }
+        self.raw_body = json.dumps(self.payload).encode('utf-8')
+
+    def test_valid_signature_accepted(self):
+        calculated_hash = hmac.new(
+            self.secret.encode('utf-8'),
+            msg=self.raw_body,
+            digestmod=hashlib.sha256
+        ).hexdigest()
+
+        response = self.client.post(
+            '/whatsapp/webhook/',
+            data=self.raw_body,
+            content_type='application/json',
+            HTTP_X_HUB_SIGNATURE_256=f"sha256={calculated_hash}"
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content.decode('utf-8'), 'EVENT_RECEIVED')
+
+    def test_invalid_signature_rejected(self):
+        bad_hash = "sha256=" + "0" * 64
+        response = self.client.post(
+            '/whatsapp/webhook/',
+            data=self.raw_body,
+            content_type='application/json',
+            HTTP_X_HUB_SIGNATURE_256=bad_hash
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.content.decode('utf-8'), 'Invalid Signature')
+
+    def test_missing_signature_rejected(self):
+        response = self.client.post(
+            '/whatsapp/webhook/',
+            data=self.raw_body,
+            content_type='application/json'
+        )
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(response.content.decode('utf-8'), 'Invalid Signature')

@@ -11,28 +11,26 @@ logger = logging.getLogger(__name__)
 def verify_signature(raw_body: bytes, signature_header: str) -> bool:
     """
     Validates X-Hub-Signature-256 header sent by Meta Webhook.
-    Uses WHATSAPP_APP_SECRET from environment variables first, then database settings.
-    Strict enforcement: In production (DEBUG=False), signature bypass is NEVER allowed.
+    Strictly verifies raw request body HMAC SHA-256 against WHATSAPP_APP_SECRET.
+    Returns True ONLY if signature matches. Rejects all invalid/missing signatures.
     """
     app_secret = getattr(settings, 'WHATSAPP_APP_SECRET', '')
     if not app_secret:
         config = WhatsAppSetting.objects.first()
         app_secret = config.app_secret if config else ''
 
+    app_secret = app_secret.strip() if app_secret else ''
+
     if not app_secret:
-        if getattr(settings, 'DEBUG', True):
-            logger.warning("[Meta Webhook] DEBUG=True and WHATSAPP_APP_SECRET is unset. Bypassing HMAC check for local dev testing.")
-            return True
-        else:
-            logger.critical("[Meta Webhook SECURITY ERROR] DEBUG=False but WHATSAPP_APP_SECRET is unconfigured! Rejecting request.")
-            return False
+        logger.critical("[Meta Webhook SECURITY ERROR] WHATSAPP_APP_SECRET is unconfigured! Rejecting request.")
+        return False
 
     if not signature_header or not signature_header.startswith('sha256='):
         logger.warning("[Meta Webhook] Missing or malformed X-Hub-Signature-256 header.")
         return False
 
     try:
-        expected_hash = signature_header.split('sha256=')[1]
+        expected_hash = signature_header.split('sha256=')[1].strip()
         calculated_hash = hmac.new(
             app_secret.encode('utf-8'),
             msg=raw_body,
@@ -40,11 +38,11 @@ def verify_signature(raw_body: bytes, signature_header: str) -> bool:
         ).hexdigest()
         match = hmac.compare_digest(expected_hash, calculated_hash)
         if not match:
-            logger.warning("[Meta Webhook HMAC Mismatch] Provided signature does not match WHATSAPP_APP_SECRET. Allowing payload processing for sandbox resilience.")
-        return True
+            logger.warning("[Meta Webhook HMAC Mismatch] Provided signature does not match WHATSAPP_APP_SECRET.")
+        return match
     except Exception as e:
         logger.error(f"[Meta Webhook] HMAC comparison error: {e}")
-        return True
+        return False
 
 
 def extract_incoming_message(data: dict) -> dict:

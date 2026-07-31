@@ -82,10 +82,9 @@ def whatsapp_webhook(request):
             from .state_machine import WhatsAppStateMachine
             from .services import WhatsAppService
             from website.models import Category
-            from website.views import ensure_db_ready
 
             if Category.objects.count() == 0:
-                ensure_db_ready()
+                logger.warning("[Meta Webhook WARNING] Category table is empty. Production database contains no menu categories!")
 
             try:
                 reply_res = WhatsAppStateMachine.process_incoming(
