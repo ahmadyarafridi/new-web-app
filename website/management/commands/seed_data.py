@@ -31,12 +31,11 @@ class Command(BaseCommand):
 
         # 2. Categories
         categories_data = [
-            {'name': 'Special Deals', 'slug': 'deals', 'order': 1},
-            {'name': 'Pizzas', 'slug': 'pizzas', 'order': 2},
-            {'name': 'Shawarma & Burgers', 'slug': 'shawarma-burgers', 'order': 3},
-            {'name': 'Sides & Wings', 'slug': 'sides-wings', 'order': 4},
-            {'name': 'Traditional Pulao', 'slug': 'traditional-pulao', 'order': 5},
-            {'name': 'Beverages', 'slug': 'beverages', 'order': 6},
+            {'name': 'Pizzas', 'slug': 'pizzas', 'order': 1},
+            {'name': 'Shawarma & Burgers', 'slug': 'shawarma-burgers', 'order': 2},
+            {'name': 'Sides & Wings', 'slug': 'sides-wings', 'order': 3},
+            {'name': 'Traditional Pulao', 'slug': 'traditional-pulao', 'order': 4},
+            {'name': 'Beverages', 'slug': 'beverages', 'order': 5},
         ]
         
         cat_objs = {}
@@ -105,51 +104,6 @@ class Command(BaseCommand):
 
         # 4. Menu Products
         products_data = [
-            # Deals inside menu
-            {
-                'cat': 'deals',
-                'name': 'Zinger Combo Deal',
-                'slug': 'menu-deal-zinger-combo',
-                'price': 450,
-                'description': 'Crispy Zinger Burger + French Fries + Cold Drink',
-                'image': 'images/burger.jpg',
-                'tag': 'Bestseller Deal',
-                'item_code': 'deal-zinger-combo',
-                'order': 1
-            },
-            {
-                'cat': 'deals',
-                'name': 'Couple Pizza Deal',
-                'slug': 'menu-deal-couple-pizza',
-                'price': 899,
-                'description': 'Medium Tikka Pizza + 2 Chilled Soft Drinks',
-                'image': 'images/pizza.jpg',
-                'tag': 'Hot Deal',
-                'item_code': 'deal-couple-pizza',
-                'order': 2
-            },
-            {
-                'cat': 'deals',
-                'name': 'Mega Family Deal',
-                'slug': 'menu-deal-mega-family',
-                'price': 1650,
-                'description': 'Large Fajita Pizza + Special Chicken Pulao + 1.5L Soda',
-                'image': 'images/Menu/Main Courses/Beef Steak.jpg',
-                'tag': 'Family Saver',
-                'item_code': 'deal-mega-family',
-                'order': 3
-            },
-            {
-                'cat': 'deals',
-                'name': 'Shawarma Feast Deal',
-                'slug': 'menu-deal-shawarma-feast',
-                'price': 580,
-                'description': '2 Chicken Shawarmas + Hot Wings (6 pcs) + 2 Lime Sodas',
-                'image': 'images/Menu/Appetizers/Chicken Wings.jpg',
-                'tag': 'Special',
-                'item_code': 'deal-shawarma-feast',
-                'order': 4
-            },
 
             # Pizzas
             {
