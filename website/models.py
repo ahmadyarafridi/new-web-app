@@ -103,10 +103,17 @@ class Product(models.Model):
         return f"{self.name} (Rs. {self.price:.0f})"
 
     @property
+    def title(self):
+        return self.name
+
+    @property
     def image_src(self):
         if self.image_file:
             return self.image_file.url
-        return self.image
+        if self.image and (self.image.startswith('http://') or self.image.startswith('https://') or self.image.startswith('/')):
+            return self.image
+        from django.templatetags.static import static
+        return static(self.image)
 
 
 class Deal(models.Model):
@@ -130,7 +137,10 @@ class Deal(models.Model):
     def image_src(self):
         if self.image_file:
             return self.image_file.url
-        return self.image
+        if self.image and (self.image.startswith('http://') or self.image.startswith('https://') or self.image.startswith('/')):
+            return self.image
+        from django.templatetags.static import static
+        return static(self.image)
 
 
 class Review(models.Model):

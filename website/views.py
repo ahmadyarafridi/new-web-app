@@ -35,11 +35,17 @@ PER_PAGE = 9
 def index(request):
     track_visit(request)
     try:
-        categories = list(Category.objects.filter(is_active=True))
+        categories = list(Category.objects.filter(is_active=True).order_by('display_order', 'id'))
         products_qs = Product.objects.filter(category__is_active=True).select_related('category').order_by('-id')
         paginator = Paginator(products_qs, PER_PAGE)
         first_page = paginator.get_page(1)
-        deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
+        
+        # Merge featured products from Product model with Deal objects, ordering newest first (-id)
+        featured_prods = list(Product.objects.filter(category__slug='deals', category__is_active=True, is_available=True).order_by('-id'))
+        deal_objs = list(Deal.objects.filter(is_active=True).order_by('-id'))
+        seen_codes = {p.item_code for p in featured_prods}
+        deals = featured_prods + [d for d in deal_objs if d.item_code not in seen_codes]
+
         approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
         curated_reviews = list(Review.objects.filter(is_approved=True).order_by('display_order', '-id'))
 
@@ -69,12 +75,15 @@ def index(request):
         all_products = list(products_qs)
     except (OperationalError, ProgrammingError):
         ensure_db_ready()
-        categories = list(Category.objects.filter(is_active=True))
+        categories = list(Category.objects.filter(is_active=True).order_by('display_order', 'id'))
         products_qs = Product.objects.filter(category__is_active=True).select_related('category').order_by('-id')
         all_products = list(products_qs)
         paginator = Paginator(products_qs, PER_PAGE)
         first_page = paginator.get_page(1)
-        deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
+        featured_prods = list(Product.objects.filter(category__slug='deals', category__is_active=True, is_available=True).order_by('-id'))
+        deal_objs = list(Deal.objects.filter(is_active=True).order_by('-id'))
+        seen_codes = {p.item_code for p in featured_prods}
+        deals = featured_prods + [d for d in deal_objs if d.item_code not in seen_codes]
         approved_feedback = list(CustomerFeedback.objects.filter(status='approved').order_by('-created_at', '-id'))
         curated_reviews = list(Review.objects.filter(is_approved=True).order_by('display_order', '-id'))
         seen_names = set()
