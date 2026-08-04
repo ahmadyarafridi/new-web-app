@@ -946,3 +946,165 @@ function initFloatingLabels() {
         updateState();
     });
 }
+
+/* ==========================================================================
+   EXTENSIBLE & HIGH-PERFORMANCE HERO VIDEO CAROUSEL (Video Completion Triggered)
+   ========================================================================== */
+document.addEventListener('DOMContentLoaded', () => {
+    const heroWrapper = document.getElementById('heroCarouselWrapper');
+    if (!heroWrapper) return;
+
+    const slides = Array.from(heroWrapper.querySelectorAll('.hero-slide'));
+    const dotsContainer = document.getElementById('heroCarouselDots');
+    const prevBtn = document.getElementById('heroPrevBtn');
+    const nextBtn = document.getElementById('heroNextBtn');
+
+    if (slides.length <= 1) return;
+
+    let currentIndex = 0;
+    let fallbackTimer = null;
+    const FALLBACK_DURATION = 6500; // 6.5s safety fallback timer
+
+    const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+    const handleNext = () => {
+        const nextIdx = (currentIndex + 1) % slides.length;
+        goToSlide(nextIdx);
+    };
+
+    const handlePrev = () => {
+        const prevIdx = (currentIndex - 1 + slides.length) % slides.length;
+        goToSlide(prevIdx);
+    };
+
+    const goToSlide = (nextIndex) => {
+        if (nextIndex < 0) nextIndex = slides.length - 1;
+        if (nextIndex >= slides.length) nextIndex = 0;
+
+        if (fallbackTimer) clearTimeout(fallbackTimer);
+
+        slides.forEach((slide, idx) => {
+            const video = slide.querySelector('video');
+            if (idx === nextIndex) {
+                slide.style.display = 'block';
+                slide.classList.add('active');
+                if (video) {
+                    video.muted = true;
+                    video.playsInline = true;
+                    video.currentTime = 0;
+                    
+                    // When video completes playing, automatically transition to next slide
+                    video.onended = () => {
+                        if (!prefersReducedMotion) {
+                            handleNext();
+                        }
+                    };
+
+                    const p = video.play();
+                    if (p !== undefined) {
+                        p.catch(() => {
+                            video.muted = true;
+                            video.play().catch(() => {});
+                        });
+                    }
+                }
+            } else {
+                slide.classList.remove('active');
+                slide.style.display = 'none';
+                if (video) {
+                    video.onended = null;
+                    try { video.pause(); } catch(e) {}
+                }
+            }
+        });
+
+        // Safety fallback timer if video ended event is delayed
+        if (!prefersReducedMotion) {
+            fallbackTimer = setTimeout(handleNext, FALLBACK_DURATION);
+        }
+
+        // Update indicators
+        if (dotsContainer) {
+            const dots = dotsContainer.querySelectorAll('.hero-dot');
+            dots.forEach((dot, idx) => {
+                dot.classList.toggle('active', idx === nextIndex);
+            });
+        }
+
+        currentIndex = nextIndex;
+    };
+
+    if (nextBtn) nextBtn.addEventListener('click', () => { handleNext(); });
+    if (prevBtn) prevBtn.addEventListener('click', () => { handlePrev(); });
+
+    if (dotsContainer) {
+        dotsContainer.addEventListener('click', (e) => {
+            const dot = e.target.closest('.hero-dot');
+            if (!dot) return;
+            const targetIdx = parseInt(dot.getAttribute('data-slide-to'), 10);
+            if (!isNaN(targetIdx)) {
+                goToSlide(targetIdx);
+            }
+        });
+    }
+
+    // Touch Swipe Support (Mobile & Tablet)
+    let touchStartX = 0;
+    let touchStartY = 0;
+    const SWIPE_THRESHOLD = 40; // Minimum 40px swipe distance
+
+    heroWrapper.addEventListener('touchstart', (e) => {
+        if (e.touches && e.touches.length > 0) {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }
+    }, { passive: true });
+
+    heroWrapper.addEventListener('touchend', (e) => {
+        if (e.changedTouches && e.changedTouches.length > 0) {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+
+            const deltaX = touchEndX - touchStartX;
+            const deltaY = touchEndY - touchStartY;
+
+            // Ensure swipe is horizontal (deltaX > deltaY) and exceeds threshold
+            if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) >= SWIPE_THRESHOLD) {
+                if (deltaX < 0) {
+                    handleNext(); // Swipe Left -> Next Slide
+                } else {
+                    handlePrev(); // Swipe Right -> Prev Slide
+                }
+            }
+        }
+    }, { passive: true });
+
+    // Mouse Drag Swipe Support (Desktop)
+    let isMouseDown = false;
+    let mouseStartX = 0;
+
+    heroWrapper.addEventListener('mousedown', (e) => {
+        isMouseDown = true;
+        mouseStartX = e.clientX;
+    });
+
+    heroWrapper.addEventListener('mouseup', (e) => {
+        if (!isMouseDown) return;
+        isMouseDown = false;
+        const deltaX = e.clientX - mouseStartX;
+        if (Math.abs(deltaX) >= SWIPE_THRESHOLD) {
+            if (deltaX < 0) {
+                handleNext();
+            } else {
+                handlePrev();
+            }
+        }
+    });
+
+    heroWrapper.addEventListener('mouseleave', () => {
+        isMouseDown = false;
+    });
+
+    // Initial activation
+    goToSlide(0);
+});

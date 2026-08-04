@@ -5,14 +5,70 @@
 
 {% block content %}
 <!-- HERO / HOME SECTION -->
-<section id="home">
-    <div class="hero-bg-wrapper">
-        <img src="{% static 'images/Restaurant.avif' %}" alt="{{ restaurant.name }} Interior" fetchpriority="high" decoding="async">
+<section id="home" class="hero-carousel-section" aria-label="Featured Specialties Carousel">
+    <div class="hero-carousel-wrapper" id="heroCarouselWrapper">
+        
+        <!-- SLIDE 1: PREMIUM BURGERS -->
+        <div class="hero-slide active" data-slide-index="0">
+            <div class="hero-video-wrapper">
+                <video class="hero-video" 
+                       poster="{% if hero_assets %}{{ hero_assets.burger_poster }}{% else %}{% static 'videos/hero/burger-poster.jpg' %}{% endif %}" 
+                       autoplay muted playsinline 
+                       preload="auto"
+                       aria-hidden="true">
+                    <source src="{% if hero_assets %}{{ hero_assets.burger_mp4 }}{% else %}{% static 'videos/hero/Explode_Burger.mp4' %}{% endif %}" type="video/mp4">
+                    <source src="{% if hero_assets %}{{ hero_assets.burger_webm }}{% else %}{% static 'videos/hero/Explode_Burger.webm' %}{% endif %}" type="video/webm">
+                </video>
+                <div class="hero-video-overlay"></div>
+            </div>
+            <div class="hero-content-container">
+                <div class="hero-content">
+                    <h1 class="hero-heading">Juicy. Grilled. Unforgettable.</h1>
+                    <p class="hero-description">Fresh ingredients, bold flavors, and every bite made with care.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- SLIDE 2: STONE-BAKED PIZZA -->
+        <div class="hero-slide" data-slide-index="1">
+            <div class="hero-video-wrapper">
+                <video class="hero-video" 
+                       poster="{% if hero_assets %}{{ hero_assets.pizza_poster }}{% else %}{% static 'videos/hero/pizza-poster.jpg' %}{% endif %}" 
+                       autoplay muted playsinline 
+                       preload="auto"
+                       aria-hidden="true">
+                    <source src="{% if hero_assets %}{{ hero_assets.pizza_mp4 }}{% else %}{% static 'videos/hero/Explode_Pizza.mp4' %}{% endif %}" type="video/mp4">
+                    <source src="{% if hero_assets %}{{ hero_assets.pizza_webm }}{% else %}{% static 'videos/hero/Explode_Pizza.webm' %}{% endif %}" type="video/webm">
+                </video>
+                <div class="hero-video-overlay"></div>
+            </div>
+            <div class="hero-content-container">
+                <div class="hero-content">
+                    <h1 class="hero-heading">Every Slice Worth Sharing.</h1>
+                    <p class="hero-description">Golden crust, rich toppings, and authentic flavor in every slice.</p>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- CAROUSEL ARROWS (Left & Right Sides) -->
+    <button class="hero-carousel-arrow hero-prev" id="heroPrevBtn" aria-label="Previous Slide">
+        <i class="fa-solid fa-chevron-left"></i>
+    </button>
+    <button class="hero-carousel-arrow hero-next" id="heroNextBtn" aria-label="Next Slide">
+        <i class="fa-solid fa-chevron-right"></i>
+    </button>
+
+    <!-- CAROUSEL DOTS (Bottom Center) -->
+    <div class="hero-carousel-dots" id="heroCarouselDots">
+        <button class="hero-dot active" data-slide-to="0" aria-label="Slide 1: Premium Burgers"></button>
+        <button class="hero-dot" data-slide-to="1" aria-label="Slide 2: Stone-Baked Pizza"></button>
     </div>
 </section>
 
 <!-- CONTINUOUS VERTICAL MENU SECTION -->
-<section id="menu" style="padding-top: 15px; border-bottom: 1px solid var(--color-border);">
+<section id="menu" style="padding-top: 0; margin-top: 0; border-bottom: 1px solid var(--color-border);">
 
     <!-- STICKY SECOND HORIZONTAL CATEGORY NAVBAR -->
     <div class="category-nav-bar-wrapper">

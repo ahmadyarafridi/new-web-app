@@ -335,4 +335,35 @@ class Command(BaseCommand):
         admin_user.save()
         self.stdout.write(self.style.SUCCESS('[OK] Default admin user updated (admin / admin123)'))
 
+        # 7. Cloudinary Hero Assets Auto-Upload (Production CDN Integration)
+        from django.conf import settings
+        if getattr(settings, 'USE_CLOUDINARY', False):
+            try:
+                import cloudinary.uploader
+                self.stdout.write('Uploading hero videos and posters to Cloudinary CDN...')
+                hero_dir = settings.BASE_DIR / 'static' / 'videos' / 'hero'
+                assets_to_upload = [
+                    ('burger-poster.jpg', 'image', 'hero_videos/burger-poster'),
+                    ('pizza-poster.jpg', 'image', 'hero_videos/pizza-poster'),
+                    ('Explode_Burger.mp4', 'video', 'hero_videos/Explode_Burger'),
+                    ('Explode_Burger.webm', 'video', 'hero_videos/Explode_Burger'),
+                    ('Explode_Pizza.mp4', 'video', 'hero_videos/Explode_Pizza'),
+                    ('Explode_Pizza.webm', 'video', 'hero_videos/Explode_Pizza'),
+                ]
+                for filename, rtype, pub_id in assets_to_upload:
+                    file_path = hero_dir / filename
+                    if file_path.exists():
+                        try:
+                            cloudinary.uploader.upload(
+                                str(file_path),
+                                resource_type=rtype,
+                                public_id=pub_id,
+                                overwrite=True
+                            )
+                            self.stdout.write(self.style.SUCCESS(f'  [OK] Cloudinary CDN sync: {filename}'))
+                        except Exception as upload_err:
+                            self.stdout.write(self.style.WARNING(f'  [WARN] Cloudinary upload for {filename} deferred: {upload_err}'))
+            except Exception as e:
+                self.stdout.write(self.style.WARNING(f'[WARN] Cloudinary hero sync deferred: {e}'))
+
         self.stdout.write(self.style.SUCCESS('Seeding complete! All data successfully loaded.'))
