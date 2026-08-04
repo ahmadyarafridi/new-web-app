@@ -16,8 +16,12 @@
                        autoplay muted playsinline 
                        preload="auto"
                        aria-hidden="true">
-                    <source src="{% if hero_assets %}{{ hero_assets.burger_mp4 }}{% else %}{% static 'videos/hero/Explode_Burger.mp4' %}{% endif %}" type="video/mp4">
-                    <source src="{% if hero_assets %}{{ hero_assets.burger_webm }}{% else %}{% static 'videos/hero/Explode_Burger.webm' %}{% endif %}" type="video/webm">
+                    {% if hero_assets %}
+                    <source src="{{ hero_assets.burger_mp4 }}" type="video/mp4">
+                    <source src="{{ hero_assets.burger_webm }}" type="video/webm">
+                    {% endif %}
+                    <source src="{% static 'videos/hero/Explode_Burger.mp4' %}" type="video/mp4">
+                    <source src="{% static 'videos/hero/Explode_Burger.webm' %}" type="video/webm">
                 </video>
                 <div class="hero-video-overlay"></div>
             </div>
@@ -37,8 +41,12 @@
                        autoplay muted playsinline 
                        preload="auto"
                        aria-hidden="true">
-                    <source src="{% if hero_assets %}{{ hero_assets.pizza_mp4 }}{% else %}{% static 'videos/hero/Explode_Pizza.mp4' %}{% endif %}" type="video/mp4">
-                    <source src="{% if hero_assets %}{{ hero_assets.pizza_webm }}{% else %}{% static 'videos/hero/Explode_Pizza.webm' %}{% endif %}" type="video/webm">
+                    {% if hero_assets %}
+                    <source src="{{ hero_assets.pizza_mp4 }}" type="video/mp4">
+                    <source src="{{ hero_assets.pizza_webm }}" type="video/webm">
+                    {% endif %}
+                    <source src="{% static 'videos/hero/Explode_Pizza.mp4' %}" type="video/mp4">
+                    <source src="{% static 'videos/hero/Explode_Pizza.webm' %}" type="video/webm">
                 </video>
                 <div class="hero-video-overlay"></div>
             </div>
