@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth.forms import AuthenticationForm
-from website.models import RestaurantInfo, Category, Product, Deal, Review
+from website.models import RestaurantInfo, Category, Product, Deal, Review, InventoryItem
 from website.image_utils import validate_image_file, optimize_image
 
 class OwnerLoginForm(AuthenticationForm):
@@ -282,3 +282,37 @@ class RestaurantInfoForm(forms.ModelForm):
         if rating is not None and (rating < 0 or rating > 5):
             raise forms.ValidationError("Google Rating must be between 0 and 5.")
         return rating
+
+
+class InventoryForm(forms.ModelForm):
+    date_bought = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'class': 'floating-input',
+            'type': 'date',
+            'placeholder': ' '
+        })
+    )
+    last_updated = forms.DateField(
+        widget=forms.DateInput(attrs={
+            'class': 'floating-input',
+            'type': 'date',
+            'placeholder': ' '
+        })
+    )
+
+    class Meta:
+        model = InventoryItem
+        fields = ['item_name', 'item_quantity', 'date_bought', 'how_much_left', 'last_updated']
+        labels = {
+            'item_name': 'Item Name',
+            'item_quantity': 'Item Quantity',
+            'date_bought': 'Date Bought',
+            'how_much_left': 'How Much Left',
+            'last_updated': 'Last Updated',
+        }
+        widgets = {
+            'item_name': forms.TextInput(attrs={'class': 'floating-input', 'placeholder': ' '}),
+            'item_quantity': forms.TextInput(attrs={'class': 'floating-input', 'placeholder': ' '}),
+            'how_much_left': forms.TextInput(attrs={'class': 'floating-input', 'placeholder': ' '}),
+        }
+

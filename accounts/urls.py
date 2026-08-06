@@ -44,6 +44,12 @@ urlpatterns = [
     path('dashboard/reviews/delete/<int:pk>/', views.review_delete, name='review_delete'),
     path('dashboard/reviews/toggle/<int:pk>/', views.review_toggle, name='review_toggle'),
     
+    # Inventory Management
+    path('dashboard/inventory/', views.manage_inventory, name='manage_inventory'),
+    path('dashboard/inventory/add/', views.inventory_add, name='inventory_add'),
+    path('dashboard/inventory/edit/<int:pk>/', views.inventory_edit, name='inventory_edit'),
+    path('dashboard/inventory/delete/<int:pk>/', views.inventory_delete, name='inventory_delete'),
+    
     # Security & Data Backup
     path('dashboard/security/', views.manage_security, name='manage_security'),
     

@@ -1,0 +1,119 @@
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Inventory Management — {{ restaurant.name }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-card" style="margin-bottom: 24px; position: relative; padding-bottom: 25px;">
+    
+    <!-- TOP HEADER ROW -->
+    <div class="dashboard-header-row" style="margin-bottom: 20px;">
+        <div>
+            <h2 class="dashboard-title"><i class="fa-solid fa-warehouse text-gold" style="margin-right: 8px;"></i> Inventory Management</h2>
+            <p class="dashboard-subtitle">Track raw materials, stock quantities, purchase dates, remaining amounts, and last updated status</p>
+        </div>
+        
+        <a href="{% url 'inventory_add' %}" class="btn-primary" style="padding: 10px 18px; font-size: 0.85rem; font-weight: 700; display: inline-flex; align-items: center; gap: 8px; border-radius: 8px; text-decoration: none;">
+            <i class="fa-solid fa-plus"></i> Add Item
+        </a>
+    </div>
+
+    <!-- SEARCH BAR -->
+    <div style="margin-bottom: 20px;">
+        <form method="GET" action="{% url 'manage_inventory' %}" style="display: flex; gap: 10px; max-width: 500px;">
+            <div class="floating-group" style="flex: 1; margin-bottom: 0 !important;">
+                <input type="text" name="q" value="{{ search_query }}" class="floating-input" placeholder=" " id="inventorySearchInput">
+                <label for="inventorySearchInput" class="floating-label"><i class="fa-solid fa-magnifying-glass" style="margin-right: 6px;"></i> Search inventory...</label>
+            </div>
+            <button type="submit" class="btn-primary" style="padding: 10px 18px; border-radius: 8px; font-size: 0.85rem;">
+                Search
+            </button>
+            {% if search_query %}
+            <a href="{% url 'manage_inventory' %}" class="btn-secondary" style="padding: 10px 16px; border-radius: 8px; font-size: 0.85rem; text-decoration: none;">
+                Clear
+            </a>
+            {% endif %}
+        </form>
+    </div>
+
+    <!-- INVENTORY ITEMS TABLE -->
+    <div class="dashboard-table-wrapper">
+        <table class="dashboard-table">
+            <thead>
+                <tr>
+                    <th>Item Name</th>
+                    <th>Quantity</th>
+                    <th>Date Bought</th>
+                    <th>How Much Left</th>
+                    <th>Last Updated</th>
+                    <th style="text-align: right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in inventory_list %}
+                <tr>
+                    <td>
+                        <strong style="font-size: 0.9rem; font-weight: 700; color: var(--color-text-bright);">{{ item.item_name }}</strong>
+                    </td>
+                    <td>
+                        <span class="badge-status badge-active">{{ item.item_quantity }}</span>
+                    </td>
+                    <td>
+                        <i class="fa-regular fa-calendar" style="margin-right: 6px; opacity: 0.7;"></i>{{ item.date_bought|date:"M d, Y" }}
+                    </td>
+                    <td>
+                        <span style="font-size: 0.88rem; font-weight: 600; color: var(--color-text-bright);">{{ item.how_much_left }}</span>
+                    </td>
+                    <td>
+                        <i class="fa-solid fa-clock-rotate-left" style="margin-right: 6px; opacity: 0.7; color: var(--color-primary);"></i>{{ item.last_updated|date:"M d, Y" }}
+                    </td>
+                    <td style="text-align: right;">
+                        <div style="display: flex; gap: 8px; justify-content: flex-end;">
+                            <a href="{% url 'inventory_edit' item.pk %}" class="btn-action-edit" title="Edit Item">
+                                <i class="fa-solid fa-pen"></i> Edit
+                            </a>
+                            <a href="{% url 'inventory_delete' item.pk %}" class="btn-action-delete" title="Delete Item">
+                                <i class="fa-solid fa-trash"></i> Delete
+                            </a>
+                        </div>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" style="padding: 40px 20px; text-align: center; color: var(--color-text-gray);">
+                        <i class="fa-solid fa-boxes-stacked" style="font-size: 2.5rem; margin-bottom: 12px; opacity: 0.5; display: block; color: var(--color-primary);"></i>
+                        <p style="font-size: 0.95rem; font-weight: 600; margin: 0 0 6px 0; color: var(--color-text-bright);">No inventory items recorded yet</p>
+                        <p style="font-size: 0.82rem; margin: 0; color: var(--color-text-gray);">Click the <strong>+ Add Item</strong> button above to record your first inventory item.</p>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        <!-- PAGINATION -->
+        {% if inventory_list.has_other_pages %}
+        <div style="padding: 16px 20px; background: var(--color-bg-deep); border-top: 1px solid var(--color-border); display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-size: 0.8rem; color: var(--color-text-gray);">
+                Page {{ inventory_list.number }} of {{ inventory_list.paginator.num_pages }}
+            </span>
+            <div style="display: flex; gap: 6px;">
+                {% if inventory_list.has_previous %}
+                <a href="?page={{ inventory_list.previous_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; text-decoration: none;">Previous</a>
+                {% endif %}
+                {% if inventory_list.has_next %}
+                <a href="?page={{ inventory_list.next_page_number }}{% if search_query %}&q={{ search_query }}{% endif %}" class="btn-secondary" style="padding: 6px 12px; font-size: 0.8rem; text-decoration: none;">Next</a>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- BOTTOM BACK BUTTON -->
+    <div style="margin-top: 24px; display: flex; justify-content: flex-start;">
+        <a href="{% url 'dashboard' %}" class="btn-secondary" style="padding: 8px 22px; font-size: 0.8rem; font-weight: 700; text-decoration: none; border-radius: 8px; display: inline-flex; align-items: center; gap: 6px;">
+            &larr; Back to Dashboard
+        </a>
+    </div>
+
+</div>
+{% endblock %}

@@ -270,3 +270,23 @@ class OrderNotification(models.Model):
 
     def __str__(self):
         return f"{self.title} - Read: {self.is_read}"
+
+
+class InventoryItem(models.Model):
+    restaurant = models.ForeignKey(RestaurantInfo, on_delete=models.CASCADE, related_name='inventory_items', null=True, blank=True)
+    item_name = models.CharField(max_length=150, help_text="e.g. Cooking Oil, Cheese, Flour, Meat")
+    item_quantity = models.CharField(max_length=100, help_text="e.g. 50 kg, 20 liters, 10 cartons")
+    date_bought = models.DateField(default=timezone.now, help_text="Date when item was purchased")
+    how_much_left = models.CharField(max_length=100, help_text="e.g. 15 kg left, 5 liters, 30%")
+    last_updated = models.DateField(default=timezone.now, help_text="Date when inventory count was last updated")
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-date_bought', '-id']
+        verbose_name = "Inventory Item"
+        verbose_name_plural = "Inventory Items"
+
+    def __str__(self):
+        return f"{self.item_name} ({self.item_quantity})"
+

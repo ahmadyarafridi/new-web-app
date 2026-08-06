@@ -13,10 +13,10 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db.models import Q, Sum
 from django.utils import timezone
-from website.models import RestaurantInfo, Category, Product, Deal, Review, CustomerFeedback, Order, OrderItem, DailyVisit, OrderNotification
+from website.models import RestaurantInfo, Category, Product, Deal, Review, CustomerFeedback, Order, OrderItem, DailyVisit, OrderNotification, InventoryItem
 from .forms import (
     OwnerLoginForm, ProductForm, CategoryForm,
-    DealForm, ReviewForm, RestaurantInfoForm
+    DealForm, ReviewForm, RestaurantInfoForm, InventoryForm
 )
 from .analytics_utils import (
     get_visitor_analytics_data,
@@ -972,3 +972,87 @@ def export_full_data_zip(request):
     response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
+
+
+# ==============================================================================
+# INVENTORY MANAGEMENT
+# ==============================================================================
+@login_required(login_url='login')
+def manage_inventory(request):
+    search_query = request.GET.get('q', '').strip()
+    inventory_qs = InventoryItem.objects.all()
+
+    if search_query:
+        inventory_qs = inventory_qs.filter(
+            Q(item_name__icontains=search_query) |
+            Q(item_quantity__icontains=search_query) |
+            Q(how_much_left__icontains=search_query)
+        )
+
+    paginator = Paginator(inventory_qs, 15)
+    page_number = request.GET.get('page')
+    inventory_list = paginator.get_page(page_number)
+
+    context = {
+        'inventory_list': inventory_list,
+        'search_query': search_query,
+        'title': 'Inventory Management',
+    }
+    return render(request, 'accounts/inventory.html', context)
+
+
+@login_required(login_url='login')
+def inventory_add(request):
+    if request.method == 'POST':
+        form = InventoryForm(request.POST)
+        if form.is_valid():
+            item = form.save(commit=False)
+            item.restaurant = RestaurantInfo.objects.first()
+            item.save()
+            messages.success(request, f"Inventory item '{item.item_name}' added successfully!")
+            return redirect('manage_inventory')
+    else:
+        form = InventoryForm()
+
+    context = {
+        'form': form,
+        'title': 'Add Inventory Item',
+    }
+    return render(request, 'accounts/inventory_form.html', context)
+
+
+@login_required(login_url='login')
+def inventory_edit(request, pk):
+    item = get_object_or_404(InventoryItem, pk=pk)
+    if request.method == 'POST':
+        form = InventoryForm(request.POST, instance=item)
+        if form.is_valid():
+            form.save()
+            messages.success(request, f"Inventory item '{item.item_name}' updated successfully!")
+            return redirect('manage_inventory')
+    else:
+        form = InventoryForm(instance=item)
+
+    context = {
+        'form': form,
+        'item': item,
+        'title': f"Edit Inventory Item — {item.item_name}",
+    }
+    return render(request, 'accounts/inventory_form.html', context)
+
+
+@login_required(login_url='login')
+def inventory_delete(request, pk):
+    item = get_object_or_404(InventoryItem, pk=pk)
+    if request.method == 'POST':
+        item_name = item.item_name
+        item.delete()
+        messages.success(request, f"Inventory item '{item_name}' deleted successfully!")
+        return redirect('manage_inventory')
+
+    context = {
+        'item': item,
+        'title': f"Delete Inventory Item — {item.item_name}",
+    }
+    return render(request, 'accounts/inventory_confirm_delete.html', context)
+
