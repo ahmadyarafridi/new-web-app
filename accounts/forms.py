@@ -286,18 +286,24 @@ class RestaurantInfoForm(forms.ModelForm):
 
 class InventoryForm(forms.ModelForm):
     date_bought = forms.DateField(
-        widget=forms.DateInput(attrs={
-            'class': 'floating-input',
-            'type': 'date',
-            'placeholder': ' '
-        })
+        widget=forms.DateInput(
+            format='%Y-%m-%d',
+            attrs={
+                'class': 'floating-input',
+                'type': 'date',
+                'placeholder': ' '
+            }
+        )
     )
     last_updated = forms.DateField(
-        widget=forms.DateInput(attrs={
-            'class': 'floating-input',
-            'type': 'date',
-            'placeholder': ' '
-        })
+        widget=forms.DateInput(
+            format='%Y-%m-%d',
+            attrs={
+                'class': 'floating-input',
+                'type': 'date',
+                'placeholder': ' '
+            }
+        )
     )
 
     class Meta:

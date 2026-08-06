@@ -42,6 +42,11 @@
         display: none !important;
     }
 
+    input[type="date"]::-webkit-calendar-picker-indicator {
+        filter: invert(0.85);
+        cursor: pointer;
+    }
+
     /* ── BRANDED SELECT DROPDOWN ── */
     select.floating-input,
     .dashboard-form-grid select {
