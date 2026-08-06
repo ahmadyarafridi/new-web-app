@@ -830,6 +830,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (closeCustomerModalBtn) closeCustomerModalBtn.addEventListener('click', closeCustomerModal);
     if (customerDetailsBackdrop) customerDetailsBackdrop.addEventListener('click', closeCustomerModal);
 
+    // Real WhatsApp order handoff
+    const WHATSAPP_NUMBER = '923232870355'; // +92 323 2870355, no leading + or 0
+
     const buildWhatsAppMessage = (name, phone, address) => {
         let msg = `*AMAZING FOODS - NEW ORDER*\n`;
         msg += `------------------------------\n`;
@@ -889,7 +892,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 1. Open WhatsApp with formatted message including customer details
             const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(name, phone, address))}`;
-            window.open(waUrl, '_blank');
+            window.open(waUrl, '_blank') || (window.location.href = waUrl);
 
             // 2. Save order to backend database with customer details
             fetch('/create-order/', {
