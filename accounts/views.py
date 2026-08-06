@@ -628,6 +628,8 @@ def api_get_notifications(request):
             'title': notif_title,
             'order_id': order_label,
             'customer_name': notif.customer_name,
+            'customer_phone': notif.order.customer_phone if notif.order else '',
+            'delivery_address': notif.order.delivery_address if notif.order else '',
             'total_price': float(notif.total_price),
             'notification_type': notif.notification_type,
             'is_read': notif.is_read,

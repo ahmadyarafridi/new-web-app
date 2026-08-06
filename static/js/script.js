@@ -814,11 +814,28 @@ document.addEventListener('DOMContentLoaded', () => {
     const modalOrderItems = document.getElementById('modalOrderItems');
     const modalOrderTotal = document.getElementById('modalOrderTotal');
 
-    // Real WhatsApp order handoff
-    const WHATSAPP_NUMBER = '923232870355'; // +92 323 2870355, no leading + or 0
+    // Customer Checkout Modal Elements
+    const customerDetailsModal = document.getElementById('customerDetailsModal');
+    const customerDetailsBackdrop = document.getElementById('customerDetailsBackdrop');
+    const closeCustomerModalBtn = document.getElementById('closeCustomerModalBtn');
+    const customerCheckoutForm = document.getElementById('customerCheckoutForm');
+    const custNameInput = document.getElementById('custNameInput');
+    const custPhoneInput = document.getElementById('custPhoneInput');
+    const custAddressInput = document.getElementById('custAddressInput');
 
-    const buildWhatsAppMessage = () => {
+    const closeCustomerModal = () => {
+        if (customerDetailsModal) customerDetailsModal.classList.remove('active');
+    };
+
+    if (closeCustomerModalBtn) closeCustomerModalBtn.addEventListener('click', closeCustomerModal);
+    if (customerDetailsBackdrop) customerDetailsBackdrop.addEventListener('click', closeCustomerModal);
+
+    const buildWhatsAppMessage = (name, phone, address) => {
         let msg = `*AMAZING FOODS - NEW ORDER*\n`;
+        msg += `------------------------------\n`;
+        msg += `*Customer Name:* ${name}\n`;
+        msg += `*Phone:* ${phone}\n`;
+        msg += `*Address:* ${address}\n`;
         msg += `------------------------------\n`;
         msg += `*Order Items:*\n`;
         cart.forEach((item, index) => {
@@ -838,20 +855,52 @@ document.addEventListener('DOMContentLoaded', () => {
             }
             if (cart.length === 0) return;
 
-            // 1. Open WhatsApp INSTANTLY (0ms delay) so mobile browser popup blocker never triggers
-            const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage())}`;
+            // 1. Close cart sidebar drawer
+            if (cartSidebar && cartSidebar.classList.contains('active')) {
+                toggleCart();
+            }
+
+            // 2. Open Customer Details Modal
+            if (customerDetailsModal) {
+                customerDetailsModal.classList.add('active');
+                if (custNameInput) custNameInput.focus();
+            }
+        });
+    }
+
+    if (customerCheckoutForm) {
+        customerCheckoutForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const name = custNameInput ? custNameInput.value.trim() : '';
+            const phone = custPhoneInput ? custPhoneInput.value.trim() : '';
+            const address = custAddressInput ? custAddressInput.value.trim() : '';
+
+            if (!name || !phone || !address) {
+                alert('Please fill in your Name, Phone Number, and Delivery Address to proceed.');
+                return false;
+            }
+
+            if (cart.length === 0) {
+                alert('Your cart is empty.');
+                closeCustomerModal();
+                return false;
+            }
+
+            // 1. Open WhatsApp with formatted message including customer details
+            const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(name, phone, address))}`;
             window.open(waUrl, '_blank');
 
-            // 2. Save order to backend database in parallel background (fire and forget)
+            // 2. Save order to backend database with customer details
             fetch('/create-order/', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    customer_name: 'WhatsApp Customer',
-                    customer_phone: '',
-                    delivery_address: '',
+                    customer_name: name,
+                    customer_phone: phone,
+                    delivery_address: address,
                     order_notes: '',
                     cart_items: cart
                 })
@@ -875,8 +924,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalOrderTotal.textContent = cartTotal ? cartTotal.textContent : '';
             }
 
-            // 4. Close cart drawer & show confirmation modal
-            toggleCart();
+            // 4. Close Customer Modal & Show Success Confirmation Modal
+            closeCustomerModal();
             if (orderConfirmModal) orderConfirmModal.classList.add('active');
 
             // 5. Clear cart

@@ -362,7 +362,39 @@
             {% endif %}
         </div>
     </div>
-    <div class="cart-overlay" id="cartOverlay"></div>
+    <!-- CUSTOMER DETAILS CHECKOUT MODAL BEFORE WHATSAPP -->
+    <div class="modal" id="customerDetailsModal">
+        <div class="modal-backdrop" id="customerDetailsBackdrop"></div>
+        <div class="modal-content" style="max-width: 440px; padding: 22px 24px;">
+            <button class="modal-close-btn" id="closeCustomerModalBtn"><i class="fa-solid fa-xmark"></i></button>
+            <div style="text-align: center; margin-bottom: 14px;">
+                <i class="fa-brands fa-whatsapp" style="font-size: 2.2rem; color: #25D366; margin-bottom: 6px;"></i>
+                <h3 style="font-size: 1.15rem; font-weight: 700; color: #fff; margin: 0 0 2px 0;">Checkout Details</h3>
+                <p style="font-size: 0.78rem; color: var(--color-text-gray); margin: 0;">Provide your contact info to complete WhatsApp order</p>
+            </div>
+
+            <form id="customerCheckoutForm" style="display: flex; flex-direction: column; gap: 10px;">
+                <div class="floating-group" style="margin-bottom: 0 !important;">
+                    <input type="text" id="custNameInput" class="floating-input" placeholder=" " required style="height: 44px; padding: 12px 12px 2px 12px; font-size: 0.85rem;">
+                    <label for="custNameInput" class="floating-label" style="top: 12px; font-size: 0.82rem;">Your Name *</label>
+                </div>
+
+                <div class="floating-group" style="margin-bottom: 0 !important;">
+                    <input type="tel" id="custPhoneInput" class="floating-input" placeholder=" " required style="height: 44px; padding: 12px 12px 2px 12px; font-size: 0.85rem;">
+                    <label for="custPhoneInput" class="floating-label" style="top: 12px; font-size: 0.82rem;">Phone Number *</label>
+                </div>
+
+                <div class="floating-group" style="margin-bottom: 0 !important;">
+                    <input type="text" id="custAddressInput" class="floating-input" placeholder=" " required style="height: 44px; padding: 12px 12px 2px 12px; font-size: 0.85rem;">
+                    <label for="custAddressInput" class="floating-label" style="top: 12px; font-size: 0.82rem;">Delivery Address *</label>
+                </div>
+
+                <button type="submit" class="checkout-btn" style="margin-top: 6px; padding: 12px; font-size: 0.9rem; font-weight: 700; background: #25D366; color: #fff; border: none; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fa-brands fa-whatsapp" style="font-size: 1.1rem;"></i> Confirm & Send via WhatsApp
+                </button>
+            </form>
+        </div>
+    </div>
 
     <!-- PRE-ORDER CONFIRMATION MODAL -->
     <div class="modal" id="orderConfirmModal">

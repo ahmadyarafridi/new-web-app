@@ -631,7 +631,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     </div>
                                     <div style="display: flex; justify-content: space-between; align-items: center;">
                                         <span style="font-size: 0.72rem; color: var(--color-text-gray); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                                            ${item.order_id ? `<strong style="color:var(--color-primary);">${item.order_id}</strong> &bull; ` : ''}${item.customer_name} &bull; <strong style="color:#fff;">Rs. ${item.total_price.toLocaleString()}</strong>
+                                            ${item.order_id ? `<strong style="color:var(--color-primary);">${item.order_id}</strong> &bull; ` : ''}<strong style="color:#fff;">${item.customer_name}</strong>${item.customer_phone ? ` (${item.customer_phone})` : ''}${item.delivery_address ? ` &bull; ${item.delivery_address}` : ''} &bull; <strong style="color:var(--color-primary);">Rs. ${item.total_price.toLocaleString()}</strong>
                                         </span>
                                     </div>
                                 </div>
