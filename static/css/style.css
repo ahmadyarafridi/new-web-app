@@ -1445,24 +1445,27 @@ main {
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
-    flex-direction: column;
-    flex: 0 0 260px;
-    scroll-snap-align: start;
-    scroll-snap-stop: always;
+    flex-direction: row;
+    align-items: stretch;
+    flex: unset;
+    scroll-snap-align: unset;
+    scroll-snap-stop: unset;
 }
 
 .menu-item-card:hover {
-    transform: translateY(-4px);
     border-color: var(--color-primary) !important;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), 0 0 15px rgba(201, 168, 76, 0.2);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 12px rgba(201, 168, 76, 0.18);
 }
 
 .menu-item-img-wrapper {
     position: relative;
-    height: 190px;
+    width: 130px;
+    min-width: 130px;
+    height: auto;
     overflow: hidden;
     background: #141416;
-    border-radius: 16px 16px 0 0 !important;
+    border-radius: 16px 0 0 16px !important;
+    flex-shrink: 0;
 }
 
 .menu-item-img {
@@ -1474,72 +1477,77 @@ main {
 }
 
 .menu-item-card:hover .menu-item-img {
-    transform: scale(1.04);
+    transform: scale(1.05);
 }
 
 .menu-item-tag {
     position: absolute;
-    top: 12px;
-    left: 12px;
+    top: 10px;
+    left: 10px;
     background-color: var(--color-primary);
     color: #000000;
-    font-size: 0.65rem;
+    font-size: 0.6rem;
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    padding: 4px 10px;
+    padding: 3px 8px;
     border-radius: var(--border-radius-pill);
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
 }
 
 .menu-item-info {
-    padding: 14px 14px 12px;
+    padding: 14px 16px 14px 14px;
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    min-width: 0;
 }
 
-.menu-item-title-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 6px;
-}
-
-.menu-item-title-row h4 {
+.menu-item-info h4 {
     font-family: var(--font-body);
-    font-size: 0.92rem;
+    font-size: 0.95rem;
     font-weight: 700;
-    color: #FFFFFF !important;
+    color: #FFFFFF;
     line-height: 1.35;
+    margin: 0 0 5px 0;
 }
 
-.menu-item-card:hover .menu-item-title-row h4 {
-    color: var(--color-primary) !important;
-}
-
-.menu-item-price {
-    font-family: var(--font-body);
-    font-size: 1.05rem !important;
-    font-weight: 800 !important;
-    color: var(--color-primary) !important;
-    flex-shrink: 0;
-    letter-spacing: -0.2px;
-    white-space: nowrap !important;
+.menu-item-card:hover .menu-item-info h4 {
+    color: var(--color-primary);
 }
 
 .menu-item-desc {
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.76rem;
+    color: rgba(255, 255, 255, 0.6);
     font-weight: 400;
-    margin-bottom: 10px;
+    margin: 0 0 10px 0;
     flex-grow: 1;
     line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
 }
 
 .menu-item-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
     margin-top: auto;
+}
+
+.menu-item-price-badge {
+    display: inline-block;
+    background-color: var(--color-primary);
+    color: #000000;
+    font-family: var(--font-body);
+    font-size: 0.82rem;
+    font-weight: 800;
+    padding: 4px 12px;
+    border-radius: var(--border-radius-pill);
+    letter-spacing: -0.2px;
+    white-space: nowrap;
+    align-self: flex-start;
 }
 
 .add-to-cart-btn {
@@ -1547,7 +1555,7 @@ main {
     background-color: rgba(255, 255, 255, 0.06) !important;
     border: 1px solid rgba(255, 255, 255, 0.18) !important;
     color: #FFFFFF !important;
-    padding: 7px 11px;
+    padding: 7px 10px;
     border-radius: 10px !important;
     font-family: var(--font-body);
     font-size: 0.74rem;
@@ -1556,23 +1564,10 @@ main {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 6px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
     box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
-}
-
-@media (min-width: 769px) {
-
-    .menu-item-desc {
-        font-size: 0.82rem;
-    }
-
-    .add-to-cart-btn,
-    .deal-card-footer .add-to-cart-btn {
-        padding: 9px 15px;
-        font-size: 0.88rem;
-    }
 }
 
 .add-to-cart-btn:hover {
@@ -3776,18 +3771,18 @@ ul, ol {
 }
 
 /* ==========================================================================
-   CONTINUOUS MENU GRID OVERRIDES (2 Columns on Mobile, 4 Columns on Desktop)
+   CONTINUOUS MENU GRID OVERRIDES (3 Columns on Desktop, 1 Column on Mobile)
    ========================================================================== */
 .category-menu-section .menu-grid,
 #searchResultsGrid {
     display: grid !important;
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(3, 1fr) !important;
     flex-direction: unset !important;
     overflow-x: visible !important;
     scroll-snap-type: unset !important;
     -webkit-overflow-scrolling: unset !important;
     scrollbar-width: unset !important;
-    gap: 20px;
+    gap: 14px;
     max-width: 1280px;
     margin: 0 auto;
     padding: 4px 0 20px;
@@ -3815,12 +3810,12 @@ ul, ol {
     .category-menu-section .menu-grid,
     .menu-grid {
         display: grid !important;
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        grid-template-columns: 1fr !important;
         overflow-x: visible !important;
         scroll-snap-type: unset !important;
         -webkit-overflow-scrolling: unset !important;
         scrollbar-width: unset !important;
-        gap: 8px !important;
+        gap: 10px !important;
         padding: 4px 0 16px !important;
         max-width: 100% !important;
     }
@@ -3837,22 +3832,26 @@ ul, ol {
 
     .category-menu-section .menu-item-img-wrapper,
     .menu-item-img-wrapper {
-        height: 145px !important;
+        width: 110px !important;
+        min-width: 110px !important;
     }
 
     .menu-item-info {
-        padding: 10px 6px !important;
+        padding: 10px 12px 10px 10px !important;
     }
 
     .menu-item-info h4 {
         font-size: 0.84rem !important;
-        line-height: 1.3 !important;
-        margin-bottom: 4px !important;
     }
 
-    .menu-item-price {
-        font-size: 0.95rem !important;
-        font-weight: 800 !important;
+    .menu-item-desc {
+        font-size: 0.72rem !important;
+        -webkit-line-clamp: 2;
+    }
+
+    .menu-item-price-badge {
+        font-size: 0.76rem !important;
+        padding: 3px 10px !important;
     }
 
     .category-section-title {
@@ -3868,7 +3867,7 @@ ul, ol {
 
     .category-menu-section .menu-grid,
     .menu-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
-        gap: 6px !important;
+        grid-template-columns: 1fr !important;
+        gap: 8px !important;
     }
 }

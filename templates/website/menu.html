@@ -48,13 +48,14 @@
                 <img src="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}" alt="{{ deal.title }}" class="menu-item-img" loading="lazy" decoding="async" width="400" height="260">
             </div>
             <div class="menu-item-info">
-                <div class="menu-item-title-row">
-                    <h4>{{ deal.title }}</h4>
-                    <span class="menu-item-price">Rs. {{ deal.price|floatformat:0 }}</span>
-
+                <h4>{{ deal.title }}</h4>
+                {% if deal.description %}
+                <p class="menu-item-desc">{{ deal.description }}</p>
+                {% endif %}
                 <div class="menu-item-actions">
+                    <span class="menu-item-price-badge">Rs. {{ deal.price|floatformat:0 }}</span>
                     <button class="add-to-cart-btn" data-id="{{ deal.item_code }}" data-name="{{ deal.title }}" data-price="{{ deal.price|floatformat:0 }}" data-img="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}">
-                        <i class="fa-solid fa-plus"></i> Add to Order
+                        <i class="fa-solid fa-plus"></i> Add to Cart
                     </button>
                 </div>
             </div>
@@ -67,21 +68,22 @@
             <div class="menu-item-img-wrapper" style="position: relative;">
                 <img src="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}" alt="{{ product.name }}" class="menu-item-img" loading="lazy" decoding="async" width="400" height="260" {% if product.custom_style %}style="{{ product.custom_style }}"{% endif %}>
                 {% if not product.is_available %}
-                <span class="badge-status badge-inactive" style="position: absolute; top: 10px; right: 10px; background: rgba(229,57,53,0.85); color: #ffffff; padding: 3px 8px; font-size: 0.65rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(4px);">Out of Stock</span>
+                <span class="badge-status badge-inactive" style="position: absolute; top: 8px; left: 8px; background: rgba(229,57,53,0.85); color: #ffffff; padding: 3px 8px; font-size: 0.65rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(4px);">Out of Stock</span>
                 {% endif %}
             </div>
             <div class="menu-item-info">
-                <div class="menu-item-title-row">
-                    <h4>{{ product.name }}</h4>
-                    <span class="menu-item-price">Rs. {{ product.price|floatformat:0 }}</span>
-
+                <h4>{{ product.name }}</h4>
+                {% if product.description %}
+                <p class="menu-item-desc">{{ product.description }}</p>
+                {% endif %}
                 <div class="menu-item-actions">
+                    <span class="menu-item-price-badge">Rs. {{ product.price|floatformat:0 }}</span>
                     {% if product.is_available %}
                     <button class="add-to-cart-btn" data-id="{{ product.item_code }}" data-name="{{ product.name }}" data-price="{{ product.price|floatformat:0 }}" data-img="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}">
-                        <i class="fa-solid fa-plus"></i> Add to Order
+                        <i class="fa-solid fa-plus"></i> Add to Cart
                     </button>
                     {% else %}
-                    <button class="add-to-cart-btn disabled" disabled style="background: #222222 !important; color: #777777 !important; border: 1px solid #444444 !important; opacity: 0.6; cursor: not-allowed; pointer-events: none; width: 100%;">
+                    <button class="add-to-cart-btn disabled" disabled style="background: #222222 !important; color: #777777 !important; border: 1px solid #444444 !important; opacity: 0.6; cursor: not-allowed; pointer-events: none;">
                         Out of Stock
                     </button>
                     {% endif %}
@@ -127,15 +129,16 @@ document.addEventListener('DOMContentLoaded', function() {
     function createProductCardHtml(prod) {
         const isAvailable = prod.is_available;
         const styleAttr = prod.custom_style ? `style="${escapeHtml(prod.custom_style)}"` : '';
+        const descHtml = prod.description ? `<p class="menu-item-desc">${escapeHtml(prod.description)}</p>` : '';
         
         const outOfStockBadge = !isAvailable ? 
-            `<span class="badge-status badge-inactive" style="position: absolute; top: 10px; right: 10px; background: rgba(229,57,53,0.85); color: #ffffff; padding: 3px 8px; font-size: 0.65rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(4px);">Out of Stock</span>` : '';
+            `<span class="badge-status badge-inactive" style="position: absolute; top: 8px; left: 8px; background: rgba(229,57,53,0.85); color: #ffffff; padding: 3px 8px; font-size: 0.65rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(4px);">Out of Stock</span>` : '';
 
         const actionBtn = isAvailable ?
             `<button class="add-to-cart-btn" data-id="${escapeHtml(prod.item_code)}" data-name="${escapeHtml(prod.name)}" data-price="${prod.price}" data-img="${escapeHtml(prod.image_url)}">
-                <i class="fa-solid fa-plus"></i> Add to Order
+                <i class="fa-solid fa-plus"></i> Add to Cart
             </button>` :
-            `<button class="add-to-cart-btn disabled" disabled style="background: #222222 !important; color: #777777 !important; border: 1px solid #444444 !important; opacity: 0.6; cursor: not-allowed; pointer-events: none; width: 100%;">
+            `<button class="add-to-cart-btn disabled" disabled style="background: #222222 !important; color: #777777 !important; border: 1px solid #444444 !important; opacity: 0.6; cursor: not-allowed; pointer-events: none;">
                 Out of Stock
             </button>`;
 
@@ -146,11 +149,10 @@ document.addEventListener('DOMContentLoaded', function() {
                     ${outOfStockBadge}
                 </div>
                 <div class="menu-item-info">
-                    <div class="menu-item-title-row">
-                        <h4>${escapeHtml(prod.name)}</h4>
-                        <span class="menu-item-price">Rs. ${prod.price}</span>
-                    </div>
+                    <h4>${escapeHtml(prod.name)}</h4>
+                    ${descHtml}
                     <div class="menu-item-actions">
+                        <span class="menu-item-price-badge">Rs. ${prod.price}</span>
                         ${actionBtn}
                     </div>
                 </div>
