@@ -1571,16 +1571,7 @@ main {
     color: #000000 !important;
 }
 
-.add-to-cart-btn:hover {
-    background-color: #000000 !important;
-    border-color: var(--color-primary) !important;
-    color: var(--color-primary) !important;
-    box-shadow: 0 4px 16px rgba(201, 168, 76, 0.4);
-}
 
-.add-to-cart-btn:hover i {
-    color: var(--color-primary) !important;
-}
 
 .add-to-cart-btn:active,
 .add-to-cart-btn:focus-visible {
