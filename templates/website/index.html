@@ -130,9 +130,7 @@
                             <h4>{{ deal.title }}</h4>
                             <span class="menu-item-price">Rs. {{ deal.price|floatformat:0 }}</span>
                         </div>
-                        {% if deal.description %}
-                        <p class="menu-item-desc" style="font-size:0.75rem; color:var(--color-text-gray); margin-bottom:10px;">{{ deal.description }}</p>
-                        {% endif %}
+
                         <div class="menu-item-actions">
                             <button class="add-to-cart-btn" data-id="{{ deal.item_code }}" data-name="{{ deal.title }}" data-price="{{ deal.price|floatformat:0 }}" data-img="{{ deal.image_src }}">
                                 <i class="fa-solid fa-plus"></i> Add to Order
@@ -168,9 +166,7 @@
                             <h4>{{ product.name }}</h4>
                             <span class="menu-item-price">Rs. {{ product.price|floatformat:0 }}</span>
                         </div>
-                        {% if product.description %}
-                        <p class="menu-item-desc">{{ product.description }}</p>
-                        {% endif %}
+
                         <div class="menu-item-actions">
                             {% if product.is_available %}
                             <button class="add-to-cart-btn" data-id="{{ product.item_code }}" data-name="{{ product.name }}" data-price="{{ product.price|floatformat:0 }}" data-img="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}">

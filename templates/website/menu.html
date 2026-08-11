@@ -51,10 +51,7 @@
                 <div class="menu-item-title-row">
                     <h4>{{ deal.title }}</h4>
                     <span class="menu-item-price">Rs. {{ deal.price|floatformat:0 }}</span>
-                </div>
-                {% if deal.description %}
-                <p class="menu-item-desc" style="font-size:0.75rem; color:var(--color-text-gray); margin-bottom:10px;">{{ deal.description }}</p>
-                {% endif %}
+
                 <div class="menu-item-actions">
                     <button class="add-to-cart-btn" data-id="{{ deal.item_code }}" data-name="{{ deal.title }}" data-price="{{ deal.price|floatformat:0 }}" data-img="{% if deal.image_file %}{{ deal.image_file.url }}{% else %}{% static deal.image %}{% endif %}">
                         <i class="fa-solid fa-plus"></i> Add to Order
@@ -77,10 +74,7 @@
                 <div class="menu-item-title-row">
                     <h4>{{ product.name }}</h4>
                     <span class="menu-item-price">Rs. {{ product.price|floatformat:0 }}</span>
-                </div>
-                {% if product.description %}
-                <p class="menu-item-desc" {% if product.category.slug == 'deals' %}style="font-size:0.75rem; color:var(--color-text-gray); margin-bottom:10px;"{% endif %}>{{ product.description }}</p>
-                {% endif %}
+
                 <div class="menu-item-actions">
                     {% if product.is_available %}
                     <button class="add-to-cart-btn" data-id="{{ product.item_code }}" data-name="{{ product.name }}" data-price="{{ product.price|floatformat:0 }}" data-img="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}">
@@ -132,7 +126,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function createProductCardHtml(prod) {
         const isAvailable = prod.is_available;
-        const descHtml = prod.description ? `<p class="menu-item-desc">${escapeHtml(prod.description)}</p>` : '';
         const styleAttr = prod.custom_style ? `style="${escapeHtml(prod.custom_style)}"` : '';
         
         const outOfStockBadge = !isAvailable ? 
@@ -157,7 +150,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         <h4>${escapeHtml(prod.name)}</h4>
                         <span class="menu-item-price">Rs. ${prod.price}</span>
                     </div>
-                    ${descHtml}
                     <div class="menu-item-actions">
                         ${actionBtn}
                     </div>
