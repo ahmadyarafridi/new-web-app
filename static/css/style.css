@@ -3792,6 +3792,7 @@ ul, ol {
 #searchResultsGrid .menu-item-card {
     flex: unset !important;
     max-width: 100% !important;
+    min-height: 172px;
     scroll-snap-align: unset !important;
     scroll-snap-stop: unset !important;
     width: 100%;
