@@ -11,6 +11,8 @@ from django.contrib.auth import login as auth_login, logout as auth_logout
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
+from django.core.management import call_command
+from django.db import OperationalError, ProgrammingError
 from django.db.models import Q, Sum
 from django.utils import timezone
 from website.models import RestaurantInfo, Category, Product, Deal, Review, CustomerFeedback, Order, OrderItem, DailyVisit, OrderNotification, InventoryItem
@@ -982,6 +984,13 @@ def export_full_data_zip(request):
 @login_required(login_url='login')
 def manage_inventory(request):
     search_query = request.GET.get('q', '').strip()
+    try:
+        # Force the database access here so a newly deployed app can recover
+        # before the template tries to count a table that has not been migrated.
+        InventoryItem.objects.exists()
+    except (OperationalError, ProgrammingError):
+        call_command('migrate', interactive=False, verbosity=0)
+
     inventory_qs = InventoryItem.objects.all()
 
     if search_query:
