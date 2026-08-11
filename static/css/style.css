@@ -1437,11 +1437,10 @@ main {
         transform: translateY(0) scale(1);
     }
 }
-
 .menu-item-card {
-    background-color: var(--color-bg-card);
-    border: 1px solid var(--color-border);
-    border-radius: var(--border-radius-md);
+    background-color: #FFFFFF !important;
+    border: 1px solid var(--color-border) !important;
+    border-radius: 0px !important;
     overflow: hidden;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
     transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1454,21 +1453,23 @@ main {
 
 .menu-item-card:hover {
     transform: translateY(-4px);
-    border-color: var(--color-primary);
+    border-color: var(--color-primary) !important;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.08);
 }
 
 .menu-item-img-wrapper {
     position: relative;
-    height: 145px;
+    height: 190px;
     overflow: hidden;
     background: #FAFAFC;
+    border-radius: 0px !important;
 }
 
 .menu-item-img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    border-radius: 0px !important;
     transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -1481,7 +1482,7 @@ main {
     top: 12px;
     left: 12px;
     background-color: var(--color-primary);
-    color: var(--color-bg-deep);
+    color: #FFFFFF;
     font-size: 0.65rem;
     font-weight: 700;
     text-transform: uppercase;
@@ -1510,6 +1511,7 @@ main {
     font-family: var(--font-body);
     font-size: 0.92rem;
     font-weight: 700;
+    color: var(--color-text-bright);
     line-height: 1.35;
 }
 
@@ -1519,11 +1521,12 @@ main {
 
 .menu-item-price {
     font-family: var(--font-body);
-    font-size: 0.95rem;
-    font-weight: 800;
-    color: var(--color-primary);
+    font-size: 1.05rem !important;
+    font-weight: 800 !important;
+    color: #000000 !important;
     flex-shrink: 0;
     letter-spacing: -0.2px;
+    white-space: nowrap !important;
 }
 
 .menu-item-desc {
@@ -1541,11 +1544,11 @@ main {
 
 .add-to-cart-btn {
     width: 100%;
-    background-color: transparent;
-    border: 1px solid var(--color-border);
-    color: var(--color-text-bright);
+    background-color: #FFFFFF !important;
+    border: 1px solid #1D1D1F !important;
+    color: #1D1D1F !important;
     padding: 7px 11px;
-    border-radius: var(--border-radius-sm);
+    border-radius: var(--border-radius-sm) !important;
     font-family: var(--font-body);
     font-size: 0.74rem;
     font-weight: 700;
@@ -1556,26 +1559,39 @@ main {
     gap: 8px;
     transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
     outline: none;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+}
+
+@media (min-width: 769px) {
+
+    .menu-item-desc {
+        font-size: 0.82rem;
+    }
+
+    .add-to-cart-btn,
+    .deal-card-footer .add-to-cart-btn {
+        padding: 9px 15px;
+        font-size: 0.88rem;
+    }
 }
 
 .add-to-cart-btn:hover {
-    background-color: var(--color-primary);
-    color: var(--color-bg-deep);
-    border-color: var(--color-primary);
+    background-color: #FFFFFF !important;
+    border-color: var(--color-primary) !important;
+    color: var(--color-primary) !important;
+    box-shadow: 0 4px 14px rgba(0, 113, 227, 0.15);
 }
 
-.add-to-cart-btn:hover {
-    background-color: var(--color-primary);
-    color: var(--color-bg-deep);
-    border-color: var(--color-primary);
-    box-shadow: 0 4px 15px rgba(201, 168, 76, 0.35);
+.add-to-cart-btn:hover i {
+    color: var(--color-primary) !important;
 }
 
-.add-to-cart-btn:hover {
-    background-color: var(--color-primary);
-    color: var(--color-bg-deep);
-    border-color: var(--color-primary);
-    box-shadow: 0 4px 12px rgba(201, 168, 76, 0.3);
+.add-to-cart-btn:active,
+.add-to-cart-btn:focus-visible {
+    background-color: var(--color-primary) !important;
+    border-color: var(--color-primary) !important;
+    color: #FFFFFF !important;
+    box-shadow: 0 2px 8px rgba(0, 113, 227, 0.3);
 }
 
 /* ==========================================================================
