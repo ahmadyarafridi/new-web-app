@@ -1453,8 +1453,7 @@ main {
 }
 
 .menu-item-card:hover {
-    border-color: var(--color-primary) !important;
-    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 12px rgba(201, 168, 76, 0.18);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.5), 0 0 12px rgba(251, 191, 36, 0.1);
 }
 
 .menu-item-img-wrapper {
@@ -1513,9 +1512,6 @@ main {
     margin: 0 0 5px 0;
 }
 
-.menu-item-card:hover .menu-item-info h4 {
-    color: var(--color-primary);
-}
 
 .menu-item-desc {
     font-size: 0.76rem;
@@ -3630,12 +3626,13 @@ ul, ol {
 .category-section-title {
     font-family: var(--font-brand);
     font-size: 1.4rem;
-    color: var(--color-primary);
+    color: #FFFFFF !important;
     text-transform: uppercase;
     letter-spacing: 1.5px;
     margin: 0;
     white-space: nowrap;
 }
+
 
 .category-section-divider {
     flex: 1;
