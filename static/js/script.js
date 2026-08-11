@@ -625,6 +625,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.addEventListener('click', (e) => {
         const btn = e.target.closest('.add-to-cart-btn');
         if (!btn || btn.disabled || btn.classList.contains('disabled')) return;
+        // The product popup has its own handler that adds the selected quantity.
+        // Do not let this card-level handler create a second, data-less cart item.
+        if (btn.closest('#productDetailModal')) return;
 
         const card = btn.closest('.menu-item-card, .specialty-card');
         if (card && card.getAttribute('data-in-stock') === 'false') {
