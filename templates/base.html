@@ -18,7 +18,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=5">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=7">
     <style>
         /* ==========================================
            EXACT MATERIAL DESIGN FLOATING LABEL SYSTEM
@@ -419,7 +419,7 @@
     </div>
 
     <!-- Main Logic Script -->
-    <script src="{% static 'js/script.js' %}?v=102" defer></script>
+    <script src="{% static 'js/script.js' %}?v=104" defer></script>
     <!-- MOBILE FLOATING CART BUTTON (shows only once cart has items) -->
     <button class="mobile-cart-fab" id="mobileCartFab" aria-label="Open Cart">
         <i class="fa-solid fa-bag-shopping"></i>
@@ -440,6 +440,37 @@
             <button id="cartToastViewBtn" type="button" class="cart-toast-view-btn">
                 View
             </button>
+        </div>
+    </div>
+
+    <!-- PRODUCT DETAIL POPUP MODAL -->
+    <div id="productDetailModal" class="product-modal-backdrop" aria-hidden="true">
+        <div class="product-modal-container" role="dialog" aria-modal="true" aria-labelledby="modalProductName">
+            <button type="button" class="product-modal-close" id="closeProductModalBtn" aria-label="Close detail modal">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+            <div class="product-modal-body">
+                <div class="product-modal-img-wrapper">
+                    <img id="modalProductImg" src="" alt="Product Image">
+                    <span id="modalProductTag" class="menu-item-tag" style="display: none;"></span>
+                </div>
+                <div class="product-modal-info">
+                    <h3 id="modalProductName" class="product-modal-title"></h3>
+                    <span id="modalProductPrice" class="product-modal-price"></span>
+                    <p id="modalProductDesc" class="product-modal-desc"></p>
+                    <div class="product-modal-qty-control">
+                        <button type="button" class="modal-qty-btn" id="modalQtyMinus" aria-label="Decrease quantity"><i class="fa-solid fa-minus"></i></button>
+                        <span id="modalQtyVal" class="modal-qty-val">1</span>
+                        <button type="button" class="modal-qty-btn" id="modalQtyPlus" aria-label="Increase quantity"><i class="fa-solid fa-plus"></i></button>
+                    </div>
+                    <div class="product-modal-actions-row">
+                        <button type="button" class="add-to-cart-btn product-modal-add-btn" id="modalAddToCartBtn">
+                            <span id="modalAddToCartTotal" class="product-modal-add-total">Rs. 0</span>
+                            <span class="product-modal-add-label">Add To Cart</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 

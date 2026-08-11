@@ -951,6 +951,173 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize cart state
     loadCartFromStorage();
 
+    // ==========================================
+    // 9. PRODUCT DETAIL POPUP MODAL
+    // ==========================================
+    const productDetailModal = document.getElementById('productDetailModal');
+    const closeProductModalBtn = document.getElementById('closeProductModalBtn');
+    const modalProductImg   = document.getElementById('modalProductImg');
+    const modalProductName  = document.getElementById('modalProductName');
+    const modalProductDesc  = document.getElementById('modalProductDesc');
+    const modalProductPrice = document.getElementById('modalProductPrice');
+    const modalProductTag   = document.getElementById('modalProductTag');
+    const modalQtyVal       = document.getElementById('modalQtyVal');
+    const modalQtyMinus     = document.getElementById('modalQtyMinus');
+    const modalQtyPlus      = document.getElementById('modalQtyPlus');
+    const modalAddToCartBtn = document.getElementById('modalAddToCartBtn');
+    let modalAddToCartTotal = document.getElementById('modalAddToCartTotal');
+
+    // State for the currently-open modal item
+    let _modalData = { id: '', name: '', price: 0, img: '', qty: 1 };
+
+    const updateModalQuantityUI = () => {
+        if (modalQtyVal) modalQtyVal.textContent = _modalData.qty;
+        if (modalAddToCartTotal) {
+            modalAddToCartTotal.textContent = `Rs. ${Math.round(_modalData.price * _modalData.qty).toLocaleString('en-US')}`;
+        }
+    };
+
+    const openProductModal = (data) => {
+        if (!productDetailModal) return;
+        _modalData = { ...data, qty: 1 };
+
+        // Populate fields
+        modalProductImg.src      = data.img;
+        modalProductImg.alt      = data.name;
+        modalProductName.textContent = data.name;
+        modalProductDesc.textContent = data.description || '';
+        modalProductDesc.style.display = data.description ? '' : 'none';
+        modalProductPrice.textContent  = `Rs. ${Math.round(data.price).toLocaleString('en-US')}`;
+
+        if (modalProductTag) {
+            if (data.tag) {
+                modalProductTag.textContent = data.tag;
+                modalProductTag.style.display = '';
+            } else {
+                modalProductTag.style.display = 'none';
+            }
+        }
+
+        updateModalQuantityUI();
+
+        // If out of stock, disable the add button
+        if (modalAddToCartBtn) {
+            if (data.inStock === false) {
+                modalAddToCartBtn.disabled = true;
+                modalAddToCartBtn.innerHTML = '<span>Out of Stock</span>';
+                modalAddToCartBtn.style.opacity = '0.6';
+                modalAddToCartBtn.style.cursor  = 'not-allowed';
+            } else {
+                modalAddToCartBtn.disabled = false;
+                modalAddToCartBtn.innerHTML = '<span id="modalAddToCartTotal" class="product-modal-add-total">Rs. 0</span><span class="product-modal-add-label">Add To Cart</span>';
+                modalAddToCartTotal = document.getElementById('modalAddToCartTotal');
+                updateModalQuantityUI();
+                modalAddToCartBtn.style.opacity = '';
+                modalAddToCartBtn.style.cursor  = '';
+            }
+        }
+
+        productDetailModal.classList.add('active');
+        productDetailModal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('product-modal-open');
+        document.body.style.overflow = 'hidden';
+    };
+
+    const closeProductModal = () => {
+        if (!productDetailModal) return;
+        productDetailModal.classList.remove('active');
+        productDetailModal.setAttribute('aria-hidden', 'true');
+        document.body.classList.remove('product-modal-open');
+        document.body.style.overflow = '';
+        _modalData = { id: '', name: '', price: 0, img: '', qty: 1 };
+    };
+
+    // Close via × button
+    if (closeProductModalBtn) {
+        closeProductModalBtn.addEventListener('click', closeProductModal);
+    }
+
+    // Close via backdrop click (clicking the dark area outside the container)
+    if (productDetailModal) {
+        productDetailModal.addEventListener('click', (e) => {
+            if (e.target === productDetailModal) closeProductModal();
+        });
+    }
+
+    // Close via Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && productDetailModal && productDetailModal.classList.contains('active')) {
+            closeProductModal();
+        }
+    });
+
+    // Quantity controls inside modal
+    if (modalQtyMinus) {
+        modalQtyMinus.addEventListener('click', () => {
+            if (_modalData.qty > 1) {
+                _modalData.qty -= 1;
+                updateModalQuantityUI();
+            }
+        });
+    }
+
+    if (modalQtyPlus) {
+        modalQtyPlus.addEventListener('click', () => {
+            _modalData.qty += 1;
+            updateModalQuantityUI();
+        });
+    }
+
+    // "Add to Order" button inside the modal
+    if (modalAddToCartBtn) {
+        modalAddToCartBtn.addEventListener('click', () => {
+            if (!_modalData.id || modalAddToCartBtn.disabled) return;
+
+            // Add the qty-adjusted amount
+            for (let i = 0; i < _modalData.qty; i++) {
+                addItemToCart(_modalData.id, _modalData.name, _modalData.price, _modalData.img);
+            }
+
+            // Visual feedback on the modal button
+            const origHtml = modalAddToCartBtn.innerHTML;
+            modalAddToCartBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Added!';
+            setTimeout(() => {
+                modalAddToCartBtn.innerHTML = origHtml;
+            }, 1200);
+
+            closeProductModal();
+        });
+    }
+
+    // ── Card click → open modal (but NOT when clicking Add to Cart) ──
+    // Uses event delegation on document so it also covers dynamically injected cards (menu.html AJAX)
+    document.addEventListener('click', (e) => {
+        // Ignore if click came from an add-to-cart button (or any element inside it)
+        if (e.target.closest('.add-to-cart-btn')) return;
+        // Ignore if click came from a modal element itself
+        if (e.target.closest('#productDetailModal')) return;
+
+        const card = e.target.closest('.menu-item-card');
+        if (!card) return;
+
+        // Gather data from the card's DOM
+        const btn = card.querySelector('.add-to-cart-btn');
+        const imgEl  = card.querySelector('.menu-item-img');
+        const h4     = card.querySelector('h4');
+        const descEl = card.querySelector('.menu-item-desc');
+        const tagEl  = card.querySelector('.menu-item-tag');
+
+        const id    = btn ? btn.getAttribute('data-id')    : card.getAttribute('data-id') || '';
+        const name  = btn ? btn.getAttribute('data-name')  : (h4 ? h4.textContent.trim() : '');
+        const price = btn ? parseFloat(btn.getAttribute('data-price')) : 0;
+        const img   = btn ? btn.getAttribute('data-img')   : (imgEl ? imgEl.src : '');
+        const desc  = descEl ? descEl.textContent.trim() : '';
+        const tag   = tagEl  ? tagEl.textContent.trim()  : '';
+        const inStock = card.getAttribute('data-in-stock') !== 'false';
+
+        openProductModal({ id, name, price, img, description: desc, tag, inStock });
+    });
+
 
     // Seating layout & bookings wizard script sections removed as reservations page was retired.
 
