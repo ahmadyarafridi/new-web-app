@@ -154,7 +154,7 @@
             <div class="menu-grid">
                 {% for product in all_products %}
                 {% if product.category_id == category.id %}
-                <div class="menu-item-card" data-category="{{ category.slug }}" data-id="{{ product.item_code }}" data-in-stock="{% if product.is_available %}true{% else %}false{% endif %}">
+                <div class="menu-item-card" data-category="{{ category.slug }}" data-id="{{ product.item_code }}" data-in-stock="{% if product.is_available %}true{% else %}false{% endif %}" data-has-variations="{% if product.has_variations %}true{% else %}false{% endif %}" {% if product.has_variations %}data-variations='[{% for v in product.variations_list %}{"id": {{ v.id }}, "name": "{{ v.name|escapejs }}", "price": {{ v.price|floatformat:0 }}}{% if not forloop.last %},{% endif %}{% endfor %}]'{% endif %}>
                     <div class="menu-item-img-wrapper" style="position: relative;">
                         <img src="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}" alt="{{ product.name }}" class="menu-item-img" loading="lazy" decoding="async" width="400" height="260" {% if product.custom_style %}style="{{ product.custom_style }}"{% endif %}>
                         {% if not product.is_available %}
@@ -167,9 +167,15 @@
                         <p class="menu-item-desc">{{ product.description }}</p>
                         {% endif %}
                         <div class="menu-item-actions">
-                            <span class="menu-item-price-badge">Rs. {{ product.price|floatformat:0 }}</span>
+                            <span class="menu-item-price-badge">
+                                {% if product.has_variations %}
+                                    <span class="menu-item-price-prefix">From </span>Rs. {{ product.min_variation_price|floatformat:0 }}
+                                {% else %}
+                                    Rs. {{ product.price|floatformat:0 }}
+                                {% endif %}
+                            </span>
                             {% if product.is_available %}
-                            <button class="add-to-cart-btn" data-id="{{ product.item_code }}" data-name="{{ product.name }}" data-price="{{ product.price|floatformat:0 }}" data-img="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}">
+                            <button class="add-to-cart-btn" data-id="{{ product.item_code }}" data-name="{{ product.name }}" data-price="{% if product.has_variations %}{{ product.min_variation_price|floatformat:0 }}{% else %}{{ product.price|floatformat:0 }}{% endif %}" data-img="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}" data-has-variations="{% if product.has_variations %}true{% else %}false{% endif %}" {% if product.has_variations %}data-variations='[{% for v in product.variations_list %}{"id": {{ v.id }}, "name": "{{ v.name|escapejs }}", "price": {{ v.price|floatformat:0 }}}{% if not forloop.last %},{% endif %}{% endfor %}]'{% endif %}>
                                 <i class="fa-solid fa-plus"></i> Add to Cart
                             </button>
                             {% else %}

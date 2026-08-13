@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import RestaurantInfo, Category, Product, Deal, Review, CustomerFeedback, Order, OrderItem
+from .models import RestaurantInfo, Category, Product, ProductVariation, Deal, Review, CustomerFeedback, Order, OrderItem
 
 @admin.register(RestaurantInfo)
 class RestaurantInfoAdmin(admin.ModelAdmin):
@@ -12,6 +12,27 @@ class CategoryAdmin(admin.ModelAdmin):
     prepopulated_fields = {'slug': ('name',)}
     search_fields = ('name',)
 
+
+class ProductVariationInline(admin.TabularInline):
+    """
+    Allows the restaurant owner to add, edit, reorder, and delete size/price
+    variations directly on the Product change page.
+
+    Example:
+        Pizza
+          Small    → Rs. 500
+          Medium   → Rs. 800
+          Large    → Rs. 1,100
+    """
+    model = ProductVariation
+    extra = 1          # one blank row for quick additions
+    min_num = 0        # variations are fully optional
+    fields = ('name', 'price', 'display_order')
+    ordering = ('display_order', 'id')
+    verbose_name = 'Variation / Size'
+    verbose_name_plural = 'Variations / Sizes (leave empty if this product has no sizes)'
+
+
 @admin.register(Product)
 class ProductAdmin(admin.ModelAdmin):
     list_display = ('name', 'category', 'price', 'tag', 'item_code', 'is_available', 'display_order')
@@ -19,6 +40,8 @@ class ProductAdmin(admin.ModelAdmin):
     list_filter = ('category', 'is_available', 'tag')
     search_fields = ('name', 'item_code', 'description')
     prepopulated_fields = {'slug': ('name',)}
+    inlines = [ProductVariationInline]
+
 
 @admin.register(Deal)
 class DealAdmin(admin.ModelAdmin):

@@ -33,6 +33,42 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     // ==========================================
+    // 2.5. NAVIGATION SIDEBAR DRAWER
+    // ==========================================
+    const openNavSidebarBtn = document.getElementById('openNavSidebarBtn');
+    const closeNavSidebarBtn = document.getElementById('closeNavSidebarBtn');
+    const navSidebar = document.getElementById('navSidebar');
+    const navSidebarOverlay = document.getElementById('navSidebarOverlay');
+
+    function openNavSidebar() {
+        if (navSidebar) {
+            navSidebar.classList.add('active');
+            navSidebar.setAttribute('aria-hidden', 'false');
+        }
+        if (navSidebarOverlay) navSidebarOverlay.classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeNavSidebar() {
+        if (navSidebar) {
+            navSidebar.classList.remove('active');
+            navSidebar.setAttribute('aria-hidden', 'true');
+        }
+        if (navSidebarOverlay) navSidebarOverlay.classList.remove('active');
+        document.body.style.overflow = '';
+    }
+
+    if (openNavSidebarBtn) openNavSidebarBtn.addEventListener('click', openNavSidebar);
+    if (closeNavSidebarBtn) closeNavSidebarBtn.addEventListener('click', closeNavSidebar);
+    if (navSidebarOverlay) navSidebarOverlay.addEventListener('click', closeNavSidebar);
+
+    if (navSidebar) {
+        navSidebar.querySelectorAll('a').forEach(link => {
+            link.addEventListener('click', closeNavSidebar);
+        });
+    }
+
+    // ==========================================
     // 3. SCROLL REVEAL (INTERSECTION OBSERVER)
     // ==========================================
     const revealElements = document.querySelectorAll('.reveal');
@@ -634,9 +670,37 @@ document.addEventListener('DOMContentLoaded', () => {
             alert('This item is currently out of stock.');
             return;
         }
-        const itemId = btn.getAttribute('data-id') || (card ? card.getAttribute('data-id') : 'item-' + Date.now());
+
+        // ── Variation intercept ───────────────────────────────────────────────
+        // If this card has variations, clicking Add to Cart opens the modal
+        // instead of directly adding to cart. Variation selection is required.
+        const hasVariations = card && card.getAttribute('data-has-variations') === 'true';
+        if (hasVariations) {
+            // Gather card data and open the product detail modal
+            const imgEl  = card.querySelector('.menu-item-img');
+            const h4     = card.querySelector('h4');
+            const descEl = card.querySelector('.menu-item-desc');
+            const tagEl  = card.querySelector('.menu-item-tag');
+            const cardId   = card.getAttribute('data-id') || '';
+            const cardName = btn.getAttribute('data-name') || (h4 ? h4.textContent.trim() : '');
+            // Base price stored on button; but modal will update to variation price once selected
+            const cardPrice = parseFloat(btn.getAttribute('data-price')) || 0;
+            const cardImg   = btn.getAttribute('data-img') || (imgEl ? imgEl.src : '');
+            const cardDesc  = descEl ? descEl.textContent.trim() : '';
+            const cardTag   = tagEl  ? tagEl.textContent.trim()  : '';
+            const inStock   = card.getAttribute('data-in-stock') !== 'false';
+            // Parse variations from data attribute
+            let variations = [];
+            try { variations = JSON.parse(card.getAttribute('data-variations') || '[]'); } catch(_) {}
+            openProductModal({ id: cardId, name: cardName, price: cardPrice, img: cardImg,
+                description: cardDesc, tag: cardTag, inStock, variations });
+            return;
+        }
+        // ─────────────────────────────────────────────────────────────────────
+
+        const itemId   = btn.getAttribute('data-id') || (card ? card.getAttribute('data-id') : 'item-' + Date.now());
         const itemName = btn.getAttribute('data-name') || (card && card.querySelector('h4') ? card.querySelector('h4').textContent : 'Item');
-        
+
         let itemPrice = parseFloat(btn.getAttribute('data-price'));
         if (isNaN(itemPrice) && card) {
             const priceText = card.querySelector('.menu-item-price') ? card.querySelector('.menu-item-price').textContent : '';
@@ -645,7 +709,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const itemImg = btn.getAttribute('data-img') || (card && card.querySelector('img') ? card.querySelector('img').src : 'images/logo.png');
 
-        addItemToCart(itemId, itemName, itemPrice, itemImg);
+        // No variation — use productId = itemId, no variation fields
+        addItemToCart(itemId, itemId, itemName, itemPrice, itemImg, '', '');
 
         // Micro-animation feedback on button
         const originalContent = btn.innerHTML;
@@ -679,13 +744,33 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    const addItemToCart = (id, name, price, img) => {
-        const existingItem = cart.find(item => item.id === id);
+    /**
+     * addItemToCart
+     * @param {string} cartKey    Unique cart dedup key. For plain products: item_code.
+     *                            For variations: item_code + '-v' + variationId.
+     * @param {string} productId  The actual product item_code (sent to the backend).
+     * @param {string} name       Product display name.
+     * @param {number} price      Selected price (variation price or base price).
+     * @param {string} img        Product image URL.
+     * @param {string|number} variationId   ProductVariation.id, or '' for plain products.
+     * @param {string} variationName  Variation label ('Small', 'Medium'), or '' for plain products.
+     */
+    const addItemToCart = (cartKey, productId, name, price, img, variationId, variationName) => {
+        const existingItem = cart.find(item => item.id === cartKey);
 
         if (existingItem) {
             existingItem.quantity += 1;
         } else {
-            cart.push({ id, name, price, img, quantity: 1 });
+            cart.push({
+                id: cartKey,
+                productId: productId || cartKey,
+                name,
+                price,
+                img,
+                quantity: 1,
+                variationId: variationId || '',
+                variationName: variationName || ''
+            });
         }
 
         saveCartToStorage();
@@ -751,13 +836,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 totalQty += item.quantity;
                 subtotal += item.price * item.quantity;
 
+                const varBadge = item.variationName
+                    ? ` <span class="cart-item-variation">(${item.variationName})</span>`
+                    : '';
+
                 const itemEl = document.createElement('div');
                 itemEl.className = 'cart-item';
                 itemEl.innerHTML = `
                     <img src="${item.img}" alt="${item.name}" class="cart-item-img">
                     <div class="cart-item-details">
                         <div class="cart-item-title-row">
-                            <h4>${item.name}</h4>
+                            <h4>${item.name}${varBadge}</h4>
                             <span class="cart-item-price">Rs. ${(item.price * item.quantity).toFixed(0)}</span>
                         </div>
                         <div class="cart-item-controls">
@@ -845,7 +934,9 @@ document.addEventListener('DOMContentLoaded', () => {
         msg += `------------------------------\n`;
         msg += `*Order Items:*\n`;
         cart.forEach((item, index) => {
-            msg += `${index + 1}. ${item.name} x${item.quantity} - Rs. ${(item.price * item.quantity).toFixed(0)}\n`;
+            // Include variation name in brackets when present
+            const varPart = item.variationName ? ` (${item.variationName})` : '';
+            msg += `${index + 1}. ${item.name}${varPart} x${item.quantity} - Rs. ${(item.price * item.quantity).toFixed(0)}\n`;
         });
         msg += `------------------------------\n`;
         msg += `*Total Amount:* ${cartTotal ? cartTotal.textContent : ''}\n`;
@@ -898,17 +989,24 @@ document.addEventListener('DOMContentLoaded', () => {
             window.open(waUrl, '_blank') || (window.location.href = waUrl);
 
             // 2. Save order to backend database with customer details
+            // Map cart items to the shape api_create_order expects:
+            // { id: productId, name, price, quantity, variation_name }
+            const cartPayload = cart.map(item => ({
+                id: item.productId || item.id,   // always the product item_code
+                name: item.name,
+                price: item.price,
+                quantity: item.quantity,
+                variation_name: item.variationName || ''
+            }));
             fetch('/create-order/', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                     customer_name: name,
                     customer_phone: phone,
                     delivery_address: address,
                     order_notes: '',
-                    cart_items: cart
+                    cart_items: cartPayload
                 })
             }).catch(err => console.log('Background order sync error:', err));
 
@@ -916,10 +1014,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (modalOrderItems) {
                 modalOrderItems.innerHTML = '';
                 cart.forEach(item => {
+                    const varLabel = item.variationName ? ` (${item.variationName})` : '';
                     const row = document.createElement('div');
                     row.className = 'order-details-item';
                     row.innerHTML = `
-                        <span>${item.name} <span class="qty">x${item.quantity}</span></span>
+                        <span>${item.name}${varLabel} <span class="qty">x${item.quantity}</span></span>
                         <span>Rs. ${(item.price * item.quantity).toFixed(0)}</span>
                     `;
                     modalOrderItems.appendChild(row);
@@ -971,7 +1070,10 @@ document.addEventListener('DOMContentLoaded', () => {
     let modalAddToCartTotal = document.getElementById('modalAddToCartTotal');
 
     // State for the currently-open modal item
-    let _modalData = { id: '', name: '', price: 0, img: '', qty: 1 };
+    let _modalData = {
+        id: '', cartKey: '', productId: '', name: '', price: 0, img: '', qty: 1,
+        variationId: '', variationName: '', variations: []
+    };
 
     const updateModalQuantityUI = () => {
         if (modalQtyVal) modalQtyVal.textContent = _modalData.qty;
@@ -980,30 +1082,108 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     };
 
+    /**
+     * Render variation selector buttons inside #modalVariationSelector.
+     * Clicking a button selects that variation and updates the displayed price.
+     * If variations is empty, the selector is hidden.
+     */
+    const renderVariationSelector = (variations) => {
+        const selector = document.getElementById('modalVariationSelector');
+        if (!selector) return;
+
+        if (!variations || variations.length === 0) {
+            selector.style.display = 'none';
+            selector.innerHTML = '';
+            return;
+        }
+
+        selector.style.display = '';
+        selector.innerHTML = `
+            <span class="modal-variation-label">Choose Size / Variation</span>
+            <div class="modal-variation-options" id="modalVariationOptions"></div>
+            <span class="modal-variation-hint" id="modalVariationHint">Please select a size to continue.</span>
+        `;
+
+        const optionsRow = document.getElementById('modalVariationOptions');
+        variations.forEach(v => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'modal-variation-btn';
+            btn.setAttribute('data-var-id', v.id);
+            btn.setAttribute('data-var-name', v.name);
+            btn.setAttribute('data-var-price', v.price);
+            btn.innerHTML = `<span class="var-name">${v.name}</span><span class="var-price">Rs. ${Math.round(v.price).toLocaleString('en-US')}</span>`;
+
+            btn.addEventListener('click', () => {
+                // Deselect all, select this one
+                optionsRow.querySelectorAll('.modal-variation-btn').forEach(b => b.classList.remove('selected'));
+                btn.classList.add('selected');
+
+                // Update modal state
+                _modalData.variationId   = v.id;
+                _modalData.variationName = v.name;
+                _modalData.price         = parseFloat(v.price);
+                _modalData.cartKey       = `${_modalData.id}-v${v.id}`;
+
+                // Update price display and total button
+                if (modalProductPrice)
+                    modalProductPrice.textContent = `Rs. ${Math.round(v.price).toLocaleString('en-US')}`;
+                updateModalQuantityUI();
+
+                // Hide the "please select" hint
+                const hint = document.getElementById('modalVariationHint');
+                if (hint) hint.classList.remove('visible');
+
+                // Re-enable the add button if it was blocked
+                if (modalAddToCartBtn && modalAddToCartBtn.disabled !== true) {
+                    modalAddToCartBtn.disabled = false;
+                    modalAddToCartBtn.style.opacity = '';
+                }
+            });
+
+            optionsRow.appendChild(btn);
+        });
+    };
+
     const openProductModal = (data) => {
         if (!productDetailModal) return;
-        _modalData = { ...data, qty: 1 };
 
-        // Populate fields
-        modalProductImg.src      = data.img;
-        modalProductImg.alt      = data.name;
-        modalProductName.textContent = data.name;
-        modalProductDesc.textContent = data.description || '';
-        modalProductDesc.style.display = data.description ? '' : 'none';
-        modalProductPrice.textContent  = `Rs. ${Math.round(data.price).toLocaleString('en-US')}`;
+        // Initialise modal state
+        const variations = data.variations || [];
+        _modalData = {
+            id:            data.id || '',
+            cartKey:       data.id || '',   // overwritten when variation selected
+            productId:     data.id || '',
+            name:          data.name || '',
+            price:         parseFloat(data.price) || 0,
+            img:           data.img || '',
+            qty:           1,
+            variationId:   '',
+            variationName: '',
+            variations:    variations
+        };
+
+        // Populate static fields
+        modalProductImg.src             = data.img;
+        modalProductImg.alt             = data.name;
+        modalProductName.textContent    = data.name;
+        modalProductDesc.textContent    = data.description || '';
+        modalProductDesc.style.display  = data.description ? '' : 'none';
+        modalProductPrice.textContent   = `Rs. ${Math.round(data.price).toLocaleString('en-US')}`;
 
         if (modalProductTag) {
             if (data.tag) {
-                modalProductTag.textContent = data.tag;
-                modalProductTag.style.display = '';
+                modalProductTag.textContent    = data.tag;
+                modalProductTag.style.display  = '';
             } else {
-                modalProductTag.style.display = 'none';
+                modalProductTag.style.display  = 'none';
             }
         }
 
-        updateModalQuantityUI();
+        // Render variation selector (hides itself if no variations)
+        renderVariationSelector(variations);
 
-        // If out of stock, disable the add button
+        // Configure Add to Cart button
         if (modalAddToCartBtn) {
             if (data.inStock === false) {
                 modalAddToCartBtn.disabled = true;
@@ -1014,11 +1194,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 modalAddToCartBtn.disabled = false;
                 modalAddToCartBtn.innerHTML = '<span id="modalAddToCartTotal" class="product-modal-add-total">Rs. 0</span><span class="product-modal-add-label">Add To Cart</span>';
                 modalAddToCartTotal = document.getElementById('modalAddToCartTotal');
-                updateModalQuantityUI();
                 modalAddToCartBtn.style.opacity = '';
                 modalAddToCartBtn.style.cursor  = '';
             }
         }
+
+        updateModalQuantityUI();
+        const modalBodyScroll = productDetailModal.querySelector('.product-modal-body-scroll');
+        if (modalBodyScroll) modalBodyScroll.scrollTop = 0;
 
         productDetailModal.classList.add('active');
         productDetailModal.setAttribute('aria-hidden', 'false');
@@ -1032,7 +1215,7 @@ document.addEventListener('DOMContentLoaded', () => {
         productDetailModal.setAttribute('aria-hidden', 'true');
         document.body.classList.remove('product-modal-open');
         document.body.style.overflow = '';
-        _modalData = { id: '', name: '', price: 0, img: '', qty: 1 };
+        _modalData = { id: '', cartKey: '', productId: '', name: '', price: 0, img: '', qty: 1, variationId: '', variationName: '', variations: [] };
     };
 
     // Close via × button
@@ -1053,44 +1236,6 @@ document.addEventListener('DOMContentLoaded', () => {
             closeProductModal();
         }
     });
-
-    // Quantity controls inside modal
-    if (modalQtyMinus) {
-        modalQtyMinus.addEventListener('click', () => {
-            if (_modalData.qty > 1) {
-                _modalData.qty -= 1;
-                updateModalQuantityUI();
-            }
-        });
-    }
-
-    if (modalQtyPlus) {
-        modalQtyPlus.addEventListener('click', () => {
-            _modalData.qty += 1;
-            updateModalQuantityUI();
-        });
-    }
-
-    // "Add to Order" button inside the modal
-    if (modalAddToCartBtn) {
-        modalAddToCartBtn.addEventListener('click', () => {
-            if (!_modalData.id || modalAddToCartBtn.disabled) return;
-
-            // Add the qty-adjusted amount
-            for (let i = 0; i < _modalData.qty; i++) {
-                addItemToCart(_modalData.id, _modalData.name, _modalData.price, _modalData.img);
-            }
-
-            // Visual feedback on the modal button
-            const origHtml = modalAddToCartBtn.innerHTML;
-            modalAddToCartBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Added!';
-            setTimeout(() => {
-                modalAddToCartBtn.innerHTML = origHtml;
-            }, 1200);
-
-            closeProductModal();
-        });
-    }
 
     // ── Card click → open modal (but NOT when clicking Add to Cart) ──
     // Uses event delegation on document so it also covers dynamically injected cards (menu.html AJAX)
@@ -1118,8 +1263,73 @@ document.addEventListener('DOMContentLoaded', () => {
         const tag   = tagEl  ? tagEl.textContent.trim()  : '';
         const inStock = card.getAttribute('data-in-stock') !== 'false';
 
-        openProductModal({ id, name, price, img, description: desc, tag, inStock });
+        // Parse variations from data attribute (present only for products with variations)
+        let variations = [];
+        try { variations = JSON.parse(card.getAttribute('data-variations') || '[]'); } catch(_) {}
+
+        openProductModal({ id, name, price, img, description: desc, tag, inStock, variations });
     });
+
+    // Quantity controls inside modal
+    if (modalQtyMinus) {
+        modalQtyMinus.addEventListener('click', () => {
+            if (_modalData.qty > 1) {
+                _modalData.qty -= 1;
+                updateModalQuantityUI();
+            }
+        });
+    }
+
+    if (modalQtyPlus) {
+        modalQtyPlus.addEventListener('click', () => {
+            _modalData.qty += 1;
+            updateModalQuantityUI();
+        });
+    }
+
+    // "Add to Order" button inside the modal
+    if (modalAddToCartBtn) {
+        modalAddToCartBtn.addEventListener('click', () => {
+            if (!_modalData.id || modalAddToCartBtn.disabled) return;
+
+            // If this product has variations, the customer must pick one first
+            if (_modalData.variations.length > 0 && !_modalData.variationId) {
+                const hint = document.getElementById('modalVariationHint');
+                if (hint) hint.classList.add('visible');
+                return;
+            }
+
+            // Add once with the correct quantity
+            addItemToCart(
+                _modalData.cartKey,
+                _modalData.productId,
+                _modalData.name,
+                _modalData.price,
+                _modalData.img,
+                _modalData.variationId,
+                _modalData.variationName
+            );
+            // Then increment by remaining qty - 1
+            for (let i = 1; i < _modalData.qty; i++) {
+                addItemToCart(
+                    _modalData.cartKey,
+                    _modalData.productId,
+                    _modalData.name,
+                    _modalData.price,
+                    _modalData.img,
+                    _modalData.variationId,
+                    _modalData.variationName
+                );
+            }
+
+            // Visual feedback on the modal button
+            const origHtml = modalAddToCartBtn.innerHTML;
+            modalAddToCartBtn.innerHTML = '<i class="fa-solid fa-circle-check"></i> Added!';
+            setTimeout(() => { modalAddToCartBtn.innerHTML = origHtml; }, 1200);
+
+            closeProductModal();
+        });
+    }
 
 
     // Seating layout & bookings wizard script sections removed as reservations page was retired.

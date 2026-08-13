@@ -49,8 +49,24 @@
                 <p style="margin: 2px 0; font-size: 0.82rem; color: var(--color-text-gray); line-height: 1.5;">{{ product.description }}</p>
             </div>
             {% endif %}
+
+            {% if product.has_variations %}
+            <div style="margin-top: 6px;">
+                <span class="dashboard-label" style="display: flex; align-items: center; gap: 4px; color: var(--color-primary);">
+                    <i class="fa-solid fa-layer-group"></i> Variations / Sizes
+                </span>
+                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px;">
+                    {% for var in product.available_variations %}
+                        <span style="background: rgba(255,255,255,0.06); border: 1px solid var(--color-border); border-radius: 6px; padding: 4px 8px; font-size: 0.78rem; color: #fff;">
+                            <strong>{{ var.name }}</strong>: Rs. {{ var.price|floatformat:0 }}
+                        </span>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
+
 
     <!-- BOTTOM ACTION BAR: BACK (LEFT), EDIT (MIDDLE), DELETE (RIGHT) -->
     <div style="display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--color-border);">

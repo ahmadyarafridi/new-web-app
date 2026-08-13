@@ -33,7 +33,7 @@
 
             <div class="floating-group full-width" style="margin-bottom: 8px !important;">
                 {{ form.price }}
-                <label for="{{ form.price.id_for_label }}" class="floating-label">Price (PKR)</label>
+                <label for="{{ form.price.id_for_label }}" class="floating-label">Price</label>
             </div>
 
             <div class="dashboard-form-group full-width" style="margin-bottom: 8px !important;">
@@ -58,7 +58,196 @@
                     <i class="fa-solid fa-boxes-stacked" style="color: var(--color-primary);"></i> In Stock
                 </label>
             </div>
+
+            <!-- VARIATIONS / SIZES SECTION -->
+            <style>
+                .variation-section-card {
+                    width: 100%;
+                    box-sizing: border-box;
+                    margin-top: 10px;
+                    margin-bottom: 8px !important;
+                    background: var(--color-bg-deep);
+                    padding: 14px;
+                    border-radius: 8px;
+                    border: 1px solid var(--color-border);
+                }
+                .variation-row {
+                    display: grid;
+                    grid-template-columns: 1.8fr 1.2fr 0.7fr auto;
+                    gap: 10px;
+                    align-items: center;
+                    background: rgba(255,255,255,0.02);
+                    padding: 6px 10px;
+                    border-radius: 6px;
+                    border: 1px solid rgba(255, 255, 255, 0.08);
+                    width: 100%;
+                    box-sizing: border-box;
+                }
+                .variation-input-sm {
+                    height: 34px;
+                    padding: 6px 10px;
+                    font-size: 0.82rem;
+                    border-radius: 4px;
+                    background: rgba(0, 0, 0, 0.25);
+                    color: #ffffff;
+                    border: 1px solid rgba(255, 255, 255, 0.12);
+                    outline: none;
+                    width: 100%;
+                    box-sizing: border-box;
+                    transition: border-color 0.15s ease, background 0.15s ease;
+                }
+                .variation-input-sm:focus {
+                    border-color: var(--color-primary);
+                    background: rgba(0, 0, 0, 0.4);
+                }
+                .variation-input-sm::placeholder {
+                    color: rgba(255, 255, 255, 0.4);
+                    font-size: 0.78rem;
+                }
+
+                @media (max-width: 600px) {
+                    .variation-section-card {
+                        padding: 10px 8px !important;
+                    }
+                    .variation-row {
+                        grid-template-columns: 1.6fr 1.2fr 0.7fr auto !important;
+                        gap: 8px !important;
+                        padding: 6px 6px !important;
+                        width: 100% !important;
+                    }
+                    .variation-input-sm {
+                        font-size: 0.8rem !important;
+                        padding: 5px 6px !important;
+                        height: 32px !important;
+                    }
+                }
+            </style>
+
+            <div class="dashboard-form-group full-width variation-section-card" style="padding: 8px 10px !important;">
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 4px;">
+                    <h4 style="font-size: 0.88rem; font-weight: 700; color: #ffffff; margin: 0; display: flex; align-items: center; gap: 5px;">
+                        <i class="fa-solid fa-layer-group" style="color: var(--color-primary);"></i> Variations / Sizes
+                    </h4>
+                    <button type="button" id="addVariationRowBtn" style="font-size: 0.7rem; padding: 2px 8px; background: rgba(255,255,255,0.05); border: 1px solid var(--color-primary); color: var(--color-primary); border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 3px; line-height: 1.2;">
+                        <i class="fa-solid fa-plus"></i> Add
+                    </button>
+                </div>
+                <p style="font-size: 0.72rem; color: var(--color-text-gray); margin: 0 0 4px 0;">
+                    Leave this empty if this product has no variations.
+                </p>
+
+                {{ variation_formset.management_form }}
+
+                {% if variation_formset.non_form_errors %}
+                    <div class="alert-message alert-inactive" style="background: rgba(229,57,53,0.15); color: #ef5350; border: 1px solid rgba(229,57,53,0.3); margin-bottom: 8px; font-size: 0.78rem; padding: 6px 10px;">
+                        {{ variation_formset.non_form_errors }}
+                    </div>
+                {% endif %}
+
+                <div id="variationRowsContainer" style="display: flex; flex-direction: column; gap: 8px; width: 100%;">
+                    {% for v_form in variation_formset %}
+                        <div class="variation-row">
+                            {% for hidden in v_form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+
+                            <div style="width: 100%;">
+                                {{ v_form.name }}
+                                {% if v_form.name.errors %}
+                                    <div style="color: #ef5350; font-size: 0.72rem; margin-top: 2px;">{{ v_form.name.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div style="width: 100%;">
+                                {{ v_form.price }}
+                                {% if v_form.price.errors %}
+                                    <div style="color: #ef5350; font-size: 0.72rem; margin-top: 2px;">{{ v_form.price.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div style="width: 100%;">
+                                {{ v_form.display_order }}
+                                {% if v_form.display_order.errors %}
+                                    <div style="color: #ef5350; font-size: 0.72rem; margin-top: 2px;">{{ v_form.display_order.errors.0 }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div style="display: flex; align-items: center; justify-content: center; height: 34px;">
+                                {% if variation_formset.can_delete and v_form.instance.pk %}
+                                    <div style="display: none;">{{ v_form.DELETE }}</div>
+                                {% endif %}
+                                <button type="button" class="remove-variation-row-btn" style="background: none; border: none; color: #ef5350; cursor: pointer; font-size: 1.05rem; padding: 4px; display: flex; align-items: center; justify-content: center;" title="Delete variation">
+                                    <i class="fa-solid fa-trash-can"></i>
+                                </button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <template id="emptyVariationFormTemplate">
+                <div class="variation-row">
+                    <div style="width: 100%;">
+                        <input type="text" name="variations-__prefix__-name" id="id_variations-__prefix__-name" class="variation-input-sm" placeholder="Variation">
+                    </div>
+                    <div style="width: 100%;">
+                        <input type="number" name="variations-__prefix__-price" id="id_variations-__prefix__-price" class="variation-input-sm" placeholder="Price" step="1">
+                    </div>
+                    <div style="width: 100%;">
+                        <input type="number" name="variations-__prefix__-display_order" id="id_variations-__prefix__-display_order" class="variation-input-sm" placeholder="Order" value="0">
+                    </div>
+                    <div style="display: flex; align-items: center; justify-content: center; height: 34px;">
+                        <button type="button" class="remove-variation-row-btn" style="background: none; border: none; color: #ef5350; cursor: pointer; font-size: 1.05rem; padding: 4px; display: flex; align-items: center; justify-content: center;" title="Remove variation">
+                            <i class="fa-solid fa-trash-can"></i>
+                        </button>
+                    </div>
+                </div>
+            </template>
+
+
+            <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                const addBtn = document.getElementById('addVariationRowBtn');
+                const container = document.getElementById('variationRowsContainer');
+                const totalForms = document.getElementById('id_variations-TOTAL_FORMS');
+                const template = document.getElementById('emptyVariationFormTemplate');
+
+                if (addBtn && container && totalForms && template) {
+                    addBtn.addEventListener('click', function() {
+                        const currentCount = parseInt(totalForms.value, 10);
+                        const newRowHtml = template.innerHTML.replace(/__prefix__/g, currentCount);
+                        container.insertAdjacentHTML('beforeend', newRowHtml);
+                        totalForms.value = currentCount + 1;
+                    });
+                }
+
+                if (container) {
+                    container.addEventListener('click', function(e) {
+                        const removeBtn = e.target.closest('.remove-variation-row-btn');
+                        if (removeBtn) {
+                            const row = removeBtn.closest('.variation-row');
+                            if (row) {
+                                const deleteCheckbox = row.querySelector('input[name$="-DELETE"]');
+                                if (deleteCheckbox) {
+                                    deleteCheckbox.checked = true;
+                                    row.style.display = 'none';
+                                } else {
+                                    row.querySelectorAll('input').forEach(input => {
+                                        input.value = '';
+                                        input.disabled = true;
+                                    });
+                                    row.remove();
+                                }
+                            }
+                        }
+                    });
+                }
+            });
+            </script>
         </div>
+
+
+
 
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding-top: 14px; border-top: 1px solid var(--color-border);">
             <a href="{% url 'manage_products' %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 8px 16px; font-size: 0.78rem; font-weight: 600; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; justify-content: center; width: fit-content; max-width: max-content;">

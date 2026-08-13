@@ -115,6 +115,69 @@ class Product(models.Model):
         from django.templatetags.static import static
         return static(self.image)
 
+    # ── Variation helpers ──────────────────────────────────────────────────
+    @property
+    def has_variations(self):
+        """True when this product has at least one ProductVariation defined."""
+        return self.variations.exists()
+
+    @property
+    def variations_list(self):
+        """Ordered queryset of active variations for this product."""
+        return self.variations.order_by('display_order', 'id')
+
+    @property
+    def available_variations(self):
+        """Alias for variations_list for template compatibility."""
+        return self.variations_list
+
+    @property
+    def min_variation_price(self):
+        """
+        Lowest price across all variations, or None when no variations exist.
+        Used to render "From Rs. X" on product cards.
+        """
+        from django.db.models import Min
+        result = self.variations.aggregate(min_price=Min('price'))['min_price']
+        return result
+
+
+
+class ProductVariation(models.Model):
+    """
+    An optional size / variant for a Product (e.g. Small, Medium, Large).
+    A product with zero variations uses its own ``Product.price`` directly.
+    A product with one or more variations must have a variation selected
+    before it can be added to the cart.
+    """
+    product = models.ForeignKey(
+        Product,
+        on_delete=models.CASCADE,
+        related_name='variations',
+        help_text="The parent product this variation belongs to."
+    )
+    name = models.CharField(
+        max_length=100,
+        help_text="Variation label, e.g. Small, Medium, Large, Half, Full."
+    )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        help_text="Price for this specific variation."
+    )
+    display_order = models.PositiveIntegerField(
+        default=0,
+        help_text="Controls the order variations are listed on the menu (lowest first)."
+    )
+
+    class Meta:
+        ordering = ['display_order', 'id']
+        verbose_name = 'Product Variation'
+        verbose_name_plural = 'Product Variations'
+
+    def __str__(self):
+        return f"{self.product.name} — {self.name} (Rs. {self.price:.0f})"
+
 
 class Deal(models.Model):
     title = models.CharField(max_length=150)
@@ -242,12 +305,19 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name='items')
     product = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name='order_items')
     product_name = models.CharField(max_length=150)
+    variation_name = models.CharField(
+        max_length=100,
+        blank=True,
+        default='',
+        help_text="Variation selected by the customer, e.g. 'Small', 'Medium'. Empty when no variation applies."
+    )
     quantity = models.PositiveIntegerField(default=1)
     unit_price = models.DecimalField(max_digits=10, decimal_places=2)
     subtotal = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return f"{self.quantity}x {self.product_name} (Rs. {self.subtotal:.0f})"
+        variation_part = f" ({self.variation_name})" if self.variation_name else ""
+        return f"{self.quantity}x {self.product_name}{variation_part} (Rs. {self.subtotal:.0f})"
 
 
 class OrderNotification(models.Model):

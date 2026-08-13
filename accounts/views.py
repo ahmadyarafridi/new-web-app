@@ -12,12 +12,12 @@ from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.core.paginator import Paginator
 from django.core.management import call_command
-from django.db import OperationalError, ProgrammingError
+from django.db import OperationalError, ProgrammingError, transaction
 from django.db.models import Q, Sum
 from django.utils import timezone
-from website.models import RestaurantInfo, Category, Product, Deal, Review, CustomerFeedback, Order, OrderItem, DailyVisit, OrderNotification, InventoryItem
+from website.models import RestaurantInfo, Category, Product, ProductVariation, Deal, Review, CustomerFeedback, Order, OrderItem, DailyVisit, OrderNotification, InventoryItem
 from .forms import (
-    OwnerLoginForm, ProductForm, CategoryForm,
+    OwnerLoginForm, ProductForm, ProductVariationFormSet, CategoryForm,
     DealForm, ReviewForm, RestaurantInfoForm, InventoryForm
 )
 from .analytics_utils import (
@@ -45,6 +45,7 @@ def owner_login(request):
 def owner_logout(request):
     auth_logout(request)
     return redirect('index')
+
 
 
 @login_required(login_url='login')
@@ -264,6 +265,7 @@ def product_detail(request, pk):
 @login_required(login_url='login')
 def product_add(request):
     from django.urls import reverse
+    from django.db import transaction
     cat_slug = request.GET.get('cat', '').strip()
     initial_data = {}
     if cat_slug:
@@ -273,26 +275,49 @@ def product_add(request):
 
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES)
-        if form.is_valid():
-            product = form.save()
+        variation_formset = ProductVariationFormSet(request.POST, prefix='variations')
+        if form.is_valid() and variation_formset.is_valid():
+            with transaction.atomic():
+                product = form.save()
+                variation_formset.instance = product
+                variation_formset.save()
+            messages.success(request, f'Product "{product.name}" created successfully.')
             return redirect(f"{reverse('manage_products')}?cat={product.category.slug}")
     else:
         form = ProductForm(initial=initial_data)
-    return render(request, 'accounts/product_form.html', {'form': form, 'title': 'Add New Product'})
+        variation_formset = ProductVariationFormSet(queryset=ProductVariation.objects.none(), prefix='variations')
+    
+    return render(request, 'accounts/product_form.html', {
+        'form': form,
+        'variation_formset': variation_formset,
+        'title': 'Add New Product'
+    })
 
 
 @login_required(login_url='login')
 def product_edit(request, pk):
     from django.urls import reverse
+    from django.db import transaction
     product = get_object_or_404(Product, pk=pk)
     if request.method == 'POST':
         form = ProductForm(request.POST, request.FILES, instance=product)
-        if form.is_valid():
-            product = form.save()
+        variation_formset = ProductVariationFormSet(request.POST, instance=product, prefix='variations')
+        if form.is_valid() and variation_formset.is_valid():
+            with transaction.atomic():
+                product = form.save()
+                variation_formset.save()
+            messages.success(request, f'Product "{product.name}" updated successfully.')
             return redirect(f"{reverse('manage_products')}?cat={product.category.slug}")
     else:
         form = ProductForm(instance=product)
-    return render(request, 'accounts/product_form.html', {'form': form, 'title': 'Edit Product', 'product': product})
+        variation_formset = ProductVariationFormSet(instance=product, prefix='variations')
+    
+    return render(request, 'accounts/product_form.html', {
+        'form': form,
+        'variation_formset': variation_formset,
+        'title': 'Edit Product',
+        'product': product
+    })
 
 
 @login_required(login_url='login')

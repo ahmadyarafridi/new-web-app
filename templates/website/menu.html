@@ -64,7 +64,7 @@
         {% endif %}
 
         {% for product in products %}
-        <div class="menu-item-card" data-category="{{ product.category.slug }}" data-id="{{ product.item_code }}" data-in-stock="{% if product.is_available %}true{% else %}false{% endif %}">
+        <div class="menu-item-card" data-category="{{ product.category.slug }}" data-id="{{ product.item_code }}" data-in-stock="{% if product.is_available %}true{% else %}false{% endif %}" data-has-variations="{% if product.has_variations %}true{% else %}false{% endif %}" {% if product.has_variations %}data-variations='[{% for v in product.variations_list %}{"id": {{ v.id }}, "name": "{{ v.name|escapejs }}", "price": {{ v.price|floatformat:0 }}}{% if not forloop.last %},{% endif %}{% endfor %}]'{% endif %}>
             <div class="menu-item-img-wrapper" style="position: relative;">
                 <img src="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}" alt="{{ product.name }}" class="menu-item-img" loading="lazy" decoding="async" width="400" height="260" {% if product.custom_style %}style="{{ product.custom_style }}"{% endif %}>
                 {% if not product.is_available %}
@@ -77,9 +77,15 @@
                 <p class="menu-item-desc">{{ product.description }}</p>
                 {% endif %}
                 <div class="menu-item-actions">
-                    <span class="menu-item-price-badge">Rs. {{ product.price|floatformat:0 }}</span>
+                    <span class="menu-item-price-badge">
+                        {% if product.has_variations %}
+                            <span class="menu-item-price-prefix">From </span>Rs. {{ product.min_variation_price|floatformat:0 }}
+                        {% else %}
+                            Rs. {{ product.price|floatformat:0 }}
+                        {% endif %}
+                    </span>
                     {% if product.is_available %}
-                    <button class="add-to-cart-btn" data-id="{{ product.item_code }}" data-name="{{ product.name }}" data-price="{{ product.price|floatformat:0 }}" data-img="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}">
+                    <button class="add-to-cart-btn" data-id="{{ product.item_code }}" data-name="{{ product.name }}" data-price="{% if product.has_variations %}{{ product.min_variation_price|floatformat:0 }}{% else %}{{ product.price|floatformat:0 }}{% endif %}" data-img="{% if product.image_file %}{{ product.image_file.url }}{% else %}{% static product.image %}{% endif %}" data-has-variations="{% if product.has_variations %}true{% else %}false{% endif %}" {% if product.has_variations %}data-variations='[{% for v in product.variations_list %}{"id": {{ v.id }}, "name": "{{ v.name|escapejs }}", "price": {{ v.price|floatformat:0 }}}{% if not forloop.last %},{% endif %}{% endfor %}]'{% endif %}>
                         <i class="fa-solid fa-plus"></i> Add to Cart
                     </button>
                     {% else %}
@@ -134,8 +140,15 @@ document.addEventListener('DOMContentLoaded', function() {
         const outOfStockBadge = !isAvailable ? 
             `<span class="badge-status badge-inactive" style="position: absolute; top: 8px; left: 8px; background: rgba(229,57,53,0.85); color: #ffffff; padding: 3px 8px; font-size: 0.65rem; border-radius: 4px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; backdrop-filter: blur(4px);">Out of Stock</span>` : '';
 
+        const hasVariations = prod.has_variations === true;
+        const priceDisplay = hasVariations && prod.min_variation_price !== null ?
+            `<span class="menu-item-price-prefix">From </span>Rs. ${prod.min_variation_price}` :
+            `Rs. ${prod.price}`;
+        const priceVal = hasVariations && prod.min_variation_price !== null ? prod.min_variation_price : prod.price;
+        const variationsJson = hasVariations ? escapeHtml(JSON.stringify(prod.variations || [])) : '[]';
+
         const actionBtn = isAvailable ?
-            `<button class="add-to-cart-btn" data-id="${escapeHtml(prod.item_code)}" data-name="${escapeHtml(prod.name)}" data-price="${prod.price}" data-img="${escapeHtml(prod.image_url)}">
+            `<button class="add-to-cart-btn" data-id="${escapeHtml(prod.item_code)}" data-name="${escapeHtml(prod.name)}" data-price="${priceVal}" data-img="${escapeHtml(prod.image_url)}" data-has-variations="${hasVariations}" data-variations="${variationsJson}">
                 <i class="fa-solid fa-plus"></i> Add to Cart
             </button>` :
             `<button class="add-to-cart-btn disabled" disabled style="background: #222222 !important; color: #777777 !important; border: 1px solid #444444 !important; opacity: 0.6; cursor: not-allowed; pointer-events: none;">
@@ -143,7 +156,7 @@ document.addEventListener('DOMContentLoaded', function() {
             </button>`;
 
         return `
-            <div class="menu-item-card" data-category="${escapeHtml(prod.category_slug)}" data-id="${escapeHtml(prod.item_code)}" data-in-stock="${isAvailable}">
+            <div class="menu-item-card" data-category="${escapeHtml(prod.category_slug)}" data-id="${escapeHtml(prod.item_code)}" data-in-stock="${isAvailable}" data-has-variations="${hasVariations}" data-variations="${variationsJson}">
                 <div class="menu-item-img-wrapper" style="position: relative;">
                     <img src="${escapeHtml(prod.image_url)}" alt="${escapeHtml(prod.name)}" class="menu-item-img" loading="lazy" decoding="async" width="400" height="260" ${styleAttr}>
                     ${outOfStockBadge}
@@ -152,13 +165,14 @@ document.addEventListener('DOMContentLoaded', function() {
                     <h4>${escapeHtml(prod.name)}</h4>
                     ${descHtml}
                     <div class="menu-item-actions">
-                        <span class="menu-item-price-badge">Rs. ${prod.price}</span>
+                        <span class="menu-item-price-badge">${priceDisplay}</span>
                         ${actionBtn}
                     </div>
                 </div>
             </div>
         `;
     }
+
 
     function createLoadMoreCardHtml() {
         return `

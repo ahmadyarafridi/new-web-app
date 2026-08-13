@@ -18,7 +18,7 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
     <!-- Main Style Sheet -->
-    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=7">
+    <link rel="stylesheet" href="{% static 'css/style.css' %}?v=9">
     <style>
         /* ==========================================
            EXACT MATERIAL DESIGN FLOATING LABEL SYSTEM
@@ -220,7 +220,7 @@
         }
 
         body {
-            padding-top: {% if not restaurant.is_open %}126px{% else %}90px{% endif %} !important;
+            padding-top: {% if not restaurant.is_open %}35px{% else %}0{% endif %} !important;
         }
     </style>
     {% block extra_head %}{% endblock %}
@@ -236,18 +236,23 @@
     {% endif %}
     {% endblock %}
 
-    <!-- HEADER / NAVIGATION (FIXED TOP BLOCK) -->
+    <!-- HEADER / NAVIGATION -->
     {% block header_tag %}
-    <header style="position: fixed !important; top: {% if not restaurant.is_open %}35px{% else %}0{% endif %} !important; left: 0 !important; width: 100% !important; z-index: 99999 !important;">
+    <header style="position: relative !important; width: 100% !important; z-index: 9999 !important;">
     {% endblock %}
         <div class="header-top-bar">
             <div class="header-container">
-                <a href="{% url 'index' %}" class="header-brand">
-                    <div class="brand-text-logo">
-                        <span class="brand-main">Amazing</span>
-                        <span class="brand-sub">Foods</span>
-                    </div>
-                </a>
+                <div class="header-brand-group" style="display: flex; align-items: center; gap: 14px;">
+                    <button type="button" class="hamburger-menu-btn" id="openNavSidebarBtn" aria-label="Open Navigation Menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <a href="{% url 'index' %}" class="header-brand">
+                        <div class="brand-text-logo">
+                            <span class="brand-main">Amazing</span>
+                            <span class="brand-sub">Foods</span>
+                        </div>
+                    </a>
+                </div>
                 
                 <div class="header-actions" style="display: flex; align-items: center; gap: 16px;">
                     {% if user.is_authenticated %}
@@ -263,20 +268,7 @@
             </div>
         </div>
         
-        {% block main_nav %}
-        <div class="header-sub-nav">
-            <div class="header-container">
-                <nav id="navbar">
-                    <ul>
-                        <li><a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Home</a></li>
-                        <li><a href="/#menu">Menu</a></li>
-                        <li><a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About Us</a></li>
-                        <li><a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a></li>
-                    </ul>
-                </nav>
-            </div>
-        </div>
-        {% endblock %}
+        {% block main_nav %}{% endblock %}
     </header>
 
     <main>
@@ -419,7 +411,7 @@
     </div>
 
     <!-- Main Logic Script -->
-    <script src="{% static 'js/script.js' %}?v=105" defer></script>
+    <script src="{% static 'js/script.js' %}?v=106" defer></script>
     <!-- MOBILE FLOATING CART BUTTON (shows only once cart has items) -->
     <button class="mobile-cart-fab" id="mobileCartFab" aria-label="Open Cart">
         <i class="fa-solid fa-bag-shopping"></i>
@@ -449,30 +441,67 @@
             <button type="button" class="product-modal-close" id="closeProductModalBtn" aria-label="Close detail modal">
                 <i class="fa-solid fa-xmark"></i>
             </button>
-            <div class="product-modal-body">
-                <div class="product-modal-img-wrapper">
-                    <img id="modalProductImg" src="" alt="Product Image">
-                    <span id="modalProductTag" class="menu-item-tag" style="display: none;"></span>
+            <div class="product-modal-body-scroll">
+                <div class="product-modal-body">
+                    <div class="product-modal-img-wrapper">
+                        <img id="modalProductImg" src="" alt="Product Image">
+                        <span id="modalProductTag" class="menu-item-tag" style="display: none;"></span>
+                    </div>
+                    <div class="product-modal-info">
+                        <h3 id="modalProductName" class="product-modal-title"></h3>
+                        <span id="modalProductPrice" class="product-modal-price"></span>
+                        <p id="modalProductDesc" class="product-modal-desc"></p>
+                        <div id="modalVariationSelector" class="modal-variation-selector" style="display: none;"></div>
+                    </div>
                 </div>
-                <div class="product-modal-info">
-                    <h3 id="modalProductName" class="product-modal-title"></h3>
-                    <span id="modalProductPrice" class="product-modal-price"></span>
-                    <p id="modalProductDesc" class="product-modal-desc"></p>
-                    <div class="product-modal-qty-control">
-                        <button type="button" class="modal-qty-btn" id="modalQtyMinus" aria-label="Decrease quantity"><i class="fa-solid fa-minus"></i></button>
-                        <span id="modalQtyVal" class="modal-qty-val">1</span>
-                        <button type="button" class="modal-qty-btn" id="modalQtyPlus" aria-label="Increase quantity"><i class="fa-solid fa-plus"></i></button>
-                    </div>
-                    <div class="product-modal-actions-row">
-                        <button type="button" class="add-to-cart-btn product-modal-add-btn" id="modalAddToCartBtn">
-                            <span id="modalAddToCartTotal" class="product-modal-add-total">Rs. 0</span>
-                            <span class="product-modal-add-label">Add To Cart</span>
-                        </button>
-                    </div>
+            </div>
+            <div class="product-modal-footer">
+                <div class="product-modal-qty-control">
+                    <button type="button" class="modal-qty-btn" id="modalQtyMinus" aria-label="Decrease quantity"><i class="fa-solid fa-minus"></i></button>
+                    <span id="modalQtyVal" class="modal-qty-val">1</span>
+                    <button type="button" class="modal-qty-btn" id="modalQtyPlus" aria-label="Increase quantity"><i class="fa-solid fa-plus"></i></button>
+                </div>
+                <div class="product-modal-actions-row">
+                    <button type="button" class="add-to-cart-btn product-modal-add-btn" id="modalAddToCartBtn">
+                        <span id="modalAddToCartTotal" class="product-modal-add-total">Rs. 0</span>
+                        <span class="product-modal-add-label">Add To Cart</span>
+                    </button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- NAVIGATION SIDEBAR DRAWER -->
+    <div id="navSidebar" class="nav-sidebar" aria-hidden="true">
+        <div class="nav-sidebar-header">
+            <a href="{% url 'index' %}" class="header-brand">
+                <div class="brand-text-logo">
+                    <span class="brand-main">Amazing</span>
+                    <span class="brand-sub">Foods</span>
+                </div>
+            </a>
+            <button type="button" class="nav-sidebar-close" id="closeNavSidebarBtn" aria-label="Close navigation menu">
+                <i class="fa-solid fa-xmark"></i>
+            </button>
+        </div>
+        <div class="nav-sidebar-body">
+            <ul class="nav-sidebar-menu">
+                <li>
+                    <a href="{% url 'index' %}" class="{% if request.resolver_match.url_name == 'index' %}active{% endif %}">Home</a>
+                </li>
+                <li>
+                    <a href="/#menu">Menu</a>
+                </li>
+                <li>
+                    <a href="{% url 'about' %}" class="{% if request.resolver_match.url_name == 'about' %}active{% endif %}">About</a>
+                </li>
+                <li>
+                    <a href="{% url 'contact' %}" class="{% if request.resolver_match.url_name == 'contact' %}active{% endif %}">Contact</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+    <div id="navSidebarOverlay" class="nav-sidebar-overlay"></div>
 
     {% block body_end %}{% endblock %}
     {% block extra_js %}{% endblock %}

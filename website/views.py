@@ -154,7 +154,7 @@ def api_products(request):
             'total_count': len(items_data),
         })
 
-    qs = Product.objects.filter(category__is_active=True).select_related('category').order_by('-id')
+    qs = Product.objects.filter(category__is_active=True).select_related('category').prefetch_related('variations').order_by('-id')
     
     if cat_slug and cat_slug != 'all':
         qs = qs.filter(category__slug=cat_slug)
@@ -169,6 +169,14 @@ def api_products(request):
     items_data = []
     for prod in page_obj.object_list:
         img_url = prod.image_file.url if prod.image_file else static(prod.image)
+        # Build variation list from prefetched queryset (no extra DB hit)
+        prod_variations = list(prod.variations.order_by('display_order', 'id'))
+        has_variations = len(prod_variations) > 0
+        min_price = min(v.price for v in prod_variations) if has_variations else None
+        variations_data = [
+            {'id': v.id, 'name': v.name, 'price': float(v.price)}
+            for v in prod_variations
+        ]
         items_data.append({
             'item_code': prod.item_code,
             'name': prod.name,
@@ -178,6 +186,10 @@ def api_products(request):
             'category_slug': prod.category.slug,
             'is_available': prod.is_available,
             'custom_style': prod.custom_style or '',
+            # Variation fields
+            'has_variations': has_variations,
+            'min_variation_price': int(round(min_price)) if min_price is not None else None,
+            'variations': variations_data,
         })
         
     return JsonResponse({
@@ -324,6 +336,8 @@ def api_create_order(request):
                 item_code = str(item_data.get('id', ''))
                 qty = int(item_data.get('quantity', 1))
                 price = float(item_data.get('price', 0))
+                # variation_name is optional — empty string when no variation applies
+                variation_name = str(item_data.get('variation_name', '')).strip()
                 subtotal = price * qty
                 total_price += subtotal
 
@@ -336,6 +350,7 @@ def api_create_order(request):
                     order=order,
                     product=product_obj,
                     product_name=name,
+                    variation_name=variation_name,
                     quantity=qty,
                     unit_price=price,
                     subtotal=subtotal

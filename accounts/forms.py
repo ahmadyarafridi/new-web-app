@@ -1,6 +1,7 @@
 from django import forms
+from django.forms import inlineformset_factory, BaseInlineFormSet
 from django.contrib.auth.forms import AuthenticationForm
-from website.models import RestaurantInfo, Category, Product, Deal, Review, InventoryItem
+from website.models import RestaurantInfo, Category, Product, ProductVariation, Deal, Review, InventoryItem
 from website.image_utils import validate_image_file, optimize_image
 
 class OwnerLoginForm(AuthenticationForm):
@@ -99,6 +100,105 @@ class ProductForm(forms.ModelForm):
         if commit:
             instance.save()
         return instance
+
+
+class ProductVariationForm(forms.ModelForm):
+    name = forms.CharField(
+        required=False,
+        widget=forms.TextInput(attrs={'class': 'variation-input-sm', 'placeholder': 'Variation'})
+    )
+    price = forms.DecimalField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'variation-input-sm', 'placeholder': 'Price', 'step': '1'})
+    )
+    display_order = forms.IntegerField(
+        required=False,
+        widget=forms.NumberInput(attrs={'class': 'variation-input-sm', 'placeholder': 'Order'})
+    )
+
+    class Meta:
+        model = ProductVariation
+        fields = ['name', 'price', 'display_order']
+
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk and self.instance.price is not None:
+            val = self.instance.price
+            if val == int(val):
+                self.initial['price'] = int(val)
+
+    def clean_name(self):
+        name = self.cleaned_data.get('name')
+        if name:
+            name = name.strip()
+        return name
+
+    def clean_price(self):
+        price = self.cleaned_data.get('price')
+        if price is not None and price <= 0:
+            raise forms.ValidationError("Variation price must be a positive number.")
+        return price
+
+
+class BaseProductVariationFormSet(BaseInlineFormSet):
+    def clean(self):
+        super().clean()
+        
+        for form in self.forms:
+            if self._should_delete_form(form):
+                continue
+
+            name = form.cleaned_data.get('name') if form.cleaned_data else None
+            price = form.cleaned_data.get('price') if form.cleaned_data else None
+            
+            # Completely blank/empty row (neither name nor price provided):
+            if not name and price is None:
+                form._errors = {}
+                continue
+
+            # Partially filled out row (name provided without price or vice versa):
+            if not name:
+                form.add_error('name', 'Variation name is required.')
+            if price is None or price <= 0:
+                form.add_error('price', 'Variation price must be a positive number.')
+
+    def save(self, commit=True):
+        instances = super().save(commit=False)
+        for form in self.forms:
+            if form in self.deleted_forms:
+                continue
+
+            name = form.cleaned_data.get('name') if form.cleaned_data else None
+            price = form.cleaned_data.get('price') if form.cleaned_data else None
+
+            # Skip completely blank rows when saving
+            if not name and (price is None or price <= 0):
+                if form.instance and form.instance.pk:
+                    form.instance.delete()
+                continue
+            
+            if commit:
+                form.instance.save()
+                
+        if commit:
+            for obj in self.deleted_objects:
+                obj.delete()
+        return instances
+
+
+ProductVariationFormSet = inlineformset_factory(
+    Product,
+    ProductVariation,
+    form=ProductVariationForm,
+    formset=BaseProductVariationFormSet,
+    fields=['name', 'price', 'display_order'],
+    extra=1,
+    can_delete=True
+)
+
+
+
 
 
 class CategoryForm(forms.ModelForm):

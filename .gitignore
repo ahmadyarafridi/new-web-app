@@ -32,6 +32,7 @@ venv.bak/
 *.log
 tmp/
 temp/
+scratch/
 
 # SQLite Database
 db.sqlite3
