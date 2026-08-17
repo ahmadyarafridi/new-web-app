@@ -380,3 +380,157 @@ def api_create_order(request):
             return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+
+from django.db import transaction
+from django.contrib.auth.decorators import login_required
+
+@csrf_exempt
+def api_create_dinein_order(request):
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+
+    if not request.user.is_authenticated:
+        return JsonResponse({'status': 'error', 'message': 'Authentication required to place POS orders.'}, status=401)
+
+    try:
+        data = json.loads(request.body)
+        table_number = data.get('table_number', '').strip() or 'Table 1'
+        customer_name = data.get('customer_name', '').strip() or 'Walk-in Customer'
+        customer_phone = data.get('customer_phone', '').strip() or 'N/A (Dine-in)'
+        order_notes = data.get('order_notes', '').strip()
+        cart_items = data.get('cart_items', [])
+
+        if not cart_items:
+            return JsonResponse({'status': 'error', 'message': 'Cart is empty. Please add items before submitting.'}, status=400)
+
+        with transaction.atomic():
+            # Validate item availability and calculate authoritative server-side totals
+            total_price = 0
+            validated_line_items = []
+
+            for item_data in cart_items:
+                item_code = str(item_data.get('id', '') or item_data.get('item_code', ''))
+                qty = int(item_data.get('quantity', 1))
+                if qty <= 0:
+                    continue
+
+                product_obj = Product.objects.filter(item_code=item_code).first()
+                if not product_obj and item_code.isdigit():
+                    product_obj = Product.objects.filter(id=int(item_code)).first()
+
+                if not product_obj:
+                    # Fallback lookup by product name if item_code missing
+                    p_name = item_data.get('name', '')
+                    product_obj = Product.objects.filter(name__iexact=p_name).first()
+
+                if not product_obj:
+                    return JsonResponse({'status': 'error', 'message': f"Product '{item_data.get('name', 'Item')}' not found."}, status=400)
+
+                if not product_obj.is_available:
+                    return JsonResponse({
+                        'status': 'error',
+                        'message': f'"{product_obj.name}" is currently out of stock.'
+                    }, status=400)
+
+                unit_price = float(product_obj.price)
+                variation_name = str(item_data.get('variation_name', '')).strip()
+                variation_id = item_data.get('variation_id')
+
+                if variation_id:
+                    var_obj = ProductVariation.objects.filter(id=int(variation_id), product=product_obj).first()
+                    if var_obj:
+                        unit_price = float(var_obj.price)
+                        variation_name = var_obj.name
+                elif variation_name:
+                    var_obj = ProductVariation.objects.filter(name__iexact=variation_name, product=product_obj).first()
+                    if var_obj:
+                        unit_price = float(var_obj.price)
+                        variation_name = var_obj.name
+
+                subtotal = unit_price * qty
+                total_price += subtotal
+
+                validated_line_items.append({
+                    'product_obj': product_obj,
+                    'product_name': product_obj.name,
+                    'variation_name': variation_name,
+                    'quantity': qty,
+                    'unit_price': unit_price,
+                    'subtotal': subtotal,
+                })
+
+            if not validated_line_items:
+                return JsonResponse({'status': 'error', 'message': 'No valid items in order cart.'}, status=400)
+
+            # Collision-safe POS Order ID generation
+            today_str = timezone.now().strftime('%Y%m%d')
+            order_id = None
+            for _ in range(100):
+                rand_num = random.randint(1000, 9999)
+                candidate_id = f"POS-{today_str}-{rand_num}"
+                if not Order.objects.filter(order_id=candidate_id).exists():
+                    order_id = candidate_id
+                    break
+
+            if not order_id:
+                order_id = f"POS-{today_str}-{random.randint(10000, 99999)}"
+
+            order = Order.objects.create(
+                order_id=order_id,
+                customer_name=customer_name,
+                customer_phone=customer_phone,
+                delivery_address='Dine-in Order',
+                order_notes=order_notes,
+                total_price=total_price,
+                order_status='pending',
+                payment_status='paid',
+                order_type='dine_in',
+                table_number=table_number,
+                payment_method='cash',
+            )
+
+            created_items_data = []
+            for item in validated_line_items:
+                order_item = OrderItem.objects.create(
+                    order=order,
+                    product=item['product_obj'],
+                    product_name=item['product_name'],
+                    variation_name=item['variation_name'],
+                    quantity=item['quantity'],
+                    unit_price=item['unit_price'],
+                    subtotal=item['subtotal']
+                )
+                created_items_data.append({
+                    'product_name': order_item.product_name,
+                    'variation_name': order_item.variation_name,
+                    'quantity': order_item.quantity,
+                    'unit_price': float(order_item.unit_price),
+                    'subtotal': float(order_item.subtotal),
+                })
+
+            # Emit Real-Time Order Notification
+            OrderNotification.objects.create(
+                order=order,
+                title=f"New Dine-in Order #{order.order_id}",
+                message=f"Dine-in ({table_number}) order for Rs. {total_price:.0f}",
+                customer_name=customer_name,
+                total_price=total_price,
+                notification_type='new_order',
+                is_read=False
+            )
+
+            return JsonResponse({
+                'status': 'success',
+                'order_id': order.order_id,
+                'order_pk': order.pk,
+                'total_price': total_price,
+                'table_number': table_number,
+                'customer_name': customer_name,
+                'created_at': order.created_at.strftime('%d/%m/%Y %I:%M %p'),
+                'items': created_items_data,
+            })
+
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+

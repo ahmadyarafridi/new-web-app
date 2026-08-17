@@ -5,18 +5,20 @@
 {% block dashboard_content %}
 <div class="dashboard-card" style="margin-bottom: 24px; position: relative; padding-bottom: 70px;">
 
-    <!-- TOP TITLE BAR & STATUS FILTERS -->
+    <!-- TOP TITLE BAR & STATUS / TYPE FILTERS -->
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
         <h2 style="font-family: var(--font-brand); color: var(--color-primary); font-size: 1.2rem; text-transform: uppercase; letter-spacing: 1px; margin: 0;">
             Customer Orders ({{ all_count }})
         </h2>
 
-        <!-- STATUS FILTER PILLS -->
+        <!-- ORDER TYPE & STATUS FILTER PILLS -->
         <div style="display: flex; gap: 6px; flex-wrap: wrap;">
-            <a href="{% url 'manage_orders' %}" class="btn-secondary" style="padding: 5px 12px; font-size: 0.75rem; {% if not current_status %}background: var(--color-primary); color: #111; font-weight: 700;{% endif %}">All ({{ all_count }})</a>
-            <a href="?status=pending" class="btn-secondary" style="padding: 5px 12px; font-size: 0.75rem; {% if current_status == 'pending' %}background: #ffb74d; color: #111; font-weight: 700;{% endif %}">Pending ({{ pending_count }})</a>
-            <a href="?status=completed" class="btn-secondary" style="padding: 5px 12px; font-size: 0.75rem; {% if current_status == 'completed' %}background: #81c784; color: #111; font-weight: 700;{% endif %}">Completed ({{ completed_count }})</a>
-            <a href="?status=cancelled" class="btn-secondary" style="padding: 5px 12px; font-size: 0.75rem; {% if current_status == 'cancelled' %}background: #e53935; color: #fff; font-weight: 700;{% endif %}">Cancelled ({{ cancelled_count }})</a>
+            <a href="{% url 'manage_orders' %}" class="btn-secondary" style="padding: 5px 12px; font-size: 0.75rem; {% if current_status == 'all' and current_type == 'all' %}background: var(--color-primary); color: #111; font-weight: 700;{% endif %}">All ({{ all_count }})</a>
+            <a href="?type=delivery{% if current_status != 'all' %}&status={{ current_status }}{% endif %}" class="btn-secondary" style="padding: 5px 12px; font-size: 0.75rem; {% if current_type == 'delivery' %}background: #64b5f6; color: #111; font-weight: 700;{% endif %}">Delivery ({{ delivery_count }})</a>
+            <a href="?type=dine_in{% if current_status != 'all' %}&status={{ current_status }}{% endif %}" class="btn-secondary" style="padding: 5px 12px; font-size: 0.75rem; {% if current_type == 'dine_in' %}background: var(--color-primary); color: #111; font-weight: 700;{% endif %}">Dine-in ({{ dine_in_count }})</a>
+            <span style="color: var(--color-border); align-self: center; font-size: 0.8rem;">|</span>
+            <a href="?status=pending{% if current_type != 'all' %}&type={{ current_type }}{% endif %}" class="btn-secondary" style="padding: 5px 12px; font-size: 0.75rem; {% if current_status == 'pending' %}background: #ffb74d; color: #111; font-weight: 700;{% endif %}">Pending ({{ pending_count }})</a>
+            <a href="?status=completed{% if current_type != 'all' %}&type={{ current_type }}{% endif %}" class="btn-secondary" style="padding: 5px 12px; font-size: 0.75rem; {% if current_status == 'completed' %}background: #81c784; color: #111; font-weight: 700;{% endif %}">Completed ({{ completed_count }})</a>
         </div>
     </div>
 
@@ -26,8 +28,23 @@
         <a href="{% url 'order_detail' order.pk %}" style="text-decoration: none; color: inherit; display: block;">
             <div style="background: var(--color-bg-deep); border: 1px solid var(--color-border); border-radius: var(--border-radius-sm); padding: 14px 18px; display: flex; align-items: center; justify-content: space-between; gap: 12px; transition: border-color 0.2s ease, transform 0.2s ease;">
                 <div style="min-width: 0; flex: 1;">
-                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 3px;">
-                        <h4 style="font-family: var(--font-brand); color: #fff; font-size: 0.88rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;">{{ order.items_summary }}</h4>
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 3px; flex-wrap: wrap;">
+                        <h4 style="font-family: var(--font-brand); color: #fff; font-size: 0.88rem; margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2;">
+                            <strong style="color: var(--color-primary);">#{{ order.order_id }}</strong> &bull; {{ order.items_summary }}
+                        </h4>
+                        
+                        <!-- ORDER TYPE BADGE -->
+                        {% if order.order_type == 'dine_in' %}
+                        <span style="font-size: 0.65rem; font-weight: 700; color: var(--color-primary); background: rgba(201,168,76,0.15); padding: 2px 7px; border-radius: 8px; flex-shrink: 0;">
+                            <i class="fa-solid fa-utensils" style="margin-right: 3px;"></i> Dine-in ({% if order.table_number %}{{ order.table_number }}{% else %}Table 1{% endif %})
+                        </span>
+                        {% else %}
+                        <span style="font-size: 0.65rem; font-weight: 700; color: #64b5f6; background: rgba(100,181,246,0.15); padding: 2px 7px; border-radius: 8px; flex-shrink: 0;">
+                            <i class="fa-solid fa-motorcycle" style="margin-right: 3px;"></i> Delivery
+                        </span>
+                        {% endif %}
+
+                        <!-- STATUS BADGE -->
                         {% if order.order_status == 'pending' %}
                         <span style="font-size: 0.65rem; font-weight: 700; color: #ffb74d; background: rgba(255,183,77,0.15); padding: 2px 7px; border-radius: 8px; flex-shrink: 0;">Pending</span>
                         {% elif order.order_status == 'completed' %}
@@ -36,7 +53,9 @@
                         <span style="font-size: 0.65rem; font-weight: 700; color: #ef5350; background: rgba(239,83,80,0.15); padding: 2px 7px; border-radius: 8px; flex-shrink: 0;">Cancelled</span>
                         {% endif %}
                     </div>
-                    <span style="font-size: 0.76rem; color: var(--color-text-gray); display: block;">Ordered by: <strong style="color: #ddd;">{{ order.customer_name }}</strong></span>
+                    <span style="font-size: 0.76rem; color: var(--color-text-gray); display: block;">
+                        Customer: <strong style="color: #ddd;">{{ order.customer_name }}</strong>{% if order.order_type == 'dine_in' and order.table_number %} &bull; Table: <strong style="color: var(--color-primary);">{{ order.table_number }}</strong>{% endif %}
+                    </span>
                 </div>
                 <div style="display: flex; align-items: center; gap: 10px; flex-shrink: 0;">
                     <span style="font-size: 0.82rem; font-weight: 700; color: var(--color-primary);">Rs. {{ order.total_price|floatformat:0 }}</span>
@@ -55,7 +74,7 @@
     {% if orders.has_other_pages %}
     <div style="display: flex; justify-content: center; gap: 8px; margin-bottom: 20px;">
         {% if orders.has_previous %}
-        <a href="?page={{ orders.previous_page_number }}&status={{ current_status }}{% if search_query %}&q={{ search_query }}{% endif %}"
+        <a href="?page={{ orders.previous_page_number }}&status={{ current_status }}&type={{ current_type }}{% if search_query %}&q={{ search_query }}{% endif %}"
             class="btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">&larr; Prev</a>
         {% endif %}
 
@@ -64,7 +83,7 @@
         </span>
 
         {% if orders.has_next %}
-        <a href="?page={{ orders.next_page_number }}&status={{ current_status }}{% if search_query %}&q={{ search_query }}{% endif %}"
+        <a href="?page={{ orders.next_page_number }}&status={{ current_status }}&type={{ current_type }}{% if search_query %}&q={{ search_query }}{% endif %}"
             class="btn-secondary" style="padding: 6px 12px; font-size: 0.75rem;">Next &rarr;</a>
         {% endif %}
     </div>
@@ -78,4 +97,4 @@
     </div>
 
 </div>
-{% endblock %}
+{% endblock %}

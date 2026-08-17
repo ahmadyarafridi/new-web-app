@@ -1399,6 +1399,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
+    // Secondary carousel videos start without a source so they do not compete
+    // with the visible hero video during the page's initial load.
+    const loadDeferredVideo = (video) => {
+        if (!video || video.dataset.loaded === 'true' || !video.dataset.webmSrc) return;
+
+        const webmSource = document.createElement('source');
+        webmSource.src = video.dataset.webmSrc;
+        webmSource.type = 'video/webm';
+
+        const mp4Source = document.createElement('source');
+        mp4Source.src = video.dataset.mp4Src;
+        mp4Source.type = 'video/mp4';
+
+        video.append(webmSource, mp4Source);
+        video.dataset.loaded = 'true';
+        video.load();
+    };
+
     const handleNext = () => {
         const nextIdx = (currentIndex + 1) % slides.length;
         goToSlide(nextIdx);
@@ -1421,6 +1439,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 slide.style.display = 'block';
                 slide.classList.add('active');
                 if (video) {
+                    loadDeferredVideo(video);
                     video.muted = true;
                     video.playsInline = true;
                     video.currentTime = 0;

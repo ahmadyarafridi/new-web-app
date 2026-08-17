@@ -278,6 +278,17 @@ class Order(models.Model):
         ('refunded', 'Refunded'),
     ]
 
+    ORDER_TYPE_CHOICES = [
+        ('delivery', 'Online Delivery'),
+        ('dine_in', 'Dine-in'),
+    ]
+
+    PAYMENT_METHOD_CHOICES = [
+        ('cash', 'Cash'),
+        ('card', 'Card / POS'),
+        ('online', 'Online Payment'),
+    ]
+
     order_id = models.CharField(max_length=50, unique=True, db_index=True)
     customer_name = models.CharField(max_length=120)
     customer_phone = models.CharField(max_length=50)
@@ -286,8 +297,12 @@ class Order(models.Model):
     total_price = models.DecimalField(max_digits=10, decimal_places=2)
     order_status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', db_index=True)
     payment_status = models.CharField(max_length=20, choices=PAYMENT_CHOICES, default='unpaid')
+    order_type = models.CharField(max_length=20, choices=ORDER_TYPE_CHOICES, default='delivery', db_index=True)
+    table_number = models.CharField(max_length=30, blank=True, default='', help_text="e.g. Table 5, T-12")
+    payment_method = models.CharField(max_length=20, choices=PAYMENT_METHOD_CHOICES, default='cash')
     created_at = models.DateTimeField(auto_now_add=True, db_index=True)
     updated_at = models.DateTimeField(auto_now=True)
+
 
     class Meta:
         ordering = ['-created_at']

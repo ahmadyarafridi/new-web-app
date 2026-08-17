@@ -10,12 +10,17 @@ urlpatterns = [
     path('dashboard/', views.owner_dashboard, name='dashboard'),
     path('dashboard/status/toggle/', views.toggle_restaurant_status, name='toggle_restaurant_status'),
     
+    # Dine-in POS Management
+    path('dashboard/pos/', views.manage_pos, name='manage_pos'),
+    path('dashboard/pos/create/', views.api_create_dinein_order, name='api_create_dinein_order'),
+    
     # Orders Management
     path('dashboard/orders/', views.manage_orders, name='manage_orders'),
     path('dashboard/orders/<int:pk>/', views.order_detail, name='order_detail'),
     path('dashboard/orders/<int:pk>/status/', views.order_update_status, name='order_update_status'),
     path('dashboard/orders/<int:pk>/complete/', views.order_complete, name='order_complete'),
     path('dashboard/orders/<int:pk>/delete/', views.order_delete, name='order_delete'),
+
     
     # Products Management
     path('dashboard/products/', views.manage_products, name='manage_products'),
@@ -46,9 +51,11 @@ urlpatterns = [
     
     # Inventory Management
     path('dashboard/inventory/', views.manage_inventory, name='manage_inventory'),
+    path('dashboard/inventory/detail/<int:pk>/', views.inventory_detail, name='inventory_detail'),
     path('dashboard/inventory/add/', views.inventory_add, name='inventory_add'),
     path('dashboard/inventory/edit/<int:pk>/', views.inventory_edit, name='inventory_edit'),
     path('dashboard/inventory/delete/<int:pk>/', views.inventory_delete, name='inventory_delete'),
+
     
     # Security & Data Backup
     path('dashboard/security/', views.manage_security, name='manage_security'),

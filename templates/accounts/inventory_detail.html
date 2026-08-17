@@ -1,0 +1,80 @@
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Inventory Details — {{ item.item_name }} — {{ restaurant.name }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="dashboard-card" style="max-width: 750px; margin: 0 auto;">
+
+    <!-- TOP HEADER -->
+    <div class="dashboard-header-row" style="margin-bottom: 24px; padding-bottom: 16px; border-bottom: 1px solid var(--color-border);">
+        <div>
+            <span class="dashboard-label">Inventory Item</span>
+            <h2 class="dashboard-title" style="font-size: 1.4rem; margin-top: 4px; display: flex; align-items: center; gap: 10px;">
+                <i class="fa-solid fa-boxes-stacked text-gold"></i> {{ item.item_name }}
+            </h2>
+        </div>
+        <div>
+            <span class="badge-status badge-active" style="padding: 4px 12px; font-size: 0.8rem; font-weight: 700;">
+                {{ item.item_quantity }}
+            </span>
+        </div>
+    </div>
+
+    <!-- ITEM DETAILS GRID -->
+    <div style="background: var(--color-bg-deep); border: 1px solid var(--color-border); border-radius: var(--border-radius-sm); padding: 22px; margin-bottom: 24px;">
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 18px;">
+            <div>
+                <span class="dashboard-label">Item Name</span>
+                <p style="margin: 4px 0 0 0; font-size: 1rem; font-weight: 700; color: #ffffff;">{{ item.item_name }}</p>
+            </div>
+
+            <div>
+                <span class="dashboard-label">Stock Quantity</span>
+                <p style="margin: 4px 0 0 0; font-size: 0.95rem; font-weight: 700; color: var(--color-primary);">{{ item.item_quantity }}</p>
+            </div>
+
+            <div>
+                <span class="dashboard-label">Date Bought</span>
+                <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: #ffffff; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-regular fa-calendar" style="color: var(--color-text-gray);"></i> {{ item.date_bought|date:"F d, Y" }}
+                </p>
+            </div>
+
+            <div>
+                <span class="dashboard-label">How Much Left</span>
+                <p style="margin: 4px 0 0 0; font-size: 0.95rem; font-weight: 700; color: var(--color-primary);">{{ item.how_much_left }}</p>
+            </div>
+
+            <div>
+                <span class="dashboard-label">Last Updated Status</span>
+                <p style="margin: 4px 0 0 0; font-size: 0.9rem; color: #ffffff; display: flex; align-items: center; gap: 6px;">
+                    <i class="fa-solid fa-clock-rotate-left" style="color: var(--color-primary);"></i> {{ item.last_updated|date:"F d, Y" }}
+                </p>
+            </div>
+
+            <div>
+                <span class="dashboard-label">Date Created</span>
+                <p style="margin: 4px 0 0 0; font-size: 0.85rem; color: var(--color-text-gray);">{{ item.created_at|date:"F d, Y - g:i A" }}</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- BOTTOM ACTION BAR: BACK (LEFT), EDIT (MIDDLE), DELETE (RIGHT) -->
+    <div style="display: flex; justify-content: space-between; align-items: center; gap: 10px; padding-top: 16px; border-top: 1px solid var(--color-border); flex-wrap: wrap;">
+        <a href="{% url 'manage_inventory' %}" class="btn-secondary" style="border-color: var(--color-primary); color: var(--color-primary); padding: 8px 18px; font-size: 0.8rem; font-weight: 700; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; gap: 6px;">
+            &larr; Back to Inventory
+        </a>
+
+        <div style="display: flex; gap: 8px;">
+            <a href="{% url 'inventory_edit' item.pk %}" class="btn-primary" style="padding: 8px 18px; font-size: 0.8rem; font-weight: 700; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-pen"></i> Edit
+            </a>
+            <a href="{% url 'inventory_delete' item.pk %}" class="btn-secondary" style="border-color: #ef5350; color: #ef5350; background: rgba(239,83,80,0.1); padding: 8px 18px; font-size: 0.8rem; font-weight: 700; text-decoration: none; border-radius: var(--border-radius-sm); display: inline-flex; align-items: center; gap: 6px;">
+                <i class="fa-solid fa-trash"></i> Delete
+            </a>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

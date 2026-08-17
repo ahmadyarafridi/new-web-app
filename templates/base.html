@@ -243,9 +243,11 @@
         <div class="header-top-bar">
             <div class="header-container">
                 <div class="header-brand-group" style="display: flex; align-items: center; gap: 14px;">
+                    {% block hamburger_button %}
                     <button type="button" class="hamburger-menu-btn" id="openNavSidebarBtn" aria-label="Open Navigation Menu">
                         <i class="fa-solid fa-bars"></i>
                     </button>
+                    {% endblock %}
                     <a href="{% url 'index' %}" class="header-brand">
                         <div class="brand-text-logo">
                             <span class="brand-main">Amazing</span>

@@ -16,6 +16,8 @@ from django.db import OperationalError, ProgrammingError, transaction
 from django.db.models import Q, Sum
 from django.utils import timezone
 from website.models import RestaurantInfo, Category, Product, ProductVariation, Deal, Review, CustomerFeedback, Order, OrderItem, DailyVisit, OrderNotification, InventoryItem
+from website.views import api_create_dinein_order
+
 from .forms import (
     OwnerLoginForm, ProductForm, ProductVariationFormSet, CategoryForm,
     DealForm, ReviewForm, RestaurantInfoForm, InventoryForm
@@ -996,11 +998,271 @@ def export_full_data_zip(request):
                     rel_path = os.path.relpath(file_path, media_root)
                     zip_file.write(file_path, os.path.join('images', rel_path))
 
+    data = get_visitor_analytics_data()
+    return render(request, 'accounts/analytics_visitors_month.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_visitors_year(request):
+    data = get_visitor_analytics_data()
+    return render(request, 'accounts/analytics_visitors_year.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_revenue(request):
+    data = get_revenue_analytics_data()
+    return render(request, 'accounts/analytics_revenue.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_revenue_today(request):
+    data = get_revenue_analytics_data()
+    return render(request, 'accounts/analytics_revenue_today.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_revenue_week(request):
+    data = get_revenue_analytics_data()
+    return render(request, 'accounts/analytics_revenue_week.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_revenue_month(request):
+    data = get_revenue_analytics_data()
+    return render(request, 'accounts/analytics_revenue_month.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_revenue_year(request):
+    data = get_revenue_analytics_data()
+    return render(request, 'accounts/analytics_revenue_year.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_orders(request):
+    data = get_orders_analytics_data()
+    return render(request, 'accounts/analytics_orders.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_orders_today(request):
+    data = get_orders_analytics_data()
+    return render(request, 'accounts/analytics_orders_today.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_orders_week(request):
+    data = get_orders_analytics_data()
+    return render(request, 'accounts/analytics_orders_week.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_orders_month(request):
+    data = get_orders_analytics_data()
+    return render(request, 'accounts/analytics_orders_month.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_orders_year(request):
+    data = get_orders_analytics_data()
+    return render(request, 'accounts/analytics_orders_year.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_orders_today_pending(request):
+    data = get_orders_analytics_data()
+    return render(request, 'accounts/analytics_orders_today_pending.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def analytics_orders_today_completed(request):
+    data = get_orders_analytics_data()
+    return render(request, 'accounts/analytics_orders_today_completed.html', {'analytics': data})
+
+
+@login_required(login_url='login')
+def manage_security(request):
+    return render(request, 'accounts/security.html')
+
+
+@login_required(login_url='login')
+def export_full_data_zip(request):
+    zip_buffer = io.BytesIO()
+
+    with zipfile.ZipFile(zip_buffer, 'w', zipfile.ZIP_DEFLATED) as zip_file:
+        # 1. Full Database JSON Backup
+        info_qs = RestaurantInfo.objects.all()
+        categories_qs = Category.objects.all()
+        products_qs = Product.objects.all()
+        deals_qs = Deal.objects.all()
+        reviews_qs = Review.objects.all()
+        feedback_qs = CustomerFeedback.objects.all()
+        orders_qs = Order.objects.all()
+        items_qs = OrderItem.objects.all()
+        visits_qs = DailyVisit.objects.all()
+
+        json_data = json.dumps({
+            'export_date': timezone.now().strftime('%Y-%m-%d %H:%M:%S'),
+            'restaurant_info': list(info_qs.values()),
+            'categories': list(categories_qs.values()),
+            'products': list(products_qs.values()),
+            'deals': list(deals_qs.values()),
+            'reviews': list(reviews_qs.values()),
+            'customer_feedback': list(feedback_qs.values()),
+            'orders': list(orders_qs.values()),
+            'order_items': list(items_qs.values()),
+            'daily_visits': list(visits_qs.values()),
+        }, indent=2, default=str)
+
+        zip_file.writestr('restaurant_data_backup.json', json_data)
+
+        # 2. Products Catalog CSV
+        prod_csv_io = io.StringIO()
+        p_writer = csv.writer(prod_csv_io)
+        p_writer.writerow(['ID', 'Item Code', 'Name', 'Category', 'Price (Rs)', 'Status', 'Tag', 'Description'])
+        for p in products_qs.select_related('category'):
+            p_writer.writerow([
+                p.pk,
+                p.item_code,
+                p.name,
+                p.category.name if p.category else '',
+                f"{p.price:.0f}",
+                'Available' if p.is_available else 'Out of Stock',
+                p.tag or '',
+                p.description or ''
+            ])
+        zip_file.writestr('products_catalog.csv', prod_csv_io.getvalue())
+
+        # 3. Special Deals CSV
+        deals_csv_io = io.StringIO()
+        d_writer = csv.writer(deals_csv_io)
+        d_writer.writerow(['ID', 'Item Code', 'Title', 'Price (Rs)', 'Status', 'Tag', 'Description'])
+        for d in deals_qs:
+            d_writer.writerow([
+                d.pk,
+                d.item_code,
+                d.title,
+                f"{d.price:.0f}",
+                'Active' if d.is_active else 'Inactive',
+                d.tag or '',
+                d.description or ''
+            ])
+        zip_file.writestr('special_deals.csv', deals_csv_io.getvalue())
+
+        # 4. Orders & Income CSV
+        orders_csv_io = io.StringIO()
+        o_writer = csv.writer(orders_csv_io)
+        o_writer.writerow(['Order ID', 'Date & Time', 'Customer Name', 'Phone', 'Address', 'Status', 'Payment', 'Total Price (Rs)', 'Items Summary', 'Notes'])
+        for o in orders_qs.order_by('-created_at'):
+            o_writer.writerow([
+                o.order_id,
+                o.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                o.customer_name,
+                o.customer_phone,
+                o.delivery_address or '',
+                o.order_status,
+                o.payment_status,
+                f"{o.total_price:.0f}",
+                o.items_summary,
+                o.order_notes or ''
+            ])
+        zip_file.writestr('orders_and_income.csv', orders_csv_io.getvalue())
+
+        # 5. Customer Feedback & Reviews CSV
+        fb_csv_io = io.StringIO()
+        f_writer = csv.writer(fb_csv_io)
+        f_writer.writerow(['ID', 'Date & Time', 'Customer Name', 'Email', 'Rating', 'Status', 'Comment'])
+        for f in feedback_qs.order_by('-created_at'):
+            f_writer.writerow([
+                f.pk,
+                f.created_at.strftime('%Y-%m-%d %H:%M:%S'),
+                f.customer_name,
+                f.email or '',
+                f.rating,
+                f.status,
+                f.comment or ''
+            ])
+        zip_file.writestr('customer_feedback.csv', fb_csv_io.getvalue())
+
+        # 6. Media Uploaded Images Folder
+        media_root = settings.MEDIA_ROOT
+        if os.path.exists(media_root):
+            for root, dirs, files in os.walk(media_root):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    rel_path = os.path.relpath(file_path, media_root)
+                    zip_file.write(file_path, os.path.join('images', rel_path))
+
     zip_buffer.seek(0)
     filename = f"delicious_food_stop_backup_{timezone.now().strftime('%Y%m%d_%H%M%S')}.zip"
     response = HttpResponse(zip_buffer.getvalue(), content_type='application/zip')
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
+
+
+# ==============================================================================
+# DINE-IN POS MANAGEMENT
+# ==============================================================================
+@login_required(login_url='login')
+def manage_pos(request):
+    categories = list(Category.objects.filter(is_active=True).exclude(slug='deals').order_by('display_order', 'id'))
+    products = list(Product.objects.filter(category__is_active=True).select_related('category').prefetch_related('variations').order_by('display_order', 'id'))
+    deals = list(Deal.objects.filter(is_active=True).order_by('-id'))
+    info = RestaurantInfo.objects.first()
+
+    context = {
+        'categories': categories,
+        'products': products,
+        'deals': deals,
+        'restaurant_info': info,
+    }
+    return render(request, 'accounts/pos.html', context)
+
+
+# ==============================================================================
+# ORDERS MANAGEMENT
+# ==============================================================================
+@login_required(login_url='login')
+def manage_orders(request):
+    status_filter = request.GET.get('status', 'all').strip()
+    type_filter = request.GET.get('type', 'all').strip()
+    search_query = request.GET.get('q', '').strip()
+
+    orders_qs = Order.objects.prefetch_related('items').all()
+
+    if status_filter in ['pending', 'completed', 'cancelled']:
+        orders_qs = orders_qs.filter(order_status=status_filter)
+
+    if type_filter in ['delivery', 'dine_in']:
+        orders_qs = orders_qs.filter(order_type=type_filter)
+
+    if search_query:
+        orders_qs = orders_qs.filter(
+            Q(order_id__icontains=search_query) |
+            Q(customer_name__icontains=search_query) |
+            Q(customer_phone__icontains=search_query) |
+            Q(delivery_address__icontains=search_query) |
+            Q(table_number__icontains=search_query)
+        )
+
+    paginator = Paginator(orders_qs, 10)
+    page_number = request.GET.get('page')
+    page_obj = paginator.get_page(page_number)
+
+    context = {
+        'orders': page_obj,
+        'current_status': status_filter,
+        'current_type': type_filter,
+        'search_query': search_query,
+        'all_count': Order.objects.count(),
+        'pending_count': Order.objects.filter(order_status='pending').count(),
+        'completed_count': Order.objects.filter(order_status='completed').count(),
+        'cancelled_count': Order.objects.filter(order_status='cancelled').count(),
+        'delivery_count': Order.objects.filter(order_type='delivery').count(),
+        'dine_in_count': Order.objects.filter(order_type='dine_in').count(),
+        'analytics': get_orders_analytics_data(),
+    }
+    return render(request, 'accounts/orders.html', context)
 
 
 # ==============================================================================
@@ -1010,8 +1272,6 @@ def export_full_data_zip(request):
 def manage_inventory(request):
     search_query = request.GET.get('q', '').strip()
     try:
-        # Force the database access here so a newly deployed app can recover
-        # before the template tries to count a table that has not been migrated.
         InventoryItem.objects.exists()
     except (OperationalError, ProgrammingError):
         call_command('migrate', interactive=False, verbosity=0)
@@ -1025,7 +1285,7 @@ def manage_inventory(request):
             Q(how_much_left__icontains=search_query)
         )
 
-    paginator = Paginator(inventory_qs, 15)
+    paginator = Paginator(inventory_qs, 12)
     page_number = request.GET.get('page')
     inventory_list = paginator.get_page(page_number)
 
@@ -1035,6 +1295,13 @@ def manage_inventory(request):
         'title': 'Inventory Management',
     }
     return render(request, 'accounts/inventory.html', context)
+
+
+@login_required(login_url='login')
+def inventory_detail(request, pk):
+
+    item = get_object_or_404(InventoryItem, pk=pk)
+    return render(request, 'accounts/inventory_detail.html', {'item': item})
 
 
 @login_required(login_url='login')
@@ -1091,4 +1358,3 @@ def inventory_delete(request, pk):
         'title': f"Delete Inventory Item — {item.item_name}",
     }
     return render(request, 'accounts/inventory_confirm_delete.html', context)
-

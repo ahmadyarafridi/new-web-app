@@ -21,9 +21,9 @@
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         
-        <div class="dashboard-form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px;">
+        <div class="dashboard-form-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 10px;">
             <!-- ITEM NAME -->
-            <div class="dashboard-form-group floating-group">
+            <div class="dashboard-form-group floating-group" style="margin-bottom: 0 !important;">
                 {{ form.item_name }}
                 <label for="{{ form.item_name.id_for_label }}" class="floating-label">Item Name</label>
                 {% if form.item_name.errors %}
@@ -32,7 +32,7 @@
             </div>
 
             <!-- ITEM QUANTITY -->
-            <div class="dashboard-form-group floating-group">
+            <div class="dashboard-form-group floating-group" style="margin-bottom: 0 !important;">
                 {{ form.item_quantity }}
                 <label for="{{ form.item_quantity.id_for_label }}" class="floating-label">Item Quantity</label>
                 {% if form.item_quantity.errors %}
@@ -41,7 +41,7 @@
             </div>
 
             <!-- DATE BOUGHT -->
-            <div class="dashboard-form-group floating-group">
+            <div class="dashboard-form-group floating-group" style="margin-bottom: 0 !important;">
                 {{ form.date_bought }}
                 <label for="{{ form.date_bought.id_for_label }}" class="floating-label">Date Bought</label>
                 {% if form.date_bought.errors %}
@@ -50,17 +50,16 @@
             </div>
 
             <!-- HOW MUCH LEFT -->
-            <div class="dashboard-form-group floating-group">
+            <div class="dashboard-form-group floating-group" style="margin-bottom: 0 !important;">
                 {{ form.how_much_left }}
                 <label for="{{ form.how_much_left.id_for_label }}" class="floating-label">How Much Left</label>
-                <div style="font-size: 0.74rem; color: var(--color-text-gray); margin-top: 2px;">e.g. 5 kg, 12 packs, 50%</div>
                 {% if form.how_much_left.errors %}
                 <div style="color: #ef5350; font-size: 0.78rem; margin-top: 4px;">{{ form.how_much_left.errors.0 }}</div>
                 {% endif %}
             </div>
 
             <!-- LAST UPDATED -->
-            <div class="dashboard-form-group floating-group full-width">
+            <div class="dashboard-form-group floating-group full-width" style="margin-bottom: 0 !important;">
                 {{ form.last_updated }}
                 <label for="{{ form.last_updated.id_for_label }}" class="floating-label">Last Updated</label>
                 <div style="font-size: 0.74rem; color: var(--color-text-gray); margin-top: 2px;">Date when stock was last inspected or updated</div>
@@ -71,14 +70,38 @@
         </div>
 
         <!-- STANDARDIZED BOTTOM BUTTON BAR -->
-        <div style="margin-top: 32px; padding-top: 20px; border-top: 1px solid var(--color-border); display: flex; justify-content: flex-start; align-items: center; gap: 12px;">
-            <a href="{% url 'manage_inventory' %}" class="btn-secondary" style="padding: 10px 22px; font-size: 0.85rem; font-weight: 700; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; gap: 8px;">
-                <i class="fa-solid fa-arrow-left"></i> Back to Inventory
+        <div class="form-button-bar" style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--color-border); display: flex; justify-content: flex-start; align-items: center; gap: 12px; flex-wrap: wrap;">
+            <a href="{% url 'manage_inventory' %}" class="btn-secondary" style="padding: 10px 20px; font-size: 0.85rem; font-weight: 700; border-radius: 8px; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; gap: 8px;">
+                <i class="fa-solid fa-arrow-left"></i> Back
             </a>
-            <button type="submit" class="btn-primary" style="padding: 10px 24px; font-size: 0.85rem; font-weight: 700; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px;">
+            <button type="submit" class="btn-primary" style="padding: 10px 24px; font-size: 0.85rem; font-weight: 700; border-radius: 8px; cursor: pointer; display: inline-flex; align-items: center; justify-content: center; gap: 8px; flex: 1; min-width: 180px;">
                 <i class="fa-solid fa-floppy-disk"></i> Save Inventory Item
             </button>
         </div>
     </form>
 </div>
+
+<style>
+.dashboard-form-group.floating-group {
+    margin-bottom: 0 !important;
+}
+
+@media (max-width: 576px) {
+    .dashboard-card {
+        padding: 18px 14px !important;
+    }
+
+    .form-button-bar {
+        flex-direction: column-reverse !important;
+        align-items: stretch !important;
+    }
+
+    .form-button-bar a,
+    .form-button-bar button {
+        width: 100% !important;
+    }
+}
+</style>
 {% endblock %}
+
+
