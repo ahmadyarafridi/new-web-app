@@ -21,15 +21,30 @@
             {% endif %}
         </div>
         
-        <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Name:</strong> <span style="color: #fff; font-weight: 700;">{{ order.customer_name }}</span></p>
+        <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Order Type:</strong> 
+            {% if order.order_type == 'dine_in' %}
+            <span style="color: var(--color-primary); font-weight: 700;"><i class="fa-solid fa-utensils"></i> Dine-in</span>
+            {% if order.table_number %}<span style="color: #fff; font-weight: 700; margin-left: 6px;">({{ order.table_number }})</span>{% endif %}
+            {% else %}
+            <span style="color: #64b5f6; font-weight: 700;"><i class="fa-solid fa-motorcycle"></i> Online Delivery</span>
+            {% endif %}
+        </p>
+        <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Payment Method:</strong> <span style="color: #fff; font-weight: 700; text-transform: uppercase;">{{ order.payment_method }} (CASH)</span></p>
+        <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Customer Name:</strong> <span style="color: #fff; font-weight: 700;">{{ order.customer_name }}</span></p>
         <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Phone:</strong> <a href="tel:{{ order.customer_phone }}" style="color: var(--color-primary); font-weight: 700; text-decoration: none;">{{ order.customer_phone }}</a></p>
         <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Order Items:</strong> <span style="color: #fff; font-weight: 600;">{{ order.items_summary }}</span></p>
         <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Total Price:</strong> <span style="color: var(--color-primary); font-weight: 700;">Rs. {{ order.total_price|floatformat:0 }}</span></p>
         <p style="margin: 8px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Order Time:</strong> <span style="color: #fff;">{{ order.created_at|date:"F d, Y - g:i A" }}</span></p>
 
-        <p style="margin: 12px 0 4px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Delivery Address:</strong></p>
+        <p style="margin: 12px 0 4px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Delivery Address / Table Info:</strong></p>
         <p style="font-size: 0.82rem; color: #fff; line-height: 1.5; margin: 0 0 12px 0;">
-            {% if order.delivery_address %}{{ order.delivery_address }}{% else %}<span style="color: var(--color-text-gray);">Self Pickup / Dine-in</span>{% endif %}
+            {% if order.order_type == 'dine_in' %}
+            <span style="color: var(--color-primary); font-weight: 700;">Dine-in Order &bull; {% if order.table_number %}{{ order.table_number }}{% else %}Table 1{% endif %}</span>
+            {% elif order.delivery_address %}
+            {{ order.delivery_address }}
+            {% else %}
+            <span style="color: var(--color-text-gray);">Online Delivery</span>
+            {% endif %}
         </p>
 
         <p style="margin: 8px 0 4px 0; font-size: 0.85rem;"><strong style="color: var(--color-text-gray);">Order Notes:</strong></p>
@@ -37,10 +52,15 @@
             {% if order.order_notes %}"{{ order.order_notes }}"{% else %}<span style="color: var(--color-text-gray);">No special instructions provided.</span>{% endif %}
         </p>
 
-        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1);">
+        <div style="margin-top: 15px; padding-top: 15px; border-top: 1px dashed rgba(255,255,255,0.1); display: flex; gap: 10px; flex-wrap: wrap;">
             <a href="{{ wa_url }}" target="_blank" class="btn-primary" style="padding: 9px 18px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; background: #25D366; border-color: #25D366; color: #000; font-weight: 700; border-radius: 6px; text-decoration: none;">
                 <i class="fa-brands fa-whatsapp" style="font-size: 1rem;"></i> Chat on WhatsApp
             </a>
+            {% if order.order_status == 'completed' %}
+            <button type="button" onclick="printCustomerBill()" class="btn-secondary" style="padding: 9px 18px; font-size: 0.78rem; display: inline-flex; align-items: center; gap: 6px; background: var(--color-primary); border-color: var(--color-primary); color: #000; font-weight: 700; border-radius: 6px; cursor: pointer;">
+                <i class="fa-solid fa-receipt" style="font-size: 1rem;"></i> Print Bill Receipt
+            </button>
+            {% endif %}
         </div>
     </div>
 
@@ -84,7 +104,158 @@
 
 </div>
 
+<!-- THERMAL PRINTABLE RECEIPT TEMPLATE (CUSTOMER BILL) -->
+<div id="thermalReceipt" style="display: none;">
+    <div style="text-align: center; margin-bottom: 10px;">
+        <h3 style="margin: 0; font-size: 16px; font-weight: bold; text-transform: uppercase; letter-spacing: 1px;">
+            {% if restaurant_info.name %}{{ restaurant_info.name }}{% else %}AMAZING FOODS{% endif %}
+        </h3>
+        <p style="margin: 2px 0 0 0; font-size: 11px;">
+            {% if restaurant_info.tagline %}{{ restaurant_info.tagline }}{% else %}Fast Food & Restaurant{% endif %}
+        </p>
+        <p style="margin: 2px 0 0 0; font-size: 11px;">
+            Ph: {% if restaurant_info.phone %}{{ restaurant_info.phone }}{% else %}+92 323 2870355{% endif %}
+        </p>
+        {% if restaurant_info.address %}
+        <p style="margin: 2px 0 0 0; font-size: 10px;">{{ restaurant_info.address }}</p>
+        {% endif %}
+    </div>
+
+    <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 6px 0; margin-bottom: 10px; font-size: 11px;">
+        <div style="display: flex; justify-content: space-between;">
+            <span><strong>Order #:</strong></span>
+            <span><strong>{{ order.order_id }}</strong></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+            <span>Order Type:</span>
+            <span><strong>{% if order.order_type == 'dine_in' %}Dine-in ({% if order.table_number %}{{ order.table_number }}{% else %}Table 1{% endif %}){% else %}Online Delivery{% endif %}</strong></span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+            <span>Date:</span>
+            <span>{{ order.created_at|date:"d/m/Y g:i A" }}</span>
+        </div>
+        <div style="display: flex; justify-content: space-between; margin-top: 2px;">
+            <span>Payment:</span>
+            <span>CASH</span>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 10px; font-size: 11px;">
+        <div><strong>Customer:</strong> {{ order.customer_name }}</div>
+        {% if order.order_type == 'dine_in' %}
+        <div><strong>Table #:</strong> {% if order.table_number %}{{ order.table_number }}{% else %}Table 1{% endif %}</div>
+        {% else %}
+        <div><strong>Phone:</strong> {{ order.customer_phone }}</div>
+        <div><strong>Address:</strong> {{ order.delivery_address }}</div>
+        {% endif %}
+        {% if order.order_notes %}
+        <div style="margin-top: 2px;"><strong>Notes:</strong> {{ order.order_notes }}</div>
+        {% endif %}
+    </div>
+
+    <div style="border-top: 1px dashed #000; padding-top: 6px; margin-bottom: 10px;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 11px; font-family: inherit;">
+            <thead>
+                <tr style="border-bottom: 1px dashed #000; text-align: left;">
+                    <th style="padding-bottom: 4px;">Item</th>
+                    <th style="padding-bottom: 4px; text-align: center; width: 35px;">Qty</th>
+                    <th style="padding-bottom: 4px; text-align: right; width: 65px;">Price</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in order.items.all %}
+                <tr>
+                    <td style="padding: 4px 0; vertical-align: top; word-break: break-word;">
+                        {{ item.product_name }}
+                        {% if item.variation_name %}
+                        <span style="font-size: 10px; display: block; color: #333;">({{ item.variation_name }})</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 4px 0; text-align: center; vertical-align: top;">{{ item.quantity }}</td>
+                    <td style="padding: 4px 0; text-align: right; vertical-align: top;">Rs. {{ item.subtotal|floatformat:0 }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="3" style="padding: 4px 0;">{{ order.items_summary }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <div style="border-top: 1px dashed #000; padding-top: 6px; margin-bottom: 10px; font-size: 11px;">
+        <div style="display: flex; justify-content: space-between; font-weight: bold; font-size: 13px;">
+            <span>TOTAL AMOUNT:</span>
+            <span>Rs. {{ order.total_price|floatformat:0 }}</span>
+        </div>
+    </div>
+
+    <div style="text-align: center; border-top: 1px dashed #000; padding-top: 10px; margin-top: 10px; font-size: 11px;">
+        <p style="margin: 0; font-weight: bold;">Thank You For Ordering!</p>
+        <p style="margin: 2px 0 0 0;">Enjoy Your Meal</p>
+    </div>
+</div>
+
+<style>
+@media print {
+    body {
+        background: #ffffff !important;
+        color: #000000 !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    body * {
+        visibility: hidden !important;
+    }
+
+    .printable-active, .printable-active * {
+        visibility: visible !important;
+    }
+
+    .printable-active {
+        display: block !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 80mm !important;
+        margin: 0 !important;
+        padding: 6mm 4mm !important;
+        background: #ffffff !important;
+        color: #000000 !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        font-size: 11px !important;
+        line-height: 1.3 !important;
+        box-sizing: border-box !important;
+    }
+
+    @page {
+        margin: 0;
+        size: auto;
+    }
+}
+</style>
+
 <script>
+function printCustomerBill() {
+    const receipt = document.getElementById('thermalReceipt');
+    let printContainer = document.getElementById('printContainerBill');
+
+    if (!printContainer) {
+        printContainer = document.createElement('div');
+        printContainer.id = 'printContainerBill';
+        document.body.appendChild(printContainer);
+    }
+
+    // This mirrors the working Dine-in POS print flow: place a visible
+    // printable receipt in the current page, then open the browser dialog.
+    printContainer.innerHTML = `<div class="printable-active">${receipt.innerHTML}</div>`;
+    setTimeout(() => {
+        window.print();
+        printContainer.innerHTML = '';
+    }, 100);
+}
+
 (function() {
     const params = new URLSearchParams(window.location.search);
     if (params.get('ref') === 'overview') {
@@ -97,3 +268,5 @@
 })();
 </script>
 {% endblock %}
+
+

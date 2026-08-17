@@ -1,0 +1,1290 @@
+{% extends 'accounts/dashboard_base.html' %}
+{% load static %}
+
+{% block title %}Dine-in POS — {{ restaurant_info.name|default:"Restaurant" }}{% endblock %}
+
+{% block dashboard_content %}
+<div class="pos-container">
+    
+    <!-- MAIN POS SPLIT LAYOUT (2 COLUMNS) -->
+    <div class="pos-layout">
+        
+        <!-- LEFT PANEL: MENU CATALOG & PRODUCTS -->
+        <div class="pos-menu-panel">
+            
+            <!-- HEADER & SEARCH -->
+            <div class="pos-header-row">
+                <div class="pos-title-area">
+                    <h2 class="pos-title"><i class="fa-solid fa-cash-register text-gold"></i> Dine-in POS</h2>
+                </div>
+                <div class="pos-search-box">
+                    <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                    <input type="text" id="posSearchInput" placeholder="Search food items..." onkeyup="filterPosProducts()">
+                </div>
+            </div>
+
+            <!-- CATEGORY FILTER PILLS -->
+            <div class="pos-category-bar">
+                <button type="button" class="pos-cat-btn active" onclick="filterCategory('all', this)">All Items</button>
+                {% for cat in categories %}
+                <button type="button" class="pos-cat-btn" onclick="filterCategory('cat-{{ cat.id }}', this)">{{ cat.name }}</button>
+                {% endfor %}
+                {% if deals %}
+                <button type="button" class="pos-cat-btn" onclick="filterCategory('cat-deals', this)"><i class="fa-solid fa-fire text-gold"></i> Deals</button>
+                {% endif %}
+            </div>
+
+            <!-- PRODUCTS & DEALS GRID -->
+            <div class="pos-products-grid" id="posProductsGrid">
+                {% for product in products %}
+                <div class="pos-product-card cat-{{ product.category.id }} {% if not product.is_available %}out-of-stock{% endif %}"
+                     data-name="{{ product.name|lower }}"
+                     data-id="{{ product.item_code|default:product.id }}"
+                     data-price="{{ product.price }}"
+                     data-available="{% if product.is_available %}true{% else %}false{% endif %}"
+                     onclick="handleProductClick({{ product.id }}, '{{ product.name|escapejs }}', {{ product.price }}, {% if product.is_available %}true{% else %}false{% endif %})">
+                    
+                    <div class="pos-card-img-wrap">
+                        {% if product.image_src %}
+                        <img src="{{ product.image_src }}" alt="{{ product.name }}" loading="lazy">
+                        {% else %}
+                        <div class="pos-card-placeholder"><i class="fa-solid fa-utensils"></i></div>
+                        {% endif %}
+                        {% if not product.is_available %}
+                        <div class="pos-stock-overlay">Out of Stock</div>
+                        {% endif %}
+                    </div>
+
+                    <div class="pos-card-body">
+                        <h4 class="pos-card-title">{{ product.name }}</h4>
+                        <div class="pos-card-footer">
+                            <span class="pos-card-price">Rs. {{ product.price|floatformat:0 }}</span>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                {% if product.variations.exists %}
+                                <span class="pos-var-badge">Sizes</span>
+                                {% endif %}
+                                <span class="pos-add-icon-btn" title="Add to Order"><i class="fa-solid fa-plus"></i></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- HIDDEN VARIATIONS DATA FOR MODAL -->
+                    <div id="vars-data-{{ product.id }}" style="display: none;">
+                        {% for var in product.variations.all %}
+                        <span data-var-id="{{ var.id }}" data-var-name="{{ var.name }}" data-var-price="{{ var.price }}"></span>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endfor %}
+
+                {% for deal in deals %}
+                <div class="pos-product-card cat-deals {% if not deal.is_active %}out-of-stock{% endif %}"
+                     data-name="{{ deal.name|lower }}"
+                     data-id="DEAL-{{ deal.id }}"
+                     data-price="{{ deal.price }}"
+                     data-available="{% if deal.is_active %}true{% else %}false{% endif %}"
+                     onclick="handleProductClick('DEAL-{{ deal.id }}', '{{ deal.name|escapejs }}', {{ deal.price }}, {% if deal.is_active %}true{% else %}false{% endif %})">
+                    
+                    <div class="pos-card-img-wrap">
+                        {% if deal.image_src %}
+                        <img src="{{ deal.image_src }}" alt="{{ deal.name }}" loading="lazy">
+                        {% else %}
+                        <div class="pos-card-placeholder"><i class="fa-solid fa-fire text-gold"></i></div>
+                        {% endif %}
+                    </div>
+
+                    <div class="pos-card-body">
+                        <h4 class="pos-card-title">{{ deal.name }}</h4>
+                        <div class="pos-card-footer">
+                            <span class="pos-card-price">Rs. {{ deal.price|floatformat:0 }}</span>
+                            <div style="display: flex; align-items: center; gap: 4px;">
+                                <span class="pos-var-badge gold">Deal</span>
+                                <span class="pos-add-icon-btn" title="Add to Order"><i class="fa-solid fa-plus"></i></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+
+        </div>
+
+        <!-- RIGHT PANEL: POS LIVE CART & CHECKOUT -->
+        <div class="pos-cart-panel" id="posCartPanel">
+            
+            <div class="pos-cart-header">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <i class="fa-solid fa-receipt text-gold"></i>
+                    <h3 style="margin: 0; font-size: 1.1rem; color: #fff;">Dine-in Order</h3>
+                </div>
+                <button type="button" class="pos-clear-btn" onclick="clearCart()"><i class="fa-solid fa-trash-can"></i> Clear</button>
+            </div>
+
+            <!-- TABLE NUMBER & CUSTOMER INFO -->
+            <div class="pos-table-section">
+                <div class="pos-field-row">
+                    <div class="floating-group" style="margin-bottom: 0 !important; flex: 1; position: relative;">
+                        <select id="posTableNumber" class="floating-input" style="background: var(--color-bg-deep); color: #fff; border: 1px solid var(--color-border); border-radius: 6px; padding: 10px 12px; font-size: 0.85rem; width: 100%; cursor: pointer;">
+                            <option value="Table 1" selected>Table 1</option>
+                            <option value="Table 2">Table 2</option>
+                            <option value="Table 3">Table 3</option>
+                            <option value="Table 4">Table 4</option>
+                            <option value="Table 5">Table 5</option>
+                            <option value="Table 6">Table 6</option>
+                            <option value="Table 7">Table 7</option>
+                            <option value="Table 8">Table 8</option>
+                            <option value="Table 9">Table 9</option>
+                            <option value="Table 10">Table 10</option>
+                            <option value="Table 11">Table 11</option>
+                            <option value="Table 12">Table 12</option>
+                            <option value="Table 13">Table 13</option>
+                            <option value="Table 14">Table 14</option>
+                            <option value="Table 15">Table 15</option>
+                        </select>
+                        <label for="posTableNumber" class="floating-label" style="transform: translateY(-50%) scale(0.82); top: 0; background: var(--color-bg-card); padding: 0 4px; color: var(--color-primary); font-weight: 600;"><i class="fa-solid fa-chair" style="margin-right: 4px;"></i> Select Table</label>
+                    </div>
+                </div>
+
+                <div class="floating-group" style="margin-top: 8px; margin-bottom: 0 !important;">
+                    <input type="text" id="posOrderNotes" class="floating-input" placeholder=" ">
+                    <label for="posOrderNotes" class="floating-label"><i class="fa-solid fa-pen-note" style="margin-right: 4px;"></i> Special Instructions / Notes</label>
+                </div>
+            </div>
+
+            <!-- CART ITEMS LIST -->
+            <div class="pos-cart-items" id="posCartItemsList">
+                <div class="pos-empty-cart">
+                    <i class="fa-solid fa-basket-shopping" style="font-size: 2.2rem; color: var(--color-border); margin-bottom: 8px;"></i>
+                    <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-gray);">No items in order cart.</p>
+                    <span style="font-size: 0.75rem; color: var(--color-text-gray);">Tap food items on the left to add</span>
+                </div>
+            </div>
+
+            <!-- CART SUMMARY & SUBMIT -->
+            <div class="pos-cart-summary">
+                <div class="pos-summary-row">
+                    <span>Items Count:</span>
+                    <strong id="posTotalCount">0 items</strong>
+                </div>
+                <div class="pos-summary-row grand-total">
+                    <span>Total Amount:</span>
+                    <strong id="posGrandTotal" style="color: var(--color-primary);">Rs. 0</strong>
+                </div>
+
+                <div class="pos-action-btns">
+                    <button type="button" id="btnSubmitDineIn" class="btn-primary pos-submit-btn" onclick="submitDineInOrder()">
+                        <i class="fa-solid fa-check-circle"></i> Submit Order
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- MOBILE STICKY BOTTOM CART BAR -->
+    <div class="pos-mobile-cart-bar" id="posMobileCartBar" onclick="toggleMobileCartSheet()">
+        <div style="display: flex; align-items: center; gap: 10px;">
+            <div class="pos-mobile-badge" id="mobileBadgeCount">0</div>
+            <div>
+                <div style="font-size: 0.75rem; color: #bbb;">Dine-in Order</div>
+                <strong id="mobileBadgeTotal" style="color: var(--color-primary); font-size: 0.95rem;">Rs. 0</strong>
+            </div>
+        </div>
+        <button type="button" class="btn-primary" style="padding: 6px 14px; font-size: 0.8rem; font-weight: 700; border-radius: 6px;">
+            View Order &rarr;
+        </button>
+    </div>
+
+</div>
+
+<!-- VARIATION SELECTION MODAL -->
+<div class="pos-modal-backdrop" id="variationModal" style="display: none;">
+    <div class="pos-modal-card">
+        <div class="pos-modal-header">
+            <h3 id="modalProductName" style="margin: 0; font-size: 1.1rem; color: #fff;">Select Variation</h3>
+            <button type="button" class="pos-modal-close" onclick="closeVariationModal()">&times;</button>
+        </div>
+        <div class="pos-modal-body" id="modalVariationsList">
+            <!-- VARIATION RADIO OPTIONS LOADED VIA JS -->
+        </div>
+        <div class="pos-modal-footer">
+            <button type="button" class="btn-secondary" onclick="closeVariationModal()" style="padding: 8px 16px; font-size: 0.82rem;">Cancel</button>
+            <button type="button" class="btn-primary" onclick="confirmVariationSelection()" style="padding: 8px 20px; font-size: 0.82rem; font-weight: 700;">Add To Order</button>
+        </div>
+    </div>
+</div>
+
+<!-- PRINT CONTAINERS FOR THERMAL RECEIPT & KOT -->
+<div id="printContainerBill" style="display: none;"></div>
+<div id="printContainerKOT" style="display: none;"></div>
+
+<style>
+/* ==========================================================================
+   DINE-IN POS STYLING (RESPONSIVE 2-COLUMN LAYOUT)
+   ========================================================================== */
+.pos-container {
+    padding: 10px 0 30px 0;
+}
+
+.pos-layout {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 16px;
+    align-items: start;
+}
+
+/* LEFT PANEL */
+.pos-menu-panel {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.pos-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.pos-title {
+    margin: 0;
+    font-size: 1.3rem;
+    color: #fff;
+}
+
+.pos-subtitle {
+    font-size: 0.78rem;
+    color: var(--color-text-gray);
+}
+
+.pos-search-box {
+    position: relative;
+    width: 240px;
+}
+
+.pos-search-box input {
+    width: 100%;
+    padding: 8px 12px 8px 34px;
+    background: var(--color-bg-deep);
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.82rem;
+    box-sizing: border-box;
+}
+
+.pos-search-box .search-icon {
+    position: absolute;
+    left: 11px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--color-text-gray);
+    font-size: 0.82rem;
+}
+
+/* CATEGORIES BAR */
+.pos-category-bar {
+    display: flex;
+    gap: 8px;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+}
+
+.pos-category-bar::-webkit-scrollbar {
+    display: none;
+}
+
+/* PRODUCT CATALOG: FILL THE MENU PANEL WITH A RESPONSIVE CARD GRID */
+.pos-products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 12px;
+    align-content: start;
+    overflow-y: auto;
+    max-height: calc(100vh - 275px);
+    padding: 2px 2px 8px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+}
+
+.pos-products-grid::-webkit-scrollbar {
+    width: 6px;
+}
+
+.pos-products-grid::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 999px;
+}
+
+.pos-cat-btn {
+    padding: 6px 14px;
+    background: var(--color-bg-deep);
+    border: 1px solid var(--color-border);
+    border-radius: 20px;
+    color: var(--color-text-gray);
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.2s ease;
+}
+
+.pos-cat-btn:hover,
+.pos-cat-btn.active {
+    background: var(--color-primary);
+    color: #111;
+    border-color: var(--color-primary);
+    font-weight: 700;
+}
+
+/* EXPLICIT POINTER CURSORS FOR DINE-IN POS INTERACTIVE ELEMENTS */
+.pos-cat-btn,
+.pos-product-card,
+.pos-qty-btn,
+.pos-remove-btn,
+.pos-clear-btn,
+.pos-submit-btn,
+.table-pill,
+.pos-var-option,
+#posTableNumber {
+    cursor: pointer !important;
+}
+
+/* ENHANCED FOOD ITEM CARDS STYLING (DINE-IN POS) */
+.pos-product-card {
+    background: var(--color-bg-deep);
+    border: 1.5px solid var(--color-border);
+    border-radius: 10px;
+    overflow: hidden;
+    cursor: pointer !important;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    display: flex;
+    flex-direction: column;
+    user-select: none;
+    position: relative;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+}
+
+.pos-product-card:hover {
+    border-color: var(--color-primary) !important;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 18px rgba(201,168,76,0.22);
+}
+
+.pos-product-card:active {
+    transform: scale(0.97);
+}
+
+.pos-product-card.out-of-stock {
+    opacity: 0.5;
+    cursor: not-allowed !important;
+    border-color: #444 !important;
+}
+
+.pos-card-img-wrap {
+    height: 90px;
+    width: 100%;
+    position: relative;
+    background: #111;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.pos-card-img-wrap img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+.pos-product-card:hover .pos-card-img-wrap img {
+    transform: scale(1.08);
+}
+
+.pos-card-placeholder {
+    color: var(--color-border);
+    font-size: 1.6rem;
+}
+
+.pos-stock-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    color: #ef5350;
+    font-size: 0.72rem;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.pos-card-body {
+    padding: 10px 9px 8px 9px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    flex: 1;
+    background: linear-gradient(180deg, var(--color-bg-deep) 0%, rgba(20,20,20,0.95) 100%);
+}
+
+.pos-card-title {
+    margin: 0 0 6px 0;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.25;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.pos-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+}
+
+.pos-card-price {
+    font-size: 0.84rem;
+    font-weight: 800;
+    color: var(--color-primary);
+}
+
+.pos-add-icon-btn {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(201,168,76,0.15);
+    border: 1px solid var(--color-primary);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.72rem;
+    font-weight: 800;
+    transition: all 0.2s ease;
+}
+
+.pos-product-card:hover .pos-add-icon-btn {
+    background: var(--color-primary);
+    color: #111;
+}
+
+.pos-var-badge {
+    font-size: 0.64rem;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: rgba(255,255,255,0.1);
+    color: #ccc;
+    font-weight: 600;
+}
+
+.pos-var-badge.gold {
+    background: rgba(201,168,76,0.2);
+    color: var(--color-primary);
+}
+
+/* RIGHT PANEL: FIXED POS CART SIDEBAR WITH INDEPENDENT SCROLLING */
+.pos-cart-panel {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: var(--border-radius-sm);
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 120px);
+    position: sticky;
+    top: 100px;
+    box-sizing: border-box;
+    overflow: hidden;
+}
+
+.pos-cart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.pos-clear-btn {
+    background: transparent;
+    border: none;
+    color: #ef5350;
+    font-size: 0.76rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.pos-table-section {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--color-border);
+    flex-shrink: 0;
+}
+
+.pos-field-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.pos-payment-tag {
+    background: rgba(76,175,80,0.15);
+    color: #81c784;
+    border: 1px solid rgba(76,175,80,0.3);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 0.76rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+}
+
+.pos-table-pills {
+    display: flex;
+    gap: 4px;
+    margin-top: 8px;
+    overflow-x: auto;
+}
+
+.table-pill {
+    padding: 3px 8px;
+    background: var(--color-bg-deep);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    color: #ccc;
+    font-size: 0.72rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.table-pill.active {
+    background: var(--color-primary);
+    color: #111;
+    border-color: var(--color-primary);
+    font-weight: 700;
+}
+
+/* CART ITEMS LIST (INDEPENDENT INTERNAL SCROLLING ONLY) */
+.pos-cart-items {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 10px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pos-cart-items::-webkit-scrollbar {
+    width: 5px;
+}
+
+.pos-cart-items::-webkit-scrollbar-thumb {
+    background: var(--color-primary);
+    border-radius: 4px;
+}
+
+.pos-cart-summary {
+    border-top: 1px solid var(--color-border);
+    padding-top: 12px;
+    flex-shrink: 0;
+}
+
+
+.pos-empty-cart {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 20px;
+}
+
+.pos-cart-item {
+    background: var(--color-bg-deep);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.pos-item-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.pos-item-title {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.pos-item-var {
+    font-size: 0.7rem;
+    color: var(--color-primary);
+}
+
+.pos-item-price {
+    font-size: 0.74rem;
+    color: var(--color-text-gray);
+}
+
+.pos-qty-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 4px;
+    padding: 2px 4px;
+}
+
+.pos-qty-btn {
+    background: transparent;
+    border: none;
+    color: #fff;
+    width: 22px;
+    height: 22px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.pos-qty-val {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--color-primary);
+    min-width: 16px;
+    text-align: center;
+}
+
+.pos-item-subtotal {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+    min-width: 55px;
+    text-align: right;
+}
+
+.pos-remove-btn {
+    background: transparent;
+    border: none;
+    color: #ef5350;
+    cursor: pointer;
+    font-size: 0.8rem;
+    padding: 2px;
+}
+
+/* CART SUMMARY */
+.pos-cart-summary {
+    border-top: 1px solid var(--color-border);
+    padding-top: 12px;
+}
+
+.pos-summary-row {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+    color: var(--color-text-gray);
+    margin-bottom: 4px;
+}
+
+.pos-summary-row.grand-total {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: #fff;
+    margin-top: 6px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--color-border);
+}
+
+.pos-action-btns {
+    margin-top: 10px;
+}
+
+.pos-submit-btn {
+    width: 100%;
+    padding: 11px;
+    font-size: 0.88rem;
+    font-weight: 700;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+/* MOBILE STICKY BOTTOM CART BAR */
+.pos-mobile-cart-bar {
+    display: none;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #181818;
+    border-top: 2px solid var(--color-primary);
+    padding: 10px 16px;
+    z-index: 999;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 -4px 16px rgba(0,0,0,0.5);
+}
+
+.pos-mobile-badge {
+    background: var(--color-primary);
+    color: #111;
+    font-weight: 800;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.78rem;
+}
+
+/* MODAL STYLES */
+.pos-modal-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.pos-modal-card {
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border);
+    border-radius: 10px;
+    width: 100%;
+    max-width: 380px;
+    overflow: hidden;
+}
+
+.pos-modal-header {
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--color-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pos-modal-close {
+    background: transparent;
+    border: none;
+    color: #ccc;
+    font-size: 1.3rem;
+    cursor: pointer;
+}
+
+.pos-modal-body {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.pos-var-option {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 12px;
+    background: var(--color-bg-deep);
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.pos-var-option:hover,
+.pos-var-option.selected {
+    border-color: var(--color-primary);
+    background: rgba(201,168,76,0.08);
+}
+
+.pos-modal-footer {
+    padding: 12px 16px;
+    border-top: 1px solid var(--color-border);
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+/* PRINTING MEDIA STYLES */
+@media print {
+    body {
+        background: #fff !important;
+        color: #000 !important;
+    }
+    body * {
+        visibility: hidden !important;
+    }
+    .printable-active, .printable-active * {
+        visibility: visible !important;
+    }
+    .printable-active {
+        display: block !important;
+        position: absolute !important;
+        left: 0 !important;
+        top: 0 !important;
+        width: 80mm !important;
+        padding: 6mm 4mm !important;
+        background: #fff !important;
+        color: #000 !important;
+        font-family: 'Courier New', Courier, monospace !important;
+        font-size: 11px !important;
+        line-height: 1.3 !important;
+        box-sizing: border-box !important;
+    }
+    @page { margin: 0; size: auto; }
+}
+
+/* MOBILE RESPONSIVE MEDIA QUERIES */
+@media (max-width: 991px) {
+    .pos-layout {
+        grid-template-columns: 1fr;
+    }
+    .pos-cart-panel {
+        position: fixed;
+        inset: 0;
+        z-index: 1000;
+        height: 100vh;
+        border-radius: 0;
+        display: none; /* Toggled via mobile bar */
+    }
+    .pos-cart-panel.mobile-open {
+        display: flex !important;
+    }
+    .pos-mobile-cart-bar {
+        display: flex;
+    }
+    .pos-products-grid {
+        max-height: none;
+    }
+}
+
+@media (max-width: 480px) {
+    .pos-products-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+    }
+    .pos-search-box {
+        width: 100%;
+    }
+}
+</style>
+
+<script>
+/* ==========================================================================
+   DINE-IN POS JAVASCRIPT LOGIC & CART ENGINE
+   ========================================================================== */
+
+let posCart = [];
+let selectedProductForModal = null;
+let selectedVariationForModal = null;
+
+// Initialize POS Cart on DOM Load
+document.addEventListener('DOMContentLoaded', function() {
+    loadSavedCart();
+    renderCart();
+});
+
+// Load cart from localStorage
+function loadSavedCart() {
+    try {
+        const saved = localStorage.getItem('pos_cart');
+        if (saved) {
+            posCart = JSON.parse(saved);
+        }
+    } catch (e) {
+        posCart = [];
+    }
+}
+
+// Save cart to localStorage
+function saveCart() {
+    try {
+        localStorage.setItem('pos_cart', JSON.stringify(posCart));
+    } catch (e) {}
+}
+
+// Filter Categories
+function filterCategory(catClass, btn) {
+    document.querySelectorAll('.pos-cat-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+
+    const cards = document.querySelectorAll('.pos-product-card');
+    cards.forEach(card => {
+        if (catClass === 'all' || card.classList.contains(catClass)) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Search Filter
+function filterPosProducts() {
+    const q = document.getElementById('posSearchInput').value.toLowerCase().trim();
+    const cards = document.querySelectorAll('.pos-product-card');
+    cards.forEach(card => {
+        const name = card.getAttribute('data-name') || '';
+        if (name.includes(q)) {
+            card.style.display = 'flex';
+        } else {
+            card.style.display = 'none';
+        }
+    });
+}
+
+// Set Quick Table Number
+function setTable(val, btn) {
+    document.getElementById('posTableNumber').value = val;
+    document.querySelectorAll('.table-pill').forEach(b => b.classList.remove('active'));
+    if (btn) btn.classList.add('active');
+}
+
+// Handle Product Card Click
+function handleProductClick(productId, productName, basePrice, isAvailable) {
+    if (!isAvailable) {
+        alert('"' + productName + '" is currently out of stock.');
+        return;
+    }
+
+    // Check if variations exist in hidden container
+    const varsContainer = document.getElementById('vars-data-' + productId);
+    if (varsContainer && varsContainer.children.length > 0) {
+        // Open Variation Modal
+        selectedProductForModal = { id: productId, name: productName, price: basePrice };
+        openVariationModal(productName, varsContainer);
+    } else {
+        // Direct Add to Cart
+        addToCart(productId, productName, '', basePrice);
+    }
+}
+
+// Open Variation Modal
+function openVariationModal(productName, varsContainer) {
+    document.getElementById('modalProductName').innerText = 'Select Size: ' + productName;
+    const list = document.getElementById('modalVariationsList');
+    list.innerHTML = '';
+
+    const spans = varsContainer.querySelectorAll('span');
+    selectedVariationForModal = null;
+
+    spans.forEach((span, idx) => {
+        const varId = span.getAttribute('data-var-id');
+        const varName = span.getAttribute('data-var-name');
+        const varPrice = parseFloat(span.getAttribute('data-var-price'));
+
+        const div = document.createElement('div');
+        div.className = 'pos-var-option' + (idx === 0 ? ' selected' : '');
+        div.onclick = function() {
+            document.querySelectorAll('.pos-var-option').forEach(o => o.classList.remove('selected'));
+            div.classList.add('selected');
+            selectedVariationForModal = { id: varId, name: varName, price: varPrice };
+        };
+        div.innerHTML = `
+            <span style="font-weight: 700; color: #fff;">${varName}</span>
+            <span style="font-weight: 700; color: var(--color-primary);">Rs. ${varPrice}</span>
+        `;
+        list.appendChild(div);
+
+        if (idx === 0) {
+            selectedVariationForModal = { id: varId, name: varName, price: varPrice };
+        }
+    });
+
+    document.getElementById('variationModal').style.display = 'flex';
+}
+
+function closeVariationModal() {
+    document.getElementById('variationModal').style.display = 'none';
+}
+
+function confirmVariationSelection() {
+    if (selectedProductForModal && selectedVariationForModal) {
+        addToCart(
+            selectedProductForModal.id,
+            selectedProductForModal.name,
+            selectedVariationForModal.name,
+            selectedVariationForModal.price,
+            selectedVariationForModal.id
+        );
+    }
+    closeVariationModal();
+}
+
+// Add Item to POS Cart
+function addToCart(productId, name, variationName, price, variationId) {
+    const itemKey = productId + '::' + (variationName || '');
+    const existing = posCart.find(i => i.key === itemKey);
+
+    if (existing) {
+        existing.quantity += 1;
+    } else {
+        posCart.push({
+            key: itemKey,
+            id: productId,
+            name: name,
+            variation_name: variationName || '',
+            variation_id: variationId || null,
+            price: parseFloat(price),
+            quantity: 1
+        });
+    }
+
+    saveCart();
+    renderCart();
+}
+
+// Change Quantity
+function updateQty(key, delta) {
+    const item = posCart.find(i => i.key === key);
+    if (!item) return;
+
+    item.quantity += delta;
+    if (item.quantity <= 0) {
+        posCart = posCart.filter(i => i.key !== key);
+    }
+
+    saveCart();
+    renderCart();
+}
+
+// Remove Item
+function removeItem(key) {
+    posCart = posCart.filter(i => i.key !== key);
+    saveCart();
+    renderCart();
+}
+
+// Clear Entire Cart
+function clearCart() {
+    if (posCart.length > 0 && !confirm('Are you sure you want to clear the current order cart?')) {
+        return;
+    }
+    posCart = [];
+    saveCart();
+    renderCart();
+}
+
+// Render Cart UI
+function renderCart() {
+    const list = document.getElementById('posCartItemsList');
+    if (!list) return;
+
+    let totalCount = 0;
+    let grandTotal = 0;
+
+    if (posCart.length === 0) {
+        list.innerHTML = `
+            <div class="pos-empty-cart">
+                <i class="fa-solid fa-basket-shopping" style="font-size: 2.2rem; color: var(--color-border); margin-bottom: 8px;"></i>
+                <p style="margin: 0; font-size: 0.85rem; color: var(--color-text-gray);">No items in order cart.</p>
+                <span style="font-size: 0.75rem; color: var(--color-text-gray);">Tap food items on the left to add</span>
+            </div>
+        `;
+    } else {
+        let html = '';
+        posCart.forEach(item => {
+            const subtotal = item.price * item.quantity;
+            totalCount += item.quantity;
+            grandTotal += subtotal;
+
+            html += `
+                <div class="pos-cart-item">
+                    <div class="pos-item-info">
+                        <h5 class="pos-item-title">${escapeHtml(item.name)}</h5>
+                        ${item.variation_name ? `<span class="pos-item-var">(${escapeHtml(item.variation_name)})</span>` : ''}
+                        <div class="pos-item-price">Rs. ${item.price} each</div>
+                    </div>
+                    <div class="pos-qty-controls">
+                        <button type="button" class="pos-qty-btn" onclick="updateQty('${item.key}', -1)">&minus;</button>
+                        <span class="pos-qty-val">${item.quantity}</span>
+                        <button type="button" class="pos-qty-btn" onclick="updateQty('${item.key}', 1)">&plus;</button>
+                    </div>
+                    <div class="pos-item-subtotal">Rs. ${subtotal}</div>
+                    <button type="button" class="pos-remove-btn" onclick="removeItem('${item.key}')" title="Remove">&times;</button>
+                </div>
+            `;
+        });
+        list.innerHTML = html;
+    }
+
+    // Update Totals
+    document.getElementById('posTotalCount').innerText = totalCount + (totalCount === 1 ? ' item' : ' items');
+    document.getElementById('posGrandTotal').innerText = 'Rs. ' + grandTotal;
+    
+    document.getElementById('mobileBadgeCount').innerText = totalCount;
+    document.getElementById('mobileBadgeTotal').innerText = 'Rs. ' + grandTotal;
+}
+
+// Toggle Mobile Cart Sheet
+function toggleMobileCartSheet() {
+    const panel = document.getElementById('posCartPanel');
+    panel.classList.toggle('mobile-open');
+}
+
+// HTML Escape Helper
+function escapeHtml(str) {
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+// Submit Dine-in Order POST
+function submitDineInOrder() {
+    if (posCart.length === 0) {
+        alert('Order cart is empty. Please add food items before submitting.');
+        return;
+    }
+
+    const tableNum = document.getElementById('posTableNumber').value.trim() || 'Table 1';
+    const custElem = document.getElementById('posCustomerName');
+    const customerName = (custElem && custElem.value.trim()) ? custElem.value.trim() : 'Walk-in Customer';
+    const notes = document.getElementById('posOrderNotes').value.trim();
+
+    const submitBtn = document.getElementById('btnSubmitDineIn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Submitting Order...';
+
+    const payload = {
+        table_number: tableNum,
+        customer_name: customerName,
+        order_notes: notes,
+        cart_items: posCart
+    };
+
+    fetch('{% url "api_create_dinein_order" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(res => res.json())
+    .then(data => {
+        if (data.status === 'success') {
+            // Clear cart
+            posCart = [];
+            saveCart();
+            renderCart();
+
+            alert('Dine-in Order #' + data.order_id + ' submitted successfully!');
+        } else {
+            alert('Error: ' + (data.message || 'Failed to submit order.'));
+        }
+    })
+    .catch(err => {
+        alert('Network error: Unable to process order. Please try again.');
+    })
+    .finally(() => {
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '<i class="fa-solid fa-check-circle"></i> Submit Order';
+    });
+}
+
+// Render and Print Customer Bill
+function renderAndPrintBill(orderData) {
+    const container = document.getElementById('printContainerBill');
+    let itemsHtml = '';
+    orderData.items.forEach(i => {
+        itemsHtml += `
+            <tr>
+                <td style="padding: 4px 0; vertical-align: top;">
+                    ${escapeHtml(i.product_name)}
+                    ${i.variation_name ? `<span style="font-size: 10px; display: block; color: #333;">(${escapeHtml(i.variation_name)})</span>` : ''}
+                </td>
+                <td style="padding: 4px 0; text-align: center; vertical-align: top;">${i.quantity}</td>
+                <td style="padding: 4px 0; text-align: right; vertical-align: top;">Rs. ${i.subtotal}</td>
+            </tr>
+        `;
+    });
+
+    container.innerHTML = `
+        <div class="printable-active">
+            <div style="text-align: center; margin-bottom: 10px;">
+                <h3 style="margin: 0; font-size: 16px; font-weight: bold; text-transform: uppercase;">
+                    ${'{{ restaurant_info.name|escapejs }}' || 'AMAZING FOODS'}
+                </h3>
+                <p style="margin: 2px 0 0 0; font-size: 11px;">Ph: ${'{{ restaurant_info.phone|escapejs }}' || '+92 323 2870355'}</p>
+            </div>
+            <div style="border-top: 1px dashed #000; border-bottom: 1px dashed #000; padding: 6px 0; margin-bottom: 10px; font-size: 11px;">
+                <div style="display: flex; justify-content: space-between;">
+                    <span><strong>Order #:</strong></span>
+                    <span><strong>${orderData.order_id}</strong></span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Table #:</span>
+                    <span><strong>${escapeHtml(orderData.table_number)}</strong></span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Date:</span>
+                    <span>${orderData.created_at}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between;">
+                    <span>Payment:</span>
+                    <span>CASH</span>
+                </div>
+            </div>
+            <table style="width: 100%; border-collapse: collapse; font-size: 11px; font-family: inherit;">
+                <thead>
+                    <tr style="border-bottom: 1px dashed #000; text-align: left;">
+                        <th>Item</th>
+                        <th style="text-align: center; width: 35px;">Qty</th>
+                        <th style="text-align: right; width: 65px;">Price</th>
+                    </tr>
+                </thead>
+                <tbody>${itemsHtml}</tbody>
+            </table>
+            <div style="border-top: 1px dashed #000; padding-top: 6px; margin-top: 10px; font-size: 13px; font-weight: bold; display: flex; justify-content: space-between;">
+                <span>TOTAL AMOUNT:</span>
+                <span>Rs. ${orderData.total_price}</span>
+            </div>
+            <div style="text-align: center; border-top: 1px dashed #000; padding-top: 10px; margin-top: 10px; font-size: 11px;">
+                <p style="margin: 0; font-weight: bold;">Thank You For Dining With Us!</p>
+            </div>
+        </div>
+    `;
+
+    setTimeout(() => {
+        window.print();
+        container.innerHTML = '';
+    }, 100);
+}
+</script>
+{% endblock %}
