@@ -646,16 +646,33 @@ document.addEventListener('DOMContentLoaded', () => {
         localStorage.setItem('delicious_food_stop_cart', JSON.stringify(cart));
     };
 
-    // Sidebar Toggling
-    const toggleCart = () => {
-        if (cartSidebar) cartSidebar.classList.toggle('active');
-        if (cartOverlay) cartOverlay.classList.toggle('active');
+    // Sidebar Toggling with Background Blur & Scroll Lock
+    const toggleCart = (forceState) => {
+        const willBeActive = typeof forceState === 'boolean'
+            ? forceState
+            : !(cartSidebar && cartSidebar.classList.contains('active'));
+
+        if (cartSidebar) cartSidebar.classList.toggle('active', willBeActive);
+        if (cartOverlay) cartOverlay.classList.toggle('active', willBeActive);
+
+        if (willBeActive) {
+            document.body.classList.add('cart-open');
+        } else {
+            document.body.classList.remove('cart-open');
+        }
     };
 
-    if (cartToggleBtn) cartToggleBtn.addEventListener('click', toggleCart);
-    if (closeCartBtn) closeCartBtn.addEventListener('click', toggleCart);
-    if (cartOverlay) cartOverlay.addEventListener('click', toggleCart);
-    if (mobileCartFab) mobileCartFab.addEventListener('click', toggleCart);
+    if (cartToggleBtn) cartToggleBtn.addEventListener('click', () => toggleCart());
+    if (closeCartBtn) closeCartBtn.addEventListener('click', () => toggleCart(false));
+    if (cartOverlay) cartOverlay.addEventListener('click', () => toggleCart(false));
+    if (mobileCartFab) mobileCartFab.addEventListener('click', () => toggleCart());
+
+    // Close cart on Escape key
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && cartSidebar && cartSidebar.classList.contains('active')) {
+            toggleCart(false);
+        }
+    });
 
     // Add To Order Action (Global Delegation for Deal Cards and Menu Cards)
     document.addEventListener('click', (e) => {
@@ -954,7 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             // 1. Close cart sidebar drawer
             if (cartSidebar && cartSidebar.classList.contains('active')) {
-                toggleCart();
+                toggleCart(false);
             }
 
             // 2. Open Customer Details Modal

@@ -178,6 +178,41 @@ img {
     animation: rotateGold 3s infinite linear;
 }
 
+.cart-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s ease;
+}
+
+.cart-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+body.cart-open {
+    overflow: hidden !important;
+    touch-action: none;
+}
+
+body.cart-open #mobileCartFab,
+body.cart-open #cartToggleBtn,
+body.cart-open #backToTopBtn {
+    opacity: 0 !important;
+    visibility: hidden;
+    pointer-events: none !important;
+}
+
 .loader-bar {
     width: 100%;
     height: 2px;
@@ -2508,14 +2543,19 @@ footer hr {
     right: 0;
     bottom: 0;
     top: 0;
+    top: auto;
     width: 100%;
     max-width: 480px;
     margin: 0 auto;
-    height: 100%;
-    max-height: 100vh;
+    height: 585px;
+    min-height: 585px;
+    max-height: 85.8vh;
+    border-radius: 24px 24px 0 0;
     background-color: var(--color-bg-card);
     border-left: 1px solid var(--color-border);
     border-right: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-border);
+    border-bottom: none;
     z-index: 1001;
     display: flex;
     flex-direction: column;
@@ -4436,7 +4476,8 @@ body.product-modal-open #backToTopBtn {
         align-items: flex-end;
     }
 
-    .product-modal-container {
+    .product-modal-container,
+    .cart-sidebar {
         border-radius: 24px 24px 0 0;
         max-width: 100%;
         height: 88vh;
@@ -4541,3 +4582,42 @@ body.product-modal-open #backToTopBtn {
         border-radius: 12px;
     }
 }
+
+/* ==========================================================================
+   CART BACKDROP BLUR OVERLAY & UNIFIED SCROLL LOCK
+   ========================================================================== */
+.cart-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    z-index: 1000000;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transition: opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1), visibility 0.3s ease;
+}
+
+.cart-overlay.active {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+}
+
+body.cart-open {
+    overflow: hidden !important;
+    touch-action: none;
+}
+
+body.cart-open #mobileCartFab,
+body.cart-open #cartToggleBtn,
+body.cart-open #backToTopBtn {
+    opacity: 0 !important;
+    visibility: hidden;
+    pointer-events: none !important;
+}
+

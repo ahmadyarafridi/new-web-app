@@ -285,27 +285,25 @@ def contact(request):
 
 @csrf_exempt
 def api_create_order(request):
-    if request.method == 'POST':
-        try:
-            info = RestaurantInfo.objects.first()
-            if info and not info.is_open:
-                return JsonResponse({'status': 'error', 'message': 'Ordering is currently unavailable because the restaurant is closed. Please visit again during our opening hours.'}, status=403)
+    if request.method != 'POST':
+        return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
 
-            data = json.loads(request.body)
-            customer_name = data.get('customer_name', '').strip() or 'Website Customer'
-            customer_phone = data.get('customer_phone', '').strip() or 'N/A (Website Order)'
-            delivery_address = data.get('delivery_address', '').strip() or 'Website Direct Order'
-            order_notes = data.get('order_notes', '').strip()
-            cart_items = data.get('cart_items', [])
+    try:
+        info = RestaurantInfo.objects.first()
+        if info and not info.is_open:
+            return JsonResponse({'status': 'error', 'message': 'Ordering is currently unavailable because the restaurant is closed. Please visit again during our opening hours.'}, status=403)
 
-            if not cart_items:
-                return JsonResponse({'status': 'error', 'message': 'Cart is empty.'}, status=400)
+        data = json.loads(request.body)
+        customer_name = data.get('customer_name', '').strip() or 'Website Customer'
+        customer_phone = data.get('customer_phone', '').strip() or 'N/A (Website Order)'
+        delivery_address = data.get('delivery_address', '').strip() or 'Website Direct Order'
+        order_notes = data.get('order_notes', '').strip()
+        cart_items = data.get('cart_items', [])
 
-            # Generate unique order_id: e.g. DFS-20260723-8492
-            today_str = timezone.now().strftime('%Y%m%d')
-            rand_num = random.randint(1000, 9999)
-            order_id = f"DFS-{today_str}-{rand_num}"
+        if not cart_items:
+            return JsonResponse({'status': 'error', 'message': 'Cart is empty.'}, status=400)
 
+        with transaction.atomic():
             # Validate stock availability for all cart items first
             for item_data in cart_items:
                 item_code = str(item_data.get('id', ''))
@@ -319,6 +317,19 @@ def api_create_order(request):
                         'message': f'"{product_obj.name}" is currently out of stock. Please remove it from your cart before checkout.'
                     }, status=400)
 
+            # Generate collision-safe unique order_id: e.g. DFS-20260820-8492
+            today_str = timezone.now().strftime('%Y%m%d')
+            order_id = None
+            for _ in range(100):
+                rand_num = random.randint(1000, 9999)
+                candidate_id = f"DFS-{today_str}-{rand_num}"
+                if not Order.objects.filter(order_id=candidate_id).exists():
+                    order_id = candidate_id
+                    break
+
+            if not order_id:
+                order_id = f"DFS-{today_str}-{random.randint(10000, 99999)}"
+
             total_price = 0
             order = Order.objects.create(
                 order_id=order_id,
@@ -329,6 +340,7 @@ def api_create_order(request):
                 total_price=0,
                 order_status='pending',
                 payment_status='unpaid',
+                order_type='delivery',
             )
 
             for item_data in cart_items:
@@ -336,7 +348,6 @@ def api_create_order(request):
                 item_code = str(item_data.get('id', ''))
                 qty = int(item_data.get('quantity', 1))
                 price = float(item_data.get('price', 0))
-                # variation_name is optional — empty string when no variation applies
                 variation_name = str(item_data.get('variation_name', '')).strip()
                 subtotal = price * qty
                 total_price += subtotal
@@ -359,7 +370,7 @@ def api_create_order(request):
             order.total_price = total_price
             order.save()
 
-            # Create Real-Time Order Notification
+            # Create Real-Time Order Notification for Admin Panel chime & badge
             OrderNotification.objects.create(
                 order=order,
                 title=f"New Web Order #{order.order_id}",
@@ -376,10 +387,8 @@ def api_create_order(request):
                 'total_price': total_price,
             })
 
-        except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
-
-    return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
+    except Exception as e:
+        return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
 
 
 from django.db import transaction

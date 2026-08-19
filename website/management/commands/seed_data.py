@@ -346,9 +346,7 @@ class Command(BaseCommand):
                     ('burger-poster.jpg', 'image', 'hero_videos/burger-poster'),
                     ('pizza-poster.jpg', 'image', 'hero_videos/pizza-poster'),
                     ('Explode_Burger.mp4', 'video', 'hero_videos/Explode_Burger'),
-                    ('Explode_Burger.webm', 'video', 'hero_videos/Explode_Burger'),
                     ('Explode_Pizza.mp4', 'video', 'hero_videos/Explode_Pizza'),
-                    ('Explode_Pizza.webm', 'video', 'hero_videos/Explode_Pizza'),
                 ]
                 for filename, rtype, pub_id in assets_to_upload:
                     file_path = hero_dir / filename
