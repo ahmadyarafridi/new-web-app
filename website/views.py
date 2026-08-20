@@ -8,6 +8,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.db.models import F
 from .models import RestaurantInfo, Category, Product, Deal, Review, CustomerFeedback, Order, OrderItem, DailyVisit, OrderNotification
 from .forms import CustomerFeedbackForm
+from .order_schema import ensure_order_columns
 
 from django.db import OperationalError, ProgrammingError
 from django.core.management import call_command
@@ -289,6 +290,7 @@ def api_create_order(request):
         return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
 
     try:
+        ensure_order_columns()
         info = RestaurantInfo.objects.first()
         if info and not info.is_open:
             return JsonResponse({'status': 'error', 'message': 'Ordering is currently unavailable because the restaurant is closed. Please visit again during our opening hours.'}, status=403)
@@ -406,6 +408,7 @@ def api_create_dinein_order(request):
         return JsonResponse({'status': 'error', 'message': 'Authentication required to place POS orders.'}, status=401)
 
     try:
+        ensure_order_columns()
         data = json.loads(request.body)
         table_number = data.get('table_number', '').strip() or 'Table 1'
         customer_name = data.get('customer_name', '').strip() or 'Walk-in Customer'
