@@ -983,7 +983,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     if (customerCheckoutForm) {
-        customerCheckoutForm.addEventListener('submit', (e) => {
+        customerCheckoutForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             
             const name = custNameInput ? custNameInput.value.trim() : '';
@@ -1001,9 +1001,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 return false;
             }
 
-            // 1. Open WhatsApp with formatted message including customer details
+            // Open a blank tab while this click is still user-initiated. It is
+            // redirected to WhatsApp only after the order has been saved.
             const waUrl = `https://wa.me/${WHATSAPP_NUMBER}?text=${encodeURIComponent(buildWhatsAppMessage(name, phone, address))}`;
-            window.open(waUrl, '_blank') || (window.location.href = waUrl);
+            const whatsappWindow = window.open('', '_blank');
 
             // 2. Save order to backend database with customer details
             // Map cart items to the shape api_create_order expects:
@@ -1023,28 +1024,38 @@ document.addEventListener('DOMContentLoaded', () => {
                 cart_items: cartPayload
             });
 
-            const doOrderSync = (attempt) => {
-                fetch('/create-order/', {
+            const submitButton = customerCheckoutForm.querySelector('button[type="submit"]');
+            if (submitButton) {
+                submitButton.disabled = true;
+                submitButton.textContent = 'Saving order...';
+            }
+
+            try {
+                const response = await fetch('/create-order/', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: orderPayload
                 })
-                .then(res => {
-                    if (!res.ok) {
-                        res.text().then(t => console.warn('[Order Sync] Server error (attempt ' + attempt + '):', res.status, t));
-                        if (attempt < 2) setTimeout(() => doOrderSync(attempt + 1), 3000);
-                    } else {
-                        res.json().then(d => {
-                            if (d.status !== 'success') console.warn('[Order Sync] Error response:', d.message);
-                        }).catch(() => {});
-                    }
-                })
-                .catch(err => {
-                    console.warn('[Order Sync] Network error (attempt ' + attempt + '):', err);
-                    if (attempt < 2) setTimeout(() => doOrderSync(attempt + 1), 3000);
-                });
-            };
-            doOrderSync(1);
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok || result.status !== 'success') {
+                    throw new Error(result.message || 'Unable to save your order. Please try again.');
+                }
+            } catch (error) {
+                if (whatsappWindow) whatsappWindow.close();
+                alert(error.message || 'Unable to save your order. Please try again.');
+                return;
+            } finally {
+                if (submitButton) {
+                    submitButton.disabled = false;
+                    submitButton.innerHTML = '<i class="fa-brands fa-whatsapp" style="font-size: 1.1rem;"></i> Confirm & Send via WhatsApp';
+                }
+            }
+
+            if (whatsappWindow) {
+                whatsappWindow.location.href = waUrl;
+            } else {
+                window.location.href = waUrl;
+            }
 
             // 3. Populate confirmation modal order items
             if (modalOrderItems) {
