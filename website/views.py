@@ -6,7 +6,7 @@ from django.http import JsonResponse
 from django.utils import timezone
 from django.views.decorators.csrf import csrf_exempt
 from django.db.models import F
-from .models import RestaurantInfo, Category, Product, Deal, Review, CustomerFeedback, Order, OrderItem, DailyVisit, OrderNotification
+from .models import RestaurantInfo, Category, Product, ProductVariation, Deal, Review, CustomerFeedback, Order, OrderItem, DailyVisit, OrderNotification
 from .forms import CustomerFeedbackForm
 from .order_schema import ensure_order_columns
 
