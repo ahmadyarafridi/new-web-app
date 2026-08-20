@@ -1015,17 +1015,36 @@ document.addEventListener('DOMContentLoaded', () => {
                 quantity: item.quantity,
                 variation_name: item.variationName || ''
             }));
-            fetch('/create-order/', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    customer_name: name,
-                    customer_phone: phone,
-                    delivery_address: address,
-                    order_notes: '',
-                    cart_items: cartPayload
+            const orderPayload = JSON.stringify({
+                customer_name: name,
+                customer_phone: phone,
+                delivery_address: address,
+                order_notes: '',
+                cart_items: cartPayload
+            });
+
+            const doOrderSync = (attempt) => {
+                fetch('/create-order/', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: orderPayload
                 })
-            }).catch(err => console.log('Background order sync error:', err));
+                .then(res => {
+                    if (!res.ok) {
+                        res.text().then(t => console.warn('[Order Sync] Server error (attempt ' + attempt + '):', res.status, t));
+                        if (attempt < 2) setTimeout(() => doOrderSync(attempt + 1), 3000);
+                    } else {
+                        res.json().then(d => {
+                            if (d.status !== 'success') console.warn('[Order Sync] Error response:', d.message);
+                        }).catch(() => {});
+                    }
+                })
+                .catch(err => {
+                    console.warn('[Order Sync] Network error (attempt ' + attempt + '):', err);
+                    if (attempt < 2) setTimeout(() => doOrderSync(attempt + 1), 3000);
+                });
+            };
+            doOrderSync(1);
 
             // 3. Populate confirmation modal order items
             if (modalOrderItems) {

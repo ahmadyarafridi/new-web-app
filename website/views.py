@@ -371,15 +371,18 @@ def api_create_order(request):
             order.save()
 
             # Create Real-Time Order Notification for Admin Panel chime & badge
-            OrderNotification.objects.create(
-                order=order,
-                title=f"New Web Order #{order.order_id}",
-                message=f"Received order from {order.customer_name} for Rs. {total_price:.0f}",
-                customer_name=order.customer_name,
-                total_price=total_price,
-                notification_type='new_order',
-                is_read=False
-            )
+            try:
+                OrderNotification.objects.create(
+                    order=order,
+                    title=f"New Web Order #{order.order_id}",
+                    message=f"Received order from {order.customer_name} for Rs. {total_price:.0f}",
+                    customer_name=order.customer_name,
+                    total_price=total_price,
+                    notification_type='new_order',
+                    is_read=False
+                )
+            except Exception as notif_err:
+                print(f"[OrderNotification] Warning: failed to create notification for {order.order_id}: {notif_err}")
 
             return JsonResponse({
                 'status': 'success',

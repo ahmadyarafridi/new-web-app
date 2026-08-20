@@ -14,7 +14,7 @@
                 <video class="hero-video" 
                        poster="{% if hero_assets %}{{ hero_assets.burger_poster }}{% else %}{% static 'videos/hero/burger-poster.jpg' %}{% endif %}" 
                        autoplay muted playsinline 
-                       preload="auto"
+                       preload="metadata"
                        aria-hidden="true">
                     {% if hero_assets %}
                     <source src="{{ hero_assets.burger_webm }}" type="video/webm">
@@ -39,7 +39,7 @@
                 <video class="hero-video" 
                        poster="{% if hero_assets %}{{ hero_assets.pizza_poster }}{% else %}{% static 'videos/hero/pizza-poster.jpg' %}{% endif %}" 
                        autoplay muted playsinline 
-                       preload="auto"
+                       preload="none"
                        aria-hidden="true">
                     {% if hero_assets %}
                     <source src="{{ hero_assets.pizza_webm }}" type="video/webm">

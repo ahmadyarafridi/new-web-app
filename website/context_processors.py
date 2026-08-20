@@ -28,13 +28,16 @@ def restaurant_info(request):
     hero_assets_urls = None
     if use_cloudinary:
         base_url = f"https://res.cloudinary.com/{cloud_name}"
+        # Transformations: q_auto:low = auto quality (lower), vc_auto = auto video codec,
+        # br_600k/br_800k = max bitrate cap, w_1280 = max width for WebM/MP4
+        # Posters: q_auto:good, w_1280, f_jpg for fast-loading preview images
         hero_assets_urls = {
-            'burger_poster': f"{base_url}/image/upload/v1/hero_videos/burger-poster.jpg",
-            'burger_mp4': f"{base_url}/video/upload/v1/hero_videos/Explode_Burger.mp4",
-            'burger_webm': f"{base_url}/video/upload/v1/hero_videos/Explode_Burger.webm",
-            'pizza_poster': f"{base_url}/image/upload/v1/hero_videos/pizza-poster.jpg",
-            'pizza_mp4': f"{base_url}/video/upload/v1/hero_videos/Explode_Pizza.mp4",
-            'pizza_webm': f"{base_url}/video/upload/v1/hero_videos/Explode_Pizza.webm",
+            'burger_poster': f"{base_url}/image/upload/q_auto:good,w_1280,f_jpg/v1/hero_videos/burger-poster.jpg",
+            'burger_mp4':   f"{base_url}/video/upload/q_auto:low,vc_auto,br_800k,w_1280/v1/hero_videos/Explode_Burger.mp4",
+            'burger_webm':  f"{base_url}/video/upload/q_auto:low,vc_auto,br_600k,w_1280/v1/hero_videos/Explode_Burger.webm",
+            'pizza_poster': f"{base_url}/image/upload/q_auto:good,w_1280,f_jpg/v1/hero_videos/pizza-poster.jpg",
+            'pizza_mp4':    f"{base_url}/video/upload/q_auto:low,vc_auto,br_800k,w_1280/v1/hero_videos/Explode_Pizza.mp4",
+            'pizza_webm':   f"{base_url}/video/upload/q_auto:low,vc_auto,br_600k,w_1280/v1/hero_videos/Explode_Pizza.webm",
         }
 
     return {
